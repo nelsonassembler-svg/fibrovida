@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual do Usuário — FibroVida</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #7a9a50;
+      --green-dark: #4a6a28;
+      --green-deep: #2d4a18;
+      --gold:       #c8a840;
+      --cream:      #f5f3e8;
+      --white:      #ffffff;
+      --text:       #1a1a0a;
+      --text2:      #4a4a30;
+      --border:     #e0ddd0;
+      --card:       #ffffff;
+      --sidebar-w:  260px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--green-deep);
+      min-height: 100vh;
+      position: fixed; left: 0; top: 0;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      z-index: 100;
+    }
+    .sb-logo {
+      padding: 28px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .sb-logo .logo-icon { font-size: 28px; }
+    .sb-logo h1 { font-size: 20px; font-weight: 900; color: #fff; margin-top: 4px; }
+    .sb-logo p  { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 2px; }
+
+    .sb-search {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .sb-search input {
+      width: 100%; padding: 8px 12px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px; color: #fff; font-size: 13px;
+      outline: none;
+    }
+    .sb-search input::placeholder { color: rgba(255,255,255,.4); }
+
+    .sb-nav { padding: 12px 0; flex: 1; }
+    .sb-section-title {
+      font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: rgba(255,255,255,.35);
+      padding: 14px 20px 6px;
+    }
+    .sb-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 20px; color: rgba(255,255,255,.7);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    .sb-link:hover  { color: #fff; background: rgba(255,255,255,.07); }
+    .sb-link.active { color: #a8d870; border-left-color: #a8d870; background: rgba(168,216,112,.08); font-weight: 700; }
+    .sb-link .sb-icon { font-size: 15px; width: 20px; text-align: center; }
+
+    .sb-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .sb-footer a {
+      display: block; text-align: center;
+      background: #a8d870; color: #1a2e0a;
+      border-radius: 8px; padding: 10px;
+      font-size: 13px; font-weight: 700;
+      text-decoration: none;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: 900px;
+      padding: 48px 48px 80px;
+    }
+
+    /* ── HERO TOPO ── */
+    .manual-hero {
+      background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-dark) 60%, var(--green) 100%);
+      border-radius: 20px; padding: 48px 40px;
+      margin-bottom: 48px; position: relative; overflow: hidden;
+    }
+    .manual-hero::before {
+      content: "📖"; font-size: 180px; position: absolute;
+      right: -20px; bottom: -30px; opacity: .07;
+    }
+    .manual-hero .mh-badge {
+      display: inline-block; background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 11px; font-weight: 700; color: #a8d870;
+      letter-spacing: .5px; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .manual-hero h1 { font-size: 36px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 12px; }
+    .manual-hero p  { font-size: 15px; color: rgba(255,255,255,.7); max-width: 500px; line-height: 1.7; }
+    .mh-stats {
+      display: flex; gap: 28px; margin-top: 28px;
+    }
+    .mh-stat { text-align: center; }
+    .mh-stat-val { font-size: 22px; font-weight: 900; color: #a8d870; }
+    .mh-stat-lbl { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 2px; }
+
+    /* ── SEÇÕES ── */
+    .doc-section {
+      margin-bottom: 60px;
+      scroll-margin-top: 20px;
+    }
+    .doc-section h2 {
+      font-size: 26px; font-weight: 900; color: var(--text);
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .doc-section h3 {
+      font-size: 17px; font-weight: 700; color: var(--green-dark);
+      margin: 28px 0 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .doc-section p { font-size: 14px; color: var(--text2); line-height: 1.8; margin-bottom: 12px; }
+    .doc-section ul, .doc-section ol {
+      padding-left: 20px; margin-bottom: 12px;
+    }
+    .doc-section li { font-size: 14px; color: var(--text2); line-height: 1.8; }
+    .doc-section li strong { color: var(--text); }
+
+    /* ── CARDS ── */
+    .tip-card {
+      background: #edf7e3; border-left: 4px solid var(--green);
+      border-radius: 0 12px 12px 0; padding: 14px 18px;
+      margin: 16px 0; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .tip-card .tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .tip-card p { margin: 0; font-size: 13px; color: var(--green-dark); line-height: 1.7; }
+
+    .warn-card {
+      background: #fff8e1; border-left: 4px solid #f0b429;
+      border-radius: 0 12px 12px 0; padding: 14px 18px;
+      margin: 16px 0; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .warn-card .tip-icon { font-size: 20px; flex-shrink: 0; }
+    .warn-card p { margin: 0; font-size: 13px; color: #7a5a00; line-height: 1.7; }
+
+    .info-card {
+      background: #e8f0fe; border-left: 4px solid #4285f4;
+      border-radius: 0 12px 12px 0; padding: 14px 18px;
+      margin: 16px 0; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .info-card .tip-icon { font-size: 20px; flex-shrink: 0; }
+    .info-card p { margin: 0; font-size: 13px; color: #1a3a7a; line-height: 1.7; }
+
+    /* ── MÓDULO CARD ── */
+    .module-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 14px; margin: 20px 0;
+    }
+    .module-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 20px 16px; text-align: center;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .module-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+    .module-card .mc-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+    .module-card .mc-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .module-card .mc-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+
+    /* ── STEPS ── */
+    .steps { margin: 16px 0; }
+    .step {
+      display: flex; gap: 16px; margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--green); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 900; flex-shrink: 0;
+    }
+    .step-content h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .step-content p  { font-size: 13px; color: var(--text2); line-height: 1.7; margin: 0; }
+
+    /* ── TABELA ── */
+    .data-table {
+      width: 100%; border-collapse: collapse; margin: 16px 0;
+      font-size: 13px;
+    }
+    .data-table th {
+      background: var(--green-dark); color: #fff;
+      padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 700;
+    }
+    .data-table th:first-child { border-radius: 10px 0 0 0; }
+    .data-table th:last-child  { border-radius: 0 10px 0 0; }
+    .data-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text2); vertical-align: top;
+    }
+    .data-table tr:nth-child(even) td { background: #faf9f4; }
+    .data-table tr:last-child td:first-child { border-radius: 0 0 0 10px; }
+    .data-table tr:last-child td:last-child  { border-radius: 0 0 10px 0; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block; padding: 2px 9px;
+      border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .badge-green  { background: #d4f0b4; color: #2d6a00; }
+    .badge-gold   { background: #fef3c7; color: #92400e; }
+    .badge-blue   { background: #dbeafe; color: #1e40af; }
+    .badge-red    { background: #fee2e2; color: #b91c1c; }
+
+    /* ── HIGHLIGHT CODE ── */
+    .code-box {
+      background: #1e2a14; border-radius: 10px;
+      padding: 14px 18px; margin: 12px 0;
+      font-family: monospace; font-size: 13px;
+      color: #a8d870; overflow-x: auto;
+    }
+
+    /* ── TOC ── */
+    .toc-box {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 20px 24px; margin-bottom: 36px;
+    }
+    .toc-box h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+    .toc-box ol { padding-left: 20px; }
+    .toc-box li { font-size: 13px; margin-bottom: 5px; }
+    .toc-box a  { color: var(--green-dark); text-decoration: none; font-weight: 500; }
+    .toc-box a:hover { color: var(--green); text-decoration: underline; }
+
+    /* ── MOBILE TOGGLE ── */
+    .mobile-toggle {
+      display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
+      background: var(--green-dark); color: #fff;
+      border: none; border-radius: 10px; padding: 10px 13px;
+      font-size: 18px; cursor: pointer;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 99;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform .3s; }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.open { display: block; }
+      .main { margin-left: 0; padding: 72px 20px 60px; }
+      .mobile-toggle { display: block; }
+      .manual-hero { padding: 32px 24px; }
+      .manual-hero h1 { font-size: 26px; }
+      .mh-stats { gap: 16px; flex-wrap: wrap; }
+      .module-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="mobile-toggle" onclick="toggleSidebar()" id="mobile-btn">☰</button>
+<div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="logo-icon">🌿</div>
+    <h1>FibroVida</h1>
+    <p>Manual do Usuário</p>
+  </div>
+
+  <div class="sb-search">
+    <input type="text" id="sb-search-input" placeholder="🔍 Buscar no manual..." oninput="filterNav(this.value)" />
+  </div>
+
+  <nav class="sb-nav" id="sb-nav">
+    <div class="sb-section-title">Primeiros Passos</div>
+    <a class="sb-link active" href="#introducao" onclick="setActive(this)"><span class="sb-icon">🌿</span> Introdução</a>
+    <a class="sb-link" href="#cadastro" onclick="setActive(this)"><span class="sb-icon">📝</span> Cadastro e Login</a>
+    <a class="sb-link" href="#trial" onclick="setActive(this)"><span class="sb-icon">🎁</span> Período de Trial</a>
+    <a class="sb-link" href="#dashboard" onclick="setActive(this)"><span class="sb-icon">🏠</span> Dashboard (Início)</a>
+
+    <div class="sb-section-title">Módulos de Saúde</div>
+    <a class="sb-link" href="#saude" onclick="setActive(this)"><span class="sb-icon">❤️</span> Diário de Saúde</a>
+    <a class="sb-link" href="#medicamentos" onclick="setActive(this)"><span class="sb-icon">💊</span> Medicamentos</a>
+    <a class="sb-link" href="#terapias" onclick="setActive(this)"><span class="sb-icon">🧘</span> Terapias</a>
+    <a class="sb-link" href="#bemestar" onclick="setActive(this)"><span class="sb-icon">🙏</span> Bem-estar</a>
+    <a class="sb-link" href="#receitas" onclick="setActive(this)"><span class="sb-icon">🥗</span> Receitas</a>
+    <a class="sb-link" href="#vitais" onclick="setActive(this)"><span class="sb-icon">📊</span> Sinais Vitais</a>
+
+    <div class="sb-section-title">Organização</div>
+    <a class="sb-link" href="#tarefas" onclick="setActive(this)"><span class="sb-icon">✅</span> Tarefas</a>
+    <a class="sb-link" href="#profissionais" onclick="setActive(this)"><span class="sb-icon">👩‍⚕️</span> Profissionais</a>
+    <a class="sb-link" href="#documentos" onclick="setActive(this)"><span class="sb-icon">📄</span> Documentos</a>
+    <a class="sb-link" href="#relatorios" onclick="setActive(this)"><span class="sb-icon">📈</span> Relatórios PDF</a>
+
+    <div class="sb-section-title">Configurações</div>
+    <a class="sb-link" href="#perfil" onclick="setActive(this)"><span class="sb-icon">👤</span> Perfil</a>
+    <a class="sb-link" href="#darkmode" onclick="setActive(this)"><span class="sb-icon">🌙</span> Modo Escuro</a>
+    <a class="sb-link" href="#planos" onclick="setActive(this)"><span class="sb-icon">💳</span> Planos e Pagamento</a>
+    <a class="sb-link" href="#faq" onclick="setActive(this)"><span class="sb-icon">❓</span> Perguntas Frequentes</a>
+  </nav>
+
+  <div class="sb-footer">
+    <a href="https://nelsonassembler-svg.github.io/fibrovida/">🌿 Acessar o App</a>
+  </div>
+</aside>
+
+<!-- ═══ CONTEÚDO ═══ -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="manual-hero">
+    <div class="mh-badge">📖 Guia Completo</div>
+    <h1>Manual do Usuário<br>FibroVida</h1>
+    <p>Tudo que você precisa saber para usar o FibroVida e cuidar da sua saúde com mais organização, carinho e tecnologia.</p>
+    <div class="mh-stats">
+      <div class="mh-stat"><div class="mh-stat-val">10</div><div class="mh-stat-lbl">Módulos explicados</div></div>
+      <div class="mh-stat"><div class="mh-stat-val">7</div><div class="mh-stat-lbl">Dias de trial grátis</div></div>
+      <div class="mh-stat"><div class="mh-stat-val">100%</div><div class="mh-stat-lbl">Em português</div></div>
+    </div>
+  </div>
+
+  <!-- ÍNDICE -->
+  <div class="toc-box">
+    <h3>📋 Índice do Manual</h3>
+    <ol>
+      <li><a href="#introducao">Introdução ao FibroVida</a></li>
+      <li><a href="#cadastro">Cadastro, Login e Confirmação de E-mail</a></li>
+      <li><a href="#trial">Período de Trial Gratuito (7 dias)</a></li>
+      <li><a href="#dashboard">Dashboard — Tela Início</a></li>
+      <li><a href="#saude">Diário de Saúde (Dor, Sono, Humor)</a></li>
+      <li><a href="#vitais">Sinais Vitais (Pressão, Peso, Glicemia)</a></li>
+      <li><a href="#medicamentos">Controle de Medicamentos</a></li>
+      <li><a href="#terapias">Terapias e Tratamentos</a></li>
+      <li><a href="#bemestar">Bem-estar e Gratidão</a></li>
+      <li><a href="#receitas">Receitas Anti-inflamatórias</a></li>
+      <li><a href="#tarefas">Tarefas e Lembretes</a></li>
+      <li><a href="#profissionais">Profissionais de Saúde</a></li>
+      <li><a href="#documentos">Documentos e Arquivos</a></li>
+      <li><a href="#relatorios">Relatórios em PDF</a></li>
+      <li><a href="#perfil">Perfil e Configurações</a></li>
+      <li><a href="#darkmode">Modo Escuro</a></li>
+      <li><a href="#planos">Planos e Pagamento via PIX</a></li>
+      <li><a href="#faq">Perguntas Frequentes</a></li>
+    </ol>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       1. INTRODUÇÃO
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="introducao">
+    <h2>🌿 Introdução ao FibroVida</h2>
+    <p>O <strong>FibroVida</strong> é um aplicativo desenvolvido especialmente para pessoas que vivem com <strong>fibromialgia</strong> e outras condições de dor crônica. Ele reúne em um só lugar todas as ferramentas necessárias para registrar, acompanhar e melhorar sua qualidade de vida.</p>
+    <p>Desenvolvido por Nelson Tomaz, paciente com fibromialgia, o app foi criado a partir da experiência real de quem enfrenta diariamente os desafios da condição: dores invisíveis, múltiplos medicamentos, fibro fog e consultas médicas frequentes.</p>
+
+    <div class="module-grid">
+      <div class="module-card"><span class="mc-icon">❤️</span><div class="mc-name">Diário da Dor</div><div class="mc-desc">Registro diário de dor, sono e humor</div></div>
+      <div class="module-card"><span class="mc-icon">💊</span><div class="mc-name">Medicamentos</div><div class="mc-desc">Alertas, estoque e receitas médicas</div></div>
+      <div class="module-card"><span class="mc-icon">📊</span><div class="mc-name">Sinais Vitais</div><div class="mc-desc">Pressão, peso, glicemia e pulso</div></div>
+      <div class="module-card"><span class="mc-icon">📄</span><div class="mc-name">Documentos</div><div class="mc-desc">Exames e receitas na nuvem</div></div>
+      <div class="module-card"><span class="mc-icon">📈</span><div class="mc-name">Relatórios PDF</div><div class="mc-desc">Para levar ao médico</div></div>
+      <div class="module-card"><span class="mc-icon">🥗</span><div class="mc-name">Receitas</div><div class="mc-desc">Anti-inflamatórias e saudáveis</div></div>
+      <div class="module-card"><span class="mc-icon">🙏</span><div class="mc-name">Gratidão</div><div class="mc-desc">Diário de bem-estar espiritual</div></div>
+      <div class="module-card"><span class="mc-icon">✝️</span><div class="mc-name">Evangelho do Dia</div><div class="mc-desc">Palavra diária da Cancão Nova</div></div>
+      <div class="module-card"><span class="mc-icon">✅</span><div class="mc-name">Tarefas</div><div class="mc-desc">Lembretes e listas do dia</div></div>
+      <div class="module-card"><span class="mc-icon">👩‍⚕️</span><div class="mc-name">Profissionais</div><div class="mc-desc">Cadastro de médicos e terapeutas</div></div>
+    </div>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p><strong>Dica:</strong> O FibroVida funciona direto no navegador do seu celular ou computador — não precisa instalar nenhum aplicativo. Basta acessar o link e fazer seu cadastro.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       2. CADASTRO E LOGIN
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="cadastro">
+    <h2>📝 Cadastro, Login e Confirmação de E-mail</h2>
+
+    <h3>🆕 Criar uma conta nova</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Acesse o app</h4>
+          <p>Abra o navegador e acesse <strong>nelsonassembler-svg.github.io/fibrovida</strong>. A tela de login aparecerá automaticamente.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Clique em "Criar conta gratuita"</h4>
+          <p>No rodapé da tela de login, clique no link azul <em>"Criar conta gratuita"</em> para abrir o formulário de cadastro.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Preencha seus dados</h4>
+          <p>Informe seu <strong>nome completo</strong>, um <strong>e-mail válido</strong> (que você acessa) e uma <strong>senha com pelo menos 6 caracteres</strong>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Aceite a Política de Privacidade (LGPD)</h4>
+          <p>Leia e marque a caixa de concordância com nossa política de privacidade. Seus dados são protegidos e usados somente para o funcionamento do app.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Confirme seu e-mail</h4>
+          <p>Um código de verificação será enviado para o seu e-mail. Abra o e-mail e clique no link de confirmação antes de fazer o primeiro login.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn-card">
+      <span class="tip-icon">⚠️</span>
+      <p><strong>Importante:</strong> Verifique a pasta de <em>Spam/Lixo Eletrônico</em> caso não receba o e-mail de confirmação em até 5 minutos. O assunto será "Confirme seu e-mail — FibroVida".</p>
+    </div>
+
+    <h3>🔑 Fazer Login</h3>
+    <p>Na tela inicial do app, informe o <strong>e-mail</strong> e a <strong>senha</strong> cadastrados e clique em <em>"Entrar"</em>. Use o ícone 👁️ para mostrar/ocultar a senha.</p>
+
+    <h3>🔒 Recuperar Senha</h3>
+    <p>Clique em <em>"Esqueci minha senha"</em> na tela de login, informe seu e-mail e clique em <em>"Enviar link"</em>. Você receberá um e-mail com instruções para criar uma nova senha.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       3. TRIAL
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="trial">
+    <h2>🎁 Período de Trial Gratuito (7 dias)</h2>
+    <p>Após criar sua conta, você tem <strong>7 dias de acesso gratuito</strong> a todos os módulos do FibroVida, sem precisar informar dados de pagamento.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Situação</th><th>O que acontece</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge badge-green">Dias 1–5</span></td><td>Acesso completo a todos os módulos. Você verá uma mensagem informando quantos dias restam.</td></tr>
+        <tr><td><span class="badge badge-gold">Dias 6–7</span></td><td>Aviso de urgência: "Trial termina em X dia(s)!" Ainda com acesso total.</td></tr>
+        <tr><td><span class="badge badge-red">Após 7 dias</span></td><td>Tela de pagamento é exibida. Escolha o plano mensal ou anual para continuar.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p>O prazo começa a contar a partir da <strong>data de criação da conta</strong>, não da data do primeiro acesso. Aproveite os 7 dias para explorar todos os módulos!</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       4. DASHBOARD
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="dashboard">
+    <h2>🏠 Dashboard — Tela Início</h2>
+    <p>O Dashboard é a tela principal do FibroVida. Ele mostra um resumo do seu dia atual e acesso rápido a todas as funcionalidades.</p>
+
+    <h3>📌 O que aparece no Dashboard</h3>
+    <ul>
+      <li><strong>Saudação personalizada</strong> — exibe seu nome e um emoji que muda conforme o horário (☀️ manhã, 🌤️ tarde, 🌙 noite).</li>
+      <li><strong>Data de hoje</strong> — exibida de forma amigável, ex: "Quinta, 15 de maio".</li>
+      <li><strong>Resumo de saúde do dia</strong> — células clicáveis mostrando: dor atual, humor, sono e tarefas pendentes (com cores: verde = bom, amarelo = atenção, vermelho = ruim).</li>
+      <li><strong>Ações rápidas</strong> — botões para acessar Saúde, Tarefas, Medicamentos, Bem-estar, Receitas e Relatórios com um toque.</li>
+      <li><strong>Evangelho do Dia</strong> — trecho do Evangelho e homilia diária, buscado automaticamente da Cancão Nova.</li>
+    </ul>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p>Clique em qualquer célula do resumo (dor, humor, sono) para ir diretamente à tela de registro de saúde daquele dia.</p>
+    </div>
+
+    <h3>📊 Células de Resumo — Significado das Cores</h3>
+    <table class="data-table">
+      <thead><tr><th>Indicador</th><th>Verde</th><th>Amarelo</th><th>Vermelho</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Dor</strong></td><td>0–3</td><td>4–6</td><td>7–10</td></tr>
+        <tr><td><strong>Humor</strong></td><td>Ótimo / Bem</td><td>Regular</td><td>Mal / Péssimo</td></tr>
+        <tr><td><strong>Sono</strong></td><td>7+ horas</td><td>5–6 horas</td><td>Menos de 5h</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       5. SAÚDE
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="saude">
+    <h2>❤️ Diário de Saúde</h2>
+    <p>O módulo de Saúde é o coração do FibroVida. Registre diariamente como você está se sentindo para acompanhar sua evolução ao longo do tempo.</p>
+
+    <h3>📝 Como registrar sua saúde diária</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Acesse a aba "Saúde"</h4>
+          <p>Toque no ícone ❤️ na barra de navegação inferior ou clique em "Registrar Saúde" no Dashboard.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Preencha o formulário rápido</h4>
+          <p>Informe o <strong>nível de dor</strong> (0–10), o <strong>humor</strong> (lista suspensa) e as <strong>horas de sono</strong> da noite anterior.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Marque os locais de dor</h4>
+          <p>Clique nos botões correspondentes às regiões do corpo onde sente dor naquele dia (cabeça, pescoço, ombros, braços, costas, etc.).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Adicione observações (opcional)</h4>
+          <p>Use o campo de texto para anotar sintomas específicos, fatores que pioraram ou melhoraram sua dor, atividades realizadas.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Salve o registro</h4>
+          <p>Clique em <em>"Salvar registro de hoje"</em>. O sistema detecta automaticamente se já existe um registro do dia e oferece atualizar.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>📋 Escala de Dor — Referência</h3>
+    <table class="data-table">
+      <thead><tr><th>Nível</th><th>Descrição</th><th>Classificação</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>Sem dor</td><td><span class="badge badge-green">Ótimo</span></td></tr>
+        <tr><td>1–3</td><td>Dor leve, não interfere nas atividades</td><td><span class="badge badge-green">Bom</span></td></tr>
+        <tr><td>4–6</td><td>Dor moderada, limita algumas atividades</td><td><span class="badge badge-gold">Atenção</span></td></tr>
+        <tr><td>7–9</td><td>Dor intensa, impede atividades normais</td><td><span class="badge badge-red">Ruim</span></td></tr>
+        <tr><td>10</td><td>Dor insuportável, requer atenção médica</td><td><span class="badge badge-red">Crítico</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>📂 Histórico de Registros</h3>
+    <p>Abaixo do formulário aparece o histórico dos últimos registros. Cada card mostra a data, nível de dor, humor, sono e locais de dor. Os dados alimentam automaticamente os <strong>relatórios em PDF</strong>.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       6. SINAIS VITAIS
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="vitais">
+    <h2>📊 Sinais Vitais</h2>
+    <p>Registre seus sinais vitais para acompanhar a saúde cardiovascular e metabólica ao longo do tempo. Também disponível na aba de Saúde.</p>
+
+    <h3>🩺 Campos disponíveis</h3>
+    <table class="data-table">
+      <thead><tr><th>Campo</th><th>Unidade</th><th>O que registrar</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SIS</strong> (Sistólica)</td><td>mmHg</td><td>Número maior da pressão arterial (ex: 120)</td></tr>
+        <tr><td><strong>DIA</strong> (Diastólica)</td><td>mmHg</td><td>Número menor da pressão arterial (ex: 80)</td></tr>
+        <tr><td><strong>PUL</strong> (Pulso)</td><td>bpm</td><td>Frequência cardíaca (batimentos por minuto)</td></tr>
+        <tr><td><strong>Peso</strong></td><td>kg</td><td>Peso corporal atual</td></tr>
+        <tr><td><strong>Cintura</strong></td><td>cm</td><td>Medida da cintura abdominal</td></tr>
+        <tr><td><strong>Glicemia</strong></td><td>mg/dL</td><td>Nível de açúcar no sangue</td></tr>
+      </tbody>
+    </table>
+
+    <h3>🟢 Referência de Pressão Arterial</h3>
+    <table class="data-table">
+      <thead><tr><th>Classificação</th><th>Sistólica</th><th>Diastólica</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-green">Ótima</span></td><td>Abaixo de 120</td><td>Abaixo de 80</td></tr>
+        <tr><td><span class="badge badge-green">Normal</span></td><td>120–129</td><td>80–84</td></tr>
+        <tr><td><span class="badge badge-gold">Limítrofe</span></td><td>130–139</td><td>85–89</td></tr>
+        <tr><td><span class="badge badge-red">Hipertensão</span></td><td>140 ou mais</td><td>90 ou mais</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn-card">
+      <span class="tip-icon">⚠️</span>
+      <p>O FibroVida é um auxiliar de registro e <strong>não substitui o acompanhamento médico profissional</strong>. Em caso de pressão muito alta ou sintomas graves, procure atendimento médico imediatamente.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       7. MEDICAMENTOS
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="medicamentos">
+    <h2>💊 Controle de Medicamentos</h2>
+    <p>Gerencie todos os seus medicamentos em um único lugar: horários, dosagens, estoque, alertas sonoros e receitas médicas digitalizadas.</p>
+
+    <h3>➕ Cadastrar um medicamento</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Toque em "+ Medicamento"</h4>
+          <p>Na aba Medicamentos, toque no botão verde para abrir o formulário de cadastro.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Preencha as informações</h4>
+          <p>Informe o <strong>nome</strong> do medicamento, a <strong>dosagem</strong> (ex: 75mg), o <strong>horário</strong> (ex: 08:00 ou múltiplos: 08:00, 14:00, 22:00), a <strong>quantidade em estoque</strong> e o <strong>estoque mínimo</strong> para alertas de reposição.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Anexe a receita médica (opcional)</h4>
+          <p>Toque na área de upload para fotografar ou selecionar o PDF da receita médica. O arquivo fica salvo na nuvem com segurança.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Salve o medicamento</h4>
+          <p>Clique em <em>"Salvar"</em>. O medicamento aparecerá na lista e os alertas serão ativados automaticamente.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>🔔 Alertas e Notificações</h3>
+    <ul>
+      <li><strong>Alerta sonoro de horário:</strong> Um som melodioso (Dó-Mi-Sol) toca no navegador no horário cadastrado, junto com uma mensagem na tela.</li>
+      <li><strong>Notificação do sistema:</strong> Se você permitir, o celular exibe uma notificação mesmo com a tela bloqueada.</li>
+      <li><strong>Alerta de estoque baixo:</strong> Quando o estoque chega ao mínimo cadastrado, um som grave toca e uma mensagem de aviso aparece.</li>
+    </ul>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p><strong>Múltiplos horários:</strong> No campo "Horário", você pode informar vários horários separados por vírgula. Exemplo: <code>08:00, 14:00, 22:00</code></p>
+    </div>
+
+    <div class="info-card">
+      <span class="tip-icon">ℹ️</span>
+      <p>O app precisa estar <strong>aberto no navegador</strong> para os alertas sonoros funcionarem. Para notificações quando o app está fechado, permita as notificações quando solicitado.</p>
+    </div>
+
+    <h3>✏️ Editar ou Excluir Medicamento</h3>
+    <p>Na lista de medicamentos, toque no card do medicamento para abrir as opções de edição. Use o botão <strong>Editar</strong> para atualizar os dados ou <strong>Excluir</strong> para remover.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       8. TERAPIAS
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="terapias">
+    <h2>🧘 Terapias e Tratamentos</h2>
+    <p>Registre todas as terapias e tratamentos que você realiza: fisioterapia, acupuntura, pilates, psicoterapia, hidroterapia e outros.</p>
+
+    <h3>📝 Cadastrar uma terapia</h3>
+    <p>Toque em <em>"+ Terapia"</em> e informe:</p>
+    <ul>
+      <li><strong>Nome da terapia</strong> — ex: Fisioterapia, Acupuntura, Pilates</li>
+      <li><strong>Frequência</strong> — ex: 2x por semana, Diário, Semanal</li>
+      <li><strong>Profissional responsável</strong> — selecione da lista de profissionais cadastrados</li>
+      <li><strong>Observações</strong> — evolução percebida, exercícios prescritos, etc.</li>
+    </ul>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p>O histórico de terapias aparece nos relatórios PDF, ajudando o médico a ter uma visão completa do seu tratamento.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       9. BEM-ESTAR / GRATIDÃO
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="bemestar">
+    <h2>🙏 Bem-estar e Diário de Gratidão</h2>
+    <p>Cultivar a gratidão é cientificamente comprovado como benéfico para a saúde mental e física, especialmente em doenças crônicas. O módulo de Bem-estar oferece um espaço para sua jornada espiritual e emocional.</p>
+
+    <h3>📖 Registrar gratidões do dia</h3>
+    <p>Na aba <em>"Bem-estar"</em>, você encontra o <strong>Diário de Gratidão</strong>. Registre 3 coisas pelas quais você é grato hoje — podem ser simples como "Tomei café quentinho" ou "Dormi melhor esta noite".</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Abra a aba Bem-estar</h4>
+          <p>Toque no ícone 🙏 na barra de navegação inferior.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Preencha as 3 gratidões</h4>
+          <p>Escreva uma frase em cada campo: "Sou grato por...", "Me alegrou hoje...", "Agradeço por..."</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Salve o registro</h4>
+          <p>Clique em <em>"Salvar gratidões"</em>. O registro é salvo com a data de hoje.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>✏️ Editar ou Excluir Gratidões</h3>
+    <p>No histórico de gratidões, cada card possui dois botões:</p>
+    <ul>
+      <li><strong>✏️ Editar</strong> — abre um modal para corrigir ou complementar o texto</li>
+      <li><strong>🗑️ Excluir</strong> — remove o registro permanentemente (pede confirmação)</li>
+    </ul>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       10. RECEITAS
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="receitas">
+    <h2>🥗 Receitas Anti-inflamatórias</h2>
+    <p>Uma biblioteca de receitas saudáveis selecionadas especialmente para reduzir a inflamação e contribuir para o alívio dos sintomas da fibromialgia.</p>
+
+    <h3>📂 Carregar receitas de exemplo</h3>
+    <p>Na primeira vez que acessar a aba de Receitas, clique em <em>"Carregar receitas de exemplo"</em> para popular a biblioteca com 10 receitas anti-inflamatórias pré-cadastradas, incluindo:</p>
+    <ul>
+      <li>Smoothie Anti-inflamatório de Cúrcuma</li>
+      <li>Salmão Grelhado com Quinoa e Brócolis</li>
+      <li>Bowl de Açaí com Frutas Vermelhas</li>
+      <li>Sopa de Lentilha com Gengibre</li>
+      <li>Chia Pudding com Morango</li>
+      <li>Frango com Cúrcuma e Legumes no Forno</li>
+      <li>Salada de Grão-de-Bico com Abacate</li>
+      <li>Chá Anti-inflamatório de Cúrcuma e Canela</li>
+      <li>Aveia com Frutas Vermelhas e Nozes</li>
+      <li>Wrap Integral com Atum e Salada</li>
+    </ul>
+
+    <h3>🔍 Buscar e Filtrar Receitas</h3>
+    <p>Use a barra de busca no topo da aba para encontrar receitas por nome ou ingrediente. Os resultados aparecem em tempo real enquanto você digita.</p>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p>Cada receita mostra a imagem, descrição, lista de ingredientes com quantidades e modo de preparo passo a passo.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       11. TAREFAS
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="tarefas">
+    <h2>✅ Tarefas e Lembretes</h2>
+    <p>Organize seu dia com uma lista de tarefas simples e eficiente. O fibro fog (névoa mental) pode tornar difícil lembrar de tudo — o FibroVida ajuda a manter o controle.</p>
+
+    <h3>➕ Criar uma tarefa</h3>
+    <p>Na aba <em>"Tarefas"</em>, clique em <em>"+ Nova Tarefa"</em> e informe:</p>
+    <ul>
+      <li><strong>Descrição</strong> — o que precisa ser feito</li>
+      <li><strong>Prioridade</strong> — Baixa, Normal ou Alta</li>
+      <li><strong>Data de vencimento</strong> — quando precisa ser concluída</li>
+    </ul>
+
+    <h3>✔️ Concluir uma tarefa</h3>
+    <p>Toque na caixa de seleção ao lado da tarefa para marcá-la como concluída. Tarefas concluídas ficam riscadas e podem ser filtradas.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       12. PROFISSIONAIS
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="profissionais">
+    <h2>👩‍⚕️ Profissionais de Saúde</h2>
+    <p>Cadastre todos os profissionais que fazem parte do seu cuidado: médicos, fisioterapeutas, psicólogos, nutricionistas e outros.</p>
+
+    <h3>➕ Cadastrar um profissional</h3>
+    <p>Clique em <em>"+ Profissional"</em> e informe:</p>
+    <ul>
+      <li><strong>Nome</strong> do profissional</li>
+      <li><strong>Especialidade</strong> — ex: Reumatologista, Fisioterapeuta</li>
+      <li><strong>Telefone / WhatsApp</strong> para contato rápido</li>
+      <li><strong>Endereço do consultório</strong></li>
+      <li><strong>Observações</strong> — dias de atendimento, planos aceitos, etc.</li>
+    </ul>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p>Os profissionais cadastrados ficam disponíveis para associar às terapias, facilitando a organização do seu time de cuidado.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       13. DOCUMENTOS
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="documentos">
+    <h2>📄 Documentos e Arquivos</h2>
+    <p>Armazene seus exames, laudos, receitas médicas e solicitações na nuvem com segurança — acessíveis de qualquer dispositivo.</p>
+
+    <h3>📤 Fazer upload de um documento</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Acesse a aba Documentos</h4>
+          <p>Toque no ícone 📄 na barra de navegação ou acesse pelas Configurações.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Clique em "+ Documento"</h4>
+          <p>Selecione o arquivo do seu dispositivo (PDF, JPG ou PNG). Você pode fotografar um documento diretamente pela câmera do celular.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Classifique o documento</h4>
+          <p>Informe o <strong>título</strong> (ex: "Hemograma - Março 2026"), a <strong>categoria</strong> (Exame, Receita, Laudo, Solicitação) e a <strong>data</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <span class="tip-icon">ℹ️</span>
+      <p>Os documentos são armazenados no <strong>Supabase Storage</strong>, um serviço de armazenamento em nuvem seguro e criptografado. Somente você tem acesso aos seus arquivos.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       14. RELATÓRIOS PDF
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="relatorios">
+    <h2>📈 Relatórios em PDF</h2>
+    <p>Gere relatórios profissionais com toda a sua evolução de saúde para levar ao médico nas consultas. Impressiona pela organização e riqueza de dados.</p>
+
+    <h3>📋 O que o relatório inclui</h3>
+    <ul>
+      <li>Gráfico de evolução da dor (linha do tempo)</li>
+      <li>Registro de humor e qualidade do sono</li>
+      <li>Mapa de locais de dor mais frequentes</li>
+      <li>Lista completa de medicamentos em uso</li>
+      <li>Sinais vitais (pressão, peso, glicemia)</li>
+      <li>Terapias realizadas no período</li>
+      <li>Dados do perfil do paciente</li>
+    </ul>
+
+    <h3>📥 Como gerar o relatório</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Acesse a aba Relatórios</h4>
+          <p>Toque no ícone 📈 na barra de navegação ou clique em "Ver Relatórios" no Dashboard.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Selecione o período</h4>
+          <p>Escolha o intervalo de datas desejado (últimos 7, 15 ou 30 dias, ou um período personalizado).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Clique em "Gerar PDF"</h4>
+          <p>O relatório será gerado e o download iniciará automaticamente. Você pode salvá-lo ou compartilhar diretamente com seu médico.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       15. PERFIL
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="perfil">
+    <h2>👤 Perfil e Configurações</h2>
+    <p>Mantenha seus dados pessoais atualizados para que os relatórios e o app funcionem corretamente.</p>
+
+    <h3>📝 Dados do Perfil</h3>
+    <ul>
+      <li><strong>Nome completo</strong></li>
+      <li><strong>Data de nascimento</strong> e <strong>sexo</strong></li>
+      <li><strong>Diagnósticos</strong> — registre suas condições de saúde</li>
+      <li><strong>Médico principal</strong> — selecione da lista de profissionais</li>
+      <li><strong>Contato de emergência</strong></li>
+    </ul>
+
+    <h3>🔐 Sair da Conta</h3>
+    <p>Acesse as Configurações (ícone ⚙️) e clique em <em>"Sair"</em>. Seus dados ficam salvos na nuvem e estarão disponíveis no próximo acesso.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       16. MODO ESCURO
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="darkmode">
+    <h2>🌙 Modo Escuro</h2>
+    <p>O Modo Escuro reduz o brilho da tela e usa tons mais suaves para os olhos — essencial para os dias de fotossensibilidade, muito comum em pacientes com fibromialgia.</p>
+
+    <h3>Como ativar</h3>
+    <p>Clique no botão <strong>🌙</strong> no canto superior direito do app. O app muda para o modo escuro imediatamente. Clique novamente para voltar ao modo claro ☀️.</p>
+
+    <div class="tip-card">
+      <span class="tip-icon">💡</span>
+      <p>Sua preferência é salva automaticamente. Na próxima vez que abrir o app, ele lembrará se você prefere o modo claro ou escuro. Se o seu celular já estiver no modo escuro do sistema, o FibroVida detecta automaticamente.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       17. PLANOS E PAGAMENTO
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="planos">
+    <h2>💳 Planos e Pagamento via PIX</h2>
+    <p>Após o período de trial de 7 dias, escolha o plano que melhor se adapta à sua necessidade.</p>
+
+    <table class="data-table">
+      <thead><tr><th>Plano</th><th>Preço</th><th>Equivalente</th><th>Economia</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Mensal</strong></td>
+          <td>R$ 14,90/mês</td>
+          <td>R$ 0,49/dia</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>Anual ⭐</strong></td>
+          <td>R$ 99,90/ano</td>
+          <td>R$ 8,32/mês</td>
+          <td><span class="badge badge-green">44% OFF</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>💳 Como pagar via PIX</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Escolha o plano</h4>
+          <p>Na tela de pagamento (exibida após o trial), selecione Mensal ou Anual.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Faça o PIX</h4>
+          <p>Abra o app do seu banco, acesse "PIX" → "Pagar" → "E-mail" e informe a chave: <strong>nelsontcmagalhaes@gmail.com</strong></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Envie o comprovante</h4>
+          <p>Clique no botão <em>"Falar no WhatsApp"</em> e envie o comprovante do PIX. A ativação é feita em até 2 horas.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Acesso liberado</h4>
+          <p>Após a confirmação do pagamento, sua conta é ativada como Premium e você tem acesso completo ao app.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-card">
+      <span class="tip-icon">📲</span>
+      <p><strong>WhatsApp para suporte e pagamento:</strong> <a href="https://wa.me/5565992393010" target="_blank" style="color:var(--green-dark);font-weight:700">+55 65 99239-3010</a></p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       18. FAQ
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="faq">
+    <h2>❓ Perguntas Frequentes</h2>
+
+    <h3>O app funciona sem internet?</h3>
+    <p>Não. O FibroVida requer conexão com a internet para salvar e recuperar seus dados na nuvem. Porém, uma vez carregado, pode funcionar com conexões lentas.</p>
+
+    <h3>Meus dados são seguros?</h3>
+    <p>Sim. Todos os dados são armazenados no <strong>Supabase</strong>, uma plataforma segura com criptografia em repouso e em trânsito. Somente você tem acesso aos seus dados — nem o desenvolvedor consegue visualizá-los.</p>
+
+    <h3>Posso usar no celular e no computador ao mesmo tempo?</h3>
+    <p>Sim! Como é um app na nuvem, você pode acessar de qualquer dispositivo. Seus dados são sincronizados automaticamente.</p>
+
+    <h3>O alerta sonoro funciona com o celular no silencioso?</h3>
+    <p>O alerta sonoro do app depende do volume de mídia do celular. Se o volume de mídia estiver no mudo, o som não será ouvido. Mantenha o volume de mídia ativo nos horários dos medicamentos.</p>
+
+    <h3>Posso cancelar o plano a qualquer momento?</h3>
+    <p>Sim. Entre em contato pelo WhatsApp e o cancelamento é processado imediatamente. Não há taxa de cancelamento.</p>
+
+    <h3>O que acontece com meus dados se eu cancelar?</h3>
+    <p>Seus dados ficam armazenados por 30 dias após o cancelamento. Caso queira reativar, todos os registros estarão disponíveis.</p>
+
+    <h3>Posso exportar meus dados?</h3>
+    <p>Sim! Use a aba <strong>Relatórios</strong> para gerar PDFs completos com todos os seus dados de saúde.</p>
+
+    <h3>O app funciona no iPhone?</h3>
+    <p>Sim, funciona em qualquer celular com navegador atualizado (Chrome, Safari, Firefox). Não precisa instalar nada — é um web app.</p>
+
+    <div class="info-card">
+      <span class="tip-icon">📧</span>
+      <p>Não encontrou resposta para sua dúvida? Entre em contato: <strong>nelsontcmagalhaes@gmail.com</strong> ou <a href="https://wa.me/5565992393010" target="_blank" style="color:#1a3a7a;font-weight:700">WhatsApp: +55 65 99239-3010</a></p>
+    </div>
+  </section>
+
+  <!-- RODAPÉ -->
+  <div style="text-align:center;padding:40px 0 0;border-top:1px solid var(--border);">
+    <p style="font-size:13px;color:var(--text2)">© 2026 FibroVida · Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong></p>
+    <p style="font-size:11px;color:#aaa;margin-top:6px">Este aplicativo não substitui o acompanhamento médico profissional.</p>
+    <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="https://nelsonassembler-svg.github.io/fibrovida/" style="background:var(--green);color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">🌿 Acessar o App</a>
+      <a href="https://nelsonassembler-svg.github.io/fibrovida/apresentacao.html" style="background:transparent;color:var(--green-dark);border:2px solid var(--green);padding:9px 22px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">📱 Ver Apresentação</a>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Ativa link da sidebar ao rolar
+  function setActive(el) {
+    document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+    // fechar sidebar no mobile após clique
+    if (window.innerWidth <= 768) toggleSidebar();
+  }
+
+  // Mobile sidebar
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+  }
+
+  // Filtro de busca na sidebar
+  function filterNav(q) {
+    const links = document.querySelectorAll('.sb-link');
+    const term = q.toLowerCase();
+    links.forEach(link => {
+      link.style.display = link.textContent.toLowerCase().includes(term) ? 'flex' : 'none';
+    });
+    // mostrar todos os títulos de seção se sem busca
+    document.querySelectorAll('.sb-section-title').forEach(t => {
+      t.style.display = term ? 'none' : 'block';
+    });
+  }
+
+  // Destaca o link ativo conforme a seção visível
+  const sections = document.querySelectorAll('.doc-section');
+  const navLinks = document.querySelectorAll('.sb-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
