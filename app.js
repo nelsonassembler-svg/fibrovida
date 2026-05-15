@@ -375,16 +375,16 @@ function showPaywall() {
   const email = encodeURIComponent(currentUser?.email || "");
   const waLink = document.getElementById("whatsapp-link");
   if (waLink) {
-    waLink.href = `https://wa.me/5565992393010?text=Ol%C3%A1!%20Realizei%20o%20pagamento%20do%20FibroVida%20Premium.%20E-mail%3A%20${email}`;
+    waLink.href = `https://wa.me/5585998251219?text=Ol%C3%A1!%20Realizei%20o%20pagamento%20do%20FibroVida%20Premium.%20E-mail%3A%20${email}`;
   }
   showScreen("paywall-screen");
 }
 
 function copiarPix() {
-  navigator.clipboard.writeText("nelsontcmagalhaes@gmail.com").then(() => {
+  navigator.clipboard.writeText("85998251219").then(() => {
     toast("Chave PIX copiada! ✅", "s");
   }).catch(() => {
-    toast("Chave PIX: nelsontcmagalhaes@gmail.com", "i");
+    toast("Chave PIX: 85998251219", "i");
   });
 }
 
