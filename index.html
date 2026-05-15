@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="pt-BR" spellcheck="true">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#7a9a50" />
+  <title>FibroVida</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div id="app">
+
+<!-- ================================================================
+     TELA AUTH
+     ================================================================ -->
+<div class="screen active" id="auth-screen">
+  <div class="auth-wrap">
+
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🌿</div>
+      <h1>FibroVida</h1>
+      <p>Seu bem-estar em primeiro lugar</p>
+    </div>
+
+    <div class="auth-card">
+
+      <!-- LOGIN -->
+      <div class="auth-panel active" id="panel-login">
+        <h2>Entrar na conta</h2>
+        <div class="fg">
+          <label>E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email" />
+        </div>
+        <div class="fg">
+          <label>Senha</label>
+          <div class="pw-wrap">
+            <input type="password" id="login-password" placeholder="Sua senha" autocomplete="current-password" />
+            <button class="pw-toggle" onclick="togglePass('login-password',this)" type="button">👁️</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+        <div class="auth-links">
+          <button onclick="showPanel('panel-register')">Criar conta gratuita</button>
+          <button onclick="showPanel('panel-recovery')">Esqueci minha senha</button>
+        </div>
+      </div>
+
+      <!-- CADASTRO -->
+      <div class="auth-panel" id="panel-register">
+        <h2>Criar conta</h2>
+        <div class="fg">
+          <label>Nome completo</label>
+          <input type="text" id="reg-name" placeholder="Seu nome" autocomplete="name" />
+        </div>
+        <div class="fg">
+          <label>E-mail</label>
+          <input type="email" id="reg-email" placeholder="seu@email.com" autocomplete="email" />
+        </div>
+        <div class="fg">
+          <label>Senha (mín. 6 caracteres)</label>
+          <div class="pw-wrap">
+            <input type="password" id="reg-password" placeholder="Crie uma senha" autocomplete="new-password" />
+            <button class="pw-toggle" onclick="togglePass('reg-password',this)" type="button">👁️</button>
+          </div>
+        </div>
+        <div class="lgpd-row">
+          <input type="checkbox" id="lgpd-check" />
+          <label for="lgpd-check">
+            Li e concordo com a <a href="#" onclick="showLGPD();return false">Política de Privacidade (LGPD)</a>.
+            Seus dados são usados somente para o funcionamento do aplicativo.
+          </label>
+        </div>
+        <button class="btn btn-primary" onclick="doRegister()">Criar conta</button>
+        <div class="auth-links">
+          <button onclick="showPanel('panel-login')">Já tenho conta</button>
+        </div>
+      </div>
+
+      <!-- RECUPERAÇÃO -->
+      <div class="auth-panel" id="panel-recovery">
+        <h2>Recuperar senha</h2>
+        <p class="text-muted mb-12">Digite seu e-mail e enviaremos um link para redefinir sua senha.</p>
+        <div class="fg">
+          <label>E-mail</label>
+          <input type="email" id="recovery-email" placeholder="seu@email.com" />
+        </div>
+        <button class="btn btn-primary" onclick="doRecovery()">Enviar link</button>
+        <div class="auth-links">
+          <button onclick="showPanel('panel-login')">Voltar ao login</button>
+        </div>
+      </div>
+
+      <!-- CONFIRMAR E-MAIL -->
+      <div class="auth-panel" id="panel-confirm">
+        <div class="text-center" style="padding:16px 0">
+          <div style="font-size:48px;margin-bottom:12px">📧</div>
+          <h2>Confirme seu e-mail</h2>
+          <p class="text-muted mt-8" style="line-height:1.6">
+            Enviamos um link de confirmação para o seu e-mail.<br>
+            Acesse sua caixa de entrada e clique no link.
+          </p>
+        </div>
+        <button class="btn btn-secondary mt-8" onclick="showPanel('panel-login')">Voltar ao login</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ================================================================
+     TELA PAYWALL
+     ================================================================ -->
+<div class="screen" id="paywall-screen">
+  <div class="paywall-wrap">
+
+    <div class="paywall-logo">
+      <span>🌿</span>
+      <h1>FibroVida</h1>
+      <p>Seu bem-estar em primeiro lugar</p>
+    </div>
+
+    <div class="paywall-card">
+      <div class="paywall-icon">🔒</div>
+      <h2 class="paywall-title">Seu período gratuito encerrou</h2>
+      <p class="paywall-sub">Seus <strong>7 dias gratuitos</strong> chegaram ao fim. Assine o plano <strong>FibroVida Premium</strong> para continuar cuidando da sua saúde sem interrupções.</p>
+
+      <div class="paywall-benefits">
+        <div class="pb-item">✅ Diário da Dor ilimitado</div>
+        <div class="pb-item">✅ Controle de sinais vitais</div>
+        <div class="pb-item">✅ Documentos médicos em nuvem</div>
+        <div class="pb-item">✅ Relatórios em PDF</div>
+        <div class="pb-item">✅ Receitas anti-inflamatórias</div>
+        <div class="pb-item">✅ Acesso em qualquer dispositivo</div>
+      </div>
+
+      <div class="paywall-plans">
+        <div class="pw-plan pw-plan-annual">
+          <div class="pw-plan-badge">MELHOR OFERTA</div>
+          <div class="pw-plan-name">Plano Anual</div>
+          <div class="pw-plan-price">R$ 99<span class="pw-cents">,90</span></div>
+          <div class="pw-plan-period">por ano · equivale a R$ 8,32/mês</div>
+          <div class="pw-plan-save">Economia de 44% ✨</div>
+        </div>
+        <div class="pw-plan">
+          <div class="pw-plan-name">Plano Mensal</div>
+          <div class="pw-plan-price">R$ 14<span class="pw-cents">,90</span></div>
+          <div class="pw-plan-period">por mês</div>
+        </div>
+      </div>
+
+      <div class="paywall-pix">
+        <div class="pix-title">💳 Como assinar — via PIX</div>
+        <div class="pix-key-box">
+          <span class="pix-label">Chave PIX (e-mail):</span>
+          <span class="pix-key" id="pix-key-text">nelsontcmagalhaes@gmail.com</span>
+          <button class="pix-copy-btn" onclick="copiarPix()">📋 Copiar</button>
+        </div>
+        <p class="pix-instrucoes">
+          1. Faça o PIX para a chave acima<br>
+          2. Envie o comprovante pelo WhatsApp<br>
+          3. Sua conta será ativada em até 2 horas
+        </p>
+        <a class="btn-whatsapp" href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Realizei%20o%20pagamento%20do%20FibroVida%20Premium%20e%20gostaria%20de%20ativar%20minha%20conta.%20E-mail%3A%20" id="whatsapp-link" target="_blank">
+          📲 Enviar comprovante pelo WhatsApp
+        </a>
+      </div>
+
+      <button class="btn-paywall-logout" onclick="doLogout()">↩ Sair da conta</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================
+     TELA PRINCIPAL
+     ================================================================ -->
+<div class="screen" id="main-screen">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <span class="header-logo-icon">🌿</span>
+    <div class="header-brand">
+      <div class="name">FibroVida</div>
+      <div class="tagline">Seu bem-estar em primeiro lugar</div>
+    </div>
+    <div class="header-actions">
+      <button class="hbtn" id="dark-toggle-btn" onclick="toggleDarkMode()" title="Alternar modo escuro">🌙</button>
+      <button class="hbtn" onclick="doLogout()" title="Sair">↪</button>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="main-content">
+
+    <!-- ============================================================
+         INÍCIO
+         ============================================================ -->
+    <div class="tab-pane active" id="tab-inicio">
+
+      <!-- Saudação -->
+      <div class="greeting-card">
+        <div class="g-emoji" id="greeting-emoji">☀️</div>
+        <div>
+          <div class="g-hello" id="greeting-text">Olá!</div>
+          <div class="g-date"  id="greeting-date"></div>
+        </div>
+      </div>
+
+      <!-- Painel Admin — só visível para nelsontcmagalhaes@gmail.com -->
+      <div class="admin-stats-panel" id="admin-stats-panel" style="display:none">
+        <div class="asp-header">
+          <span class="asp-title">📊 Painel do Administrador</span>
+          <span class="asp-live"><span class="live-dot"></span> Tempo real</span>
+        </div>
+        <div class="asp-grid">
+          <div class="asp-card asp-online">
+            <div class="asp-val" id="stat-online">—</div>
+            <div class="asp-lbl">🟢 Online agora</div>
+            <div class="asp-sub">últimos 10 min</div>
+          </div>
+          <div class="asp-card asp-today">
+            <div class="asp-val" id="stat-today">—</div>
+            <div class="asp-lbl">📅 Acessaram hoje</div>
+            <div class="asp-sub">desde meia-noite</div>
+          </div>
+          <div class="asp-card asp-total">
+            <div class="asp-val" id="stat-total">—</div>
+            <div class="asp-lbl">👥 Total cadastrados</div>
+            <div class="asp-sub">todos os planos</div>
+          </div>
+          <div class="asp-card asp-premium">
+            <div class="asp-val" id="stat-premium">—</div>
+            <div class="asp-lbl">⭐ Premium ativos</div>
+            <div class="asp-sub">plano pago</div>
+          </div>
+        </div>
+        <div class="asp-footer">
+          <span id="stat-updated">Atualizando...</span>
+          <button class="asp-refresh-btn" onclick="loadAdminStats()">🔄 Atualizar</button>
+        </div>
+      </div>
+
+      <!-- Frase motivacional -->
+      <div class="motive-banner" id="motivation-text"></div>
+
+      <!-- Alerta estoque baixo -->
+      <div class="stock-alert-bar" id="stock-alert">
+        ⚠️ Medicamento com estoque baixo: <span id="stock-alert-names"></span>
+      </div>
+
+      <!-- Cards Como está + Dicas -->
+      <div class="home-grid">
+        <div class="home-grid-card">
+          <div class="hgc-title">
+            <span class="hgc-icon">❤️</span> Como você está hoje?
+          </div>
+          <div id="home-health-mini">
+            <div class="hgc-empty">Ainda não há registro hoje. Que tal registrar como você está se sentindo?</div>
+          </div>
+        </div>
+        <div class="home-grid-card">
+          <div class="hgc-title">
+            <span class="hgc-icon">💡</span> Dicas do Dia
+          </div>
+          <ul class="dica-list" id="dica-list">
+            <li>Lembre-se de fazer pausas regulares</li>
+            <li>Hidrate-se ao longo do dia</li>
+            <li>Pratique respiração profunda quando sentir tensão</li>
+            <li>Celebre cada pequena conquista</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Resumo -->
+      <div class="summary-strip">
+        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer" title="Registrar saúde">
+          <div class="sc-val" id="sum-pain">—</div>
+          <div class="sc-lbl">Dor hoje</div>
+          <div class="sc-unit" id="sum-pain-unit"></div>
+        </div>
+        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer" title="Registrar saúde">
+          <div class="sc-val" id="sum-sleep">—</div>
+          <div class="sc-lbl">Sono</div>
+          <div class="sc-unit" id="sum-sleep-unit"></div>
+        </div>
+        <div class="summary-cell" onclick="showTab('tarefas')" style="cursor:pointer" title="Ver tarefas">
+          <div class="sc-val" id="sum-tasks">0</div>
+          <div class="sc-lbl">Tarefas</div>
+        </div>
+      </div>
+
+      <!-- Evangelho do Dia -->
+      <div class="evang-card" id="evangelho-card">
+        <div class="evang-loading">
+          <span class="evang-spin">🙏</span> Carregando Evangelho do Dia...
+        </div>
+      </div>
+
+      <!-- Ações Rápidas -->
+      <div class="acoes-title">Ações Rápidas</div>
+      <div class="acoes-grid">
+        <button class="acao-btn" onclick="showTab('saude')">
+          <span class="acao-icon">♡</span>
+          <span class="acao-label">Registrar Saúde</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('tarefas')">
+          <span class="acao-icon">☑</span>
+          <span class="acao-label">Ver Tarefas</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('medicamentos')">
+          <span class="acao-icon">💊</span>
+          <span class="acao-label">Medicamentos</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('bemestar')">
+          <span class="acao-icon">🧘</span>
+          <span class="acao-label">Bem-Estar</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('receitas')">
+          <span class="acao-icon">🥗</span>
+          <span class="acao-label">Receitas</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('relatorios')">
+          <span class="acao-icon">📊</span>
+          <span class="acao-label">Relatórios</span>
+        </button>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com<br>
+        © 2026 Todos os direitos reservados</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         SAÚDE
+         ============================================================ -->
+    <div class="tab-pane" id="tab-saude">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-red">❤️</div>
+        <div class="pt-body">
+          <div class="pt-title">Monitoramento de Saúde</div>
+          <div class="pt-sub">Como você se sentiu hoje?</div>
+        </div>
+        <button class="btn-fab" onclick="openHealthModal()" title="Novo registro">+</button>
+      </div>
+
+      <!-- Formulário rápido de hoje -->
+      <div class="card">
+        <div class="card-body">
+
+          <!-- Nível de Dor -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">❤️</span> Nível de Dor</div>
+            <div class="saude-section-sub">Como você está se sentindo hoje?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="pain-slider"
+                  min="0" max="10" value="0"
+                  oninput="updateRange(this,'pain-val',10)" style="--pct:0%" />
+                <div class="slider-hints"><span>Sem dor</span><span>Dor intensa</span></div>
+              </div>
+              <div class="slider-val"><span id="pain-val">0</span>/10</div>
+            </div>
+          </div>
+
+          <!-- Qualidade do Sono -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">😴</span> Qualidade do Sono</div>
+            <div class="saude-section-sub">Como você dormiu?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="sleep-slider"
+                  min="0" max="5" value="0"
+                  oninput="updateRange(this,'sleep-val',5)" style="--pct:0%" />
+                <div class="slider-hints"><span>Muito ruim</span><span>Excelente</span></div>
+              </div>
+              <div class="slider-val"><span id="sleep-val">0</span>/5</div>
+            </div>
+          </div>
+
+          <!-- Humor -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">😊</span> Humor e Disposição</div>
+            <div class="saude-section-sub">Como está seu humor hoje?</div>
+            <select class="humor-select" id="humor-select">
+              <option value="">Selecione seu humor...</option>
+              <option value="muito_bem">😄 Muito bem</option>
+              <option value="bem">🙂 Bem</option>
+              <option value="neutro">😐 Neutro</option>
+              <option value="mal">😔 Mal — Triste</option>
+              <option value="muito_mal">😢 Muito mal</option>
+            </select>
+          </div>
+
+          <!-- Observações -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">📝</span> Observações</div>
+            <textarea class="fg" id="health-notes" placeholder="Anote aqui qualquer observação sobre como você se sentiu, gatilhos de dor, ou qualquer coisa relevante..."
+              style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);background:var(--bg);resize:vertical;min-height:72px;outline:none;color:var(--text)"></textarea>
+          </div>
+
+          <!-- Locais de Dor -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">📍</span> Locais de Dor</div>
+            <div class="saude-section-sub">Onde você está sentindo dor hoje? (pode marcar vários)</div>
+            <div class="grade-locais" id="inline-locais-grid"></div>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveHealthInline()">💾 Salvar Registro</button>
+        </div>
+      </div>
+
+      <!-- Histórico de Saúde -->
+      <div class="flex-between mb-8 mt-12">
+        <span style="font-size:13px;font-weight:700;color:var(--text2)">Histórico de Registros</span>
+      </div>
+      <div id="health-list">
+        <div class="empty-state"><div class="ei">📅</div><p>Seus registros aparecerão aqui</p></div>
+      </div>
+
+      <!-- ── SINAIS VITAIS ────────────────────────────────── -->
+      <div class="section-title-bar">
+        <span>📊 Sinais Vitais</span>
+        <button class="btn-fab" onclick="openVitalsModal()" title="Editar registro">+</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">
+            Registre seus sinais vitais diariamente para acompanhar sua saúde ao longo do tempo.
+          </p>
+          <div class="vitals-grid">
+
+            <div class="vitals-input-group">
+              <label>⚖️ Peso</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-weight" step="0.1" min="20" max="300" placeholder="0.0" />
+                <span class="vunit">kg</span>
+              </div>
+            </div>
+
+            <div class="vitals-input-group">
+              <label>📏 Circunf. Abdominal</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-waist" step="0.1" min="40" max="200" placeholder="0.0" />
+                <span class="vunit">cm</span>
+              </div>
+            </div>
+
+            <div class="vitals-input-group span-2">
+              <label>🩺 Pressão Arterial</label>
+              <div class="vitals-input-row">
+                <div class="bp-field-wrap">
+                  <span class="bp-field-label">SIS</span>
+                  <input type="number" id="vitals-systolic" min="60" max="250" placeholder="120" />
+                  <span class="vunit">mmHg</span>
+                </div>
+                <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+                <div class="bp-field-wrap">
+                  <span class="bp-field-label">DIA</span>
+                  <input type="number" id="vitals-diastolic" min="40" max="150" placeholder="80" />
+                  <span class="vunit">mmHg</span>
+                </div>
+                <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+                <div class="bp-field-wrap">
+                  <span class="bp-field-label">PUL</span>
+                  <input type="number" id="vitals-pulse" min="30" max="220" placeholder="72" />
+                  <span class="vunit">bpm</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="vitals-input-group">
+              <label>🩸 Glicemia</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-glucose" step="0.1" min="30" max="600" placeholder="0.0" />
+                <span class="vunit">mg/dL</span>
+              </div>
+            </div>
+
+            <div class="vitals-input-group">
+              <label>Tipo de medição</label>
+              <select id="vitals-glucose-type" class="humor-select" style="font-size:12px;height:42px">
+                <option value="jejum">Em jejum</option>
+                <option value="pos_prandial">Pós-prandial</option>
+                <option value="aleatoria">Aleatória</option>
+              </select>
+            </div>
+
+          </div>
+          <button class="btn btn-primary mt-8" onclick="saveVitals()">💾 Salvar Sinais Vitais</button>
+        </div>
+      </div>
+
+      <div id="vitals-list">
+        <div class="empty-state"><div class="ei">📊</div><p>Seus sinais vitais aparecerão aqui</p></div>
+      </div>
+
+      <!-- ── DOCUMENTOS DE SAÚDE ──────────────────────────── -->
+      <div class="section-title-bar">
+        <span>📎 Documentos de Saúde</span>
+        <button class="btn-fab" onclick="openDocModal()" title="Novo documento">+</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">
+            Anexe receitas médicas, solicitações e resultados de exames em PDF ou imagem.
+            Acesse a qualquer momento direto pelo celular.
+          </p>
+          <div class="doc-type-legend">
+            <span class="doc-badge doc-receita">💊 Receita</span>
+            <span class="doc-badge doc-solicitacao">🔬 Solicitação</span>
+            <span class="doc-badge doc-resultado">📋 Resultado</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="docs-list">
+        <div class="empty-state"><div class="ei">📄</div><p>Seus documentos aparecerão aqui</p></div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         TAREFAS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-tarefas">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-green">✅</div>
+        <div class="pt-body">
+          <div class="pt-title">Minhas Tarefas</div>
+          <div class="pt-sub">Organize seu dia com carinho</div>
+        </div>
+        <button class="btn-fab" onclick="openTaskModal()" title="Nova tarefa">+</button>
+      </div>
+
+      <!-- Manhã -->
+      <div class="period-section" id="period-manha">
+        <div class="period-header">
+          <div class="period-dot dot-manha"></div>
+          🌅 Manhã
+        </div>
+        <div class="period-body" id="tasks-manha">
+          <div class="period-empty">Nenhuma tarefa para este período</div>
+        </div>
+      </div>
+
+      <!-- Tarde -->
+      <div class="period-section" id="period-tarde">
+        <div class="period-header">
+          <div class="period-dot dot-tarde"></div>
+          ☀️ Tarde
+        </div>
+        <div class="period-body" id="tasks-tarde">
+          <div class="period-empty">Nenhuma tarefa para este período</div>
+        </div>
+      </div>
+
+      <!-- Noite -->
+      <div class="period-section" id="period-noite">
+        <div class="period-header">
+          <div class="period-dot dot-noite"></div>
+          🌙 Noite
+        </div>
+        <div class="period-body" id="tasks-noite">
+          <div class="period-empty">Nenhuma tarefa para este período</div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         TERAPIAS / TRATAMENTOS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-terapias">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-teal">〰️</div>
+        <div class="pt-body">
+          <div class="pt-title">Tratamentos</div>
+          <div class="pt-sub">Gerencie seus tratamentos e terapias</div>
+        </div>
+        <button class="btn-fab" onclick="openTreatmentModal()" title="Novo tratamento">+</button>
+      </div>
+
+      <div id="treatments-list">
+        <div class="card">
+          <div class="card-body">
+            <div class="empty-state" style="padding:8px 0">
+              <div class="ei">💉</div>
+              <p>Você ainda não cadastrou nenhum tratamento.<br>Adicione os tratamentos que você está realizando!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         BEM-ESTAR
+         ============================================================ -->
+    <div class="tab-pane" id="tab-bemestar">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-purple">✨</div>
+        <div class="pt-body">
+          <div class="pt-title">Bem-Estar</div>
+          <div class="pt-sub">Cuide da sua saúde emocional</div>
+        </div>
+      </div>
+
+      <!-- Diário de Gratidão -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">🙏</span> Diário de Gratidão</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
+            Liste 3 coisas pelas quais você é grato(a) hoje. Pequenas coisas contam! 💙
+          </p>
+
+          <div class="grat-field">
+            <label>1. Sou grato(a) por...</label>
+            <input type="text" id="gratitude-1" placeholder="Ex: Um café quentinho pela manhã" />
+          </div>
+          <div class="grat-field">
+            <label>2. Sou grato(a) por...</label>
+            <input type="text" id="gratitude-2" placeholder="Ex: A ligação do meu neto" />
+          </div>
+          <div class="grat-field">
+            <label>3. Sou grato(a) por...</label>
+            <input type="text" id="gratitude-3" placeholder="Ex: Conseguir fazer minha caminhada" />
+          </div>
+
+          <button class="btn btn-primary mt-8" onclick="saveGratitude()">💾 Salvar Gratidão</button>
+        </div>
+      </div>
+
+      <!-- Histórico gratidão -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📖</span> Histórico de Gratidão</div>
+          <div id="gratitude-list">
+            <div class="empty-state" style="padding:8px 0">
+              <p>Seus diários de gratidão aparecerão aqui</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Técnicas de Respiração -->
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px">
+        Técnicas de Respiração
+      </div>
+
+      <div class="resp-card">
+        <div class="resp-card-title">Respiração 4-7-8</div>
+        <div class="resp-card-sub">Ótima para relaxamento e alívio de ansiedade</div>
+        <ol class="resp-steps">
+          <li data-n="1">Inspire pelo nariz contando até 4</li>
+          <li data-n="2">Segure a respiração contando até 7</li>
+          <li data-n="3">Expire pela boca contando até 8</li>
+          <li data-n="4">Repita 4 vezes</li>
+        </ol>
+      </div>
+
+      <div class="resp-card">
+        <div class="resp-card-title">Respiração Profunda</div>
+        <div class="resp-card-sub">Ajuda a reduzir tensão muscular</div>
+        <ol class="resp-steps">
+          <li data-n="1">Sente-se confortavelmente</li>
+          <li data-n="2">Inspire profundamente pelo nariz (5 segundos)</li>
+          <li data-n="3">Expire pela boca (5 segundos)</li>
+          <li data-n="4">Repita por 5 minutos</li>
+        </ol>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         PROFISSIONAIS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-profissionais">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-blue">🩺</div>
+        <div class="pt-body">
+          <div class="pt-title">Profissionais de Saúde</div>
+          <div class="pt-sub">Gerencie sua equipe de cuidados</div>
+        </div>
+        <button class="btn-fab" onclick="openProfModal()" title="Novo profissional">+</button>
+      </div>
+
+      <div id="professionals-list">
+        <div class="card">
+          <div class="card-body">
+            <div class="empty-state" style="padding:8px 0">
+              <div class="ei">👩‍⚕️</div>
+              <p>Nenhum profissional cadastrado.<br>Adicione médicos e terapeutas.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         MEDICAMENTOS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-medicamentos">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-purple">💊</div>
+        <div class="pt-body">
+          <div class="pt-title">Medicamentos</div>
+          <div class="pt-sub">Gerencie seus medicamentos</div>
+        </div>
+        <button class="btn-fab" onclick="openMedModal()" title="Novo medicamento">+</button>
+      </div>
+
+      <div id="medications-list">
+        <div class="card">
+          <div class="card-body">
+            <div class="empty-state" style="padding:8px 0">
+              <div class="ei">💊</div>
+              <p>Nenhum medicamento cadastrado.<br>Controle seus remédios e estoque.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         RECEITAS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-receitas">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-green">🥗</div>
+        <div class="pt-body">
+          <div class="pt-title">Receitas Saudáveis</div>
+          <div class="pt-sub">Culinária que cuida de você</div>
+        </div>
+        <button class="btn-fab" onclick="openRecipeModal()" title="Nova receita">+</button>
+      </div>
+
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="recipe-search" placeholder="Buscar receitas..." oninput="filterRecipes()" />
+      </div>
+
+      <div class="filter-strip">
+        <button class="ftab active" onclick="filterRecipeCat('all',this)">Todas</button>
+        <button class="ftab" onclick="filterRecipeCat('cafe',this)">☕ Café da manhã</button>
+        <button class="ftab" onclick="filterRecipeCat('almoco',this)">🍽️ Almoço</button>
+        <button class="ftab" onclick="filterRecipeCat('jantar',this)">🌙 Jantar</button>
+        <button class="ftab" onclick="filterRecipeCat('lanche',this)">🥜 Lanches</button>
+        <button class="ftab" onclick="filterRecipeCat('sobremesa',this)">🍓 Sobremesas</button>
+        <button class="ftab" onclick="filterRecipeCat('suco',this)">🥤 Sucos</button>
+      </div>
+
+      <div class="recipe-grid" id="recipes-grid">
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="ei">🥗</div>
+          <p>Nenhuma receita cadastrada.<br>Adicione receitas saudáveis!</p>
+          <button class="btn btn-secondary" style="margin-top:12px;font-size:12px" onclick="loadSampleRecipes()">
+            🌿 Carregar receitas de exemplo
+          </button>
+        </div>
+      </div>
+
+      <div class="page-footer" style="margin-top:16px">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         RELATÓRIOS  (acessado via Configurações / Início)
+         ============================================================ -->
+    <div class="tab-pane" id="tab-relatorios">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-orange">📊</div>
+        <div class="pt-body">
+          <div class="pt-title">Relatórios</div>
+          <div class="pt-sub">Resumo semanal da sua saúde</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📅</span> Período de Análise</div>
+          <div class="selecao-periodo">
+            <button class="botao-periodo ativo" onclick="setRepPeriod(7,this)">7 dias</button>
+            <button class="botao-periodo" onclick="setRepPeriod(14,this)">14 dias</button>
+            <button class="botao-periodo" onclick="setRepPeriod(30,this)">30 dias</button>
+          </div>
+          <div id="report-range" class="text-muted mt-8 mb-12"></div>
+          <div class="report-grid">
+            <div class="report-cell">
+              <div class="rc-icon">😣</div>
+              <div class="rc-val" id="rep-pain">—</div>
+              <div class="rc-lbl">Média Dor</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">😴</div>
+              <div class="rc-val" id="rep-sleep">—</div>
+              <div class="rc-lbl">Média Sono</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">✅</div>
+              <div class="rc-val" id="rep-tasks">0</div>
+              <div class="rc-lbl">Tarefas</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">💊</div>
+              <div class="rc-val" id="rep-meds">0</div>
+              <div class="rc-lbl">Medicamentos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">😊</span> Humor Predominante</div>
+          <div id="rep-mood" style="font-size:36px;text-align:center;padding:6px 0">—</div>
+          <div id="rep-mood-lbl" class="text-muted text-center"></div>
+        </div>
+      </div>
+
+      <!-- Locais de Dor mais frequentes -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📍</span> Locais Mais Doloridos</div>
+          <div id="rep-locais"><p class="text-muted" style="font-size:12px">Sem dados registrados</p></div>
+        </div>
+      </div>
+
+      <!-- Gráfico SVG — evolução da dor -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📊</span> Evolução da Dor</div>
+          <div id="rep-svg-chart" class="svg-chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📈</span> Dor por dia</div>
+          <div class="bar-chart" id="rep-pain-chart"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">😴</span> Sono por dia</div>
+          <div class="bar-chart" id="rep-sleep-chart"></div>
+        </div>
+      </div>
+
+      <!-- Relatório PDF para médico -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📄</span> Relatório para o Médico</div>
+          <div class="fg">
+            <label style="font-size:12px;color:var(--text2);margin-bottom:4px;display:block">Nome do médico (opcional)</label>
+            <input type="text" id="rep-medico" placeholder="Dr(a). Nome do Médico..."
+              style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);background:var(--bg);outline:none;color:var(--text)" />
+          </div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.5">
+            O PDF inclui: resumo estatístico, locais de dor frequentes e tabela detalhada de cada registro.
+          </p>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-primary" style="flex:1" onclick="gerarPDFFibroVida()">📄 Gerar PDF</button>
+            <button class="btn btn-secondary" style="flex:1" onclick="window.print()">🖨️ Imprimir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer" style="margin-top:12px">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         CONFIGURAÇÕES
+         ============================================================ -->
+    <div class="tab-pane" id="tab-config">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-green">⚙️</div>
+        <div class="pt-body">
+          <div class="pt-title">Configurações</div>
+          <div class="pt-sub">Gerencie sua conta</div>
+        </div>
+      </div>
+
+      <div id="admin-banner-strip" class="admin-banner-strip" style="display:none">
+        👑 Modo Administrador — Acesso Total ao Sistema
+      </div>
+
+      <!-- Card do usuário -->
+      <div class="settings-user-card">
+        <div class="user-avatar" id="avatar-initials">?</div>
+        <div class="user-info">
+          <h3 id="config-name">—</h3>
+          <p id="config-email">—</p>
+          <div id="config-admin-badge" class="admin-badge" style="display:none">👑 Administrador</div>
+        </div>
+      </div>
+
+      <!-- Minha conta -->
+      <div class="settings-group">
+        <div class="settings-group-title">Minha conta</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="openProfileModal()">
+            <span class="sr-icon">✏️</span>
+            <div class="sr-body">
+              <div class="sr-title">Editar perfil</div>
+              <div class="sr-sub">Alterar nome</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row" onclick="showTab('relatorios')">
+            <span class="sr-icon">📊</span>
+            <div class="sr-body">
+              <div class="sr-title">Relatórios</div>
+              <div class="sr-sub">Resumo semanal de saúde</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin -->
+      <div class="settings-group" id="admin-section" style="display:none">
+        <div class="settings-group-title">Administração</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="openAdminModal()">
+            <span class="sr-icon">👑</span>
+            <div class="sr-body">
+              <div class="sr-title">Painel Admin</div>
+              <div class="sr-sub">Gerenciar todos os dados do sistema</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacidade -->
+      <div class="settings-group">
+        <div class="settings-group-title">Privacidade</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="showLGPD()">
+            <span class="sr-icon">🔒</span>
+            <div class="sr-body">
+              <div class="sr-title">Política de Privacidade (LGPD)</div>
+              <div class="sr-sub">Como seus dados são usados</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conta -->
+      <div class="settings-group">
+        <div class="settings-group-title">Conta</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="doLogout()">
+            <span class="sr-icon">🚪</span>
+            <div class="sr-body">
+              <div class="sr-title">Sair do sistema</div>
+              <div class="sr-sub">Encerrar sessão atual</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row danger" onclick="confirmDeleteAccount()">
+            <span class="sr-icon">🗑️</span>
+            <div class="sr-body">
+              <div class="sr-title">Excluir conta</div>
+              <div class="sr-sub">Remove todos os seus dados</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com<br>
+        © 2026 Todos os direitos reservados</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- NAVEGAÇÃO INFERIOR — 8 itens scrolláveis -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item active" data-tab="inicio" onclick="showTab('inicio',this)">
+      <span class="ni">🏠</span><span class="nl">Início</span>
+    </button>
+    <button class="nav-item" data-tab="saude" onclick="showTab('saude',this)">
+      <span class="ni">❤️</span><span class="nl">Saúde</span>
+    </button>
+    <button class="nav-item" data-tab="tarefas" onclick="showTab('tarefas',this)">
+      <span class="ni">✅</span><span class="nl">Tarefas</span>
+    </button>
+    <button class="nav-item" data-tab="terapias" onclick="showTab('terapias',this)">
+      <span class="ni">〰️</span><span class="nl">Terapias</span>
+    </button>
+    <button class="nav-item" data-tab="bemestar" onclick="showTab('bemestar',this)">
+      <span class="ni">🧘</span><span class="nl">Bem-Estar</span>
+    </button>
+    <button class="nav-item" data-tab="profissionais" onclick="showTab('profissionais',this)">
+      <span class="ni">👨‍⚕️</span><span class="nl">Profissionais</span>
+    </button>
+    <button class="nav-item" data-tab="medicamentos" onclick="showTab('medicamentos',this)">
+      <span class="ni">💊</span><span class="nl">Medicamentos</span>
+    </button>
+    <button class="nav-item" data-tab="receitas" onclick="showTab('receitas',this)">
+      <span class="ni">🥗</span><span class="nl">Receitas</span>
+    </button>
+  </nav>
+
+</div><!-- /main-screen -->
+</div><!-- /app -->
+
+
+<!-- ================================================================
+     MODAIS
+     ================================================================ -->
+
+<!-- Modal: Registro de Saúde (edição via lista) -->
+<div class="modal-overlay" id="modal-health">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mh-title">❤️ Registro de Saúde</h3>
+      <button class="modal-close" onclick="closeModal('modal-health')">✕</button>
+    </div>
+    <input type="hidden" id="health-edit-id" />
+
+    <div class="fg">
+      <label>Data</label>
+      <input type="date" id="health-edit-date" />
+    </div>
+
+    <div class="fg" style="margin-bottom:16px">
+      <label>Nível de dor: <strong id="mh-pain-val" style="color:var(--green)">0</strong>/10</label>
+      <input type="range" class="fv-range" id="mh-pain-slider"
+        min="0" max="10" value="0"
+        oninput="updateRange(this,'mh-pain-val',10)" style="--pct:0%;margin-top:6px" />
+      <div class="slider-hints"><span>Sem dor</span><span>Dor intensa</span></div>
+    </div>
+
+    <div class="fg" style="margin-bottom:16px">
+      <label>Qualidade do sono: <strong id="mh-sleep-val" style="color:var(--green)">0</strong>/5</label>
+      <input type="range" class="fv-range" id="mh-sleep-slider"
+        min="0" max="5" value="0"
+        oninput="updateRange(this,'mh-sleep-val',5)" style="--pct:0%;margin-top:6px" />
+      <div class="slider-hints"><span>Muito ruim</span><span>Excelente</span></div>
+    </div>
+
+    <div class="fg">
+      <label>Humor</label>
+      <select class="humor-select" id="mh-humor">
+        <option value="">Selecione...</option>
+        <option value="muito_bem">😄 Muito bem</option>
+        <option value="bem">🙂 Bem</option>
+        <option value="neutro">😐 Neutro</option>
+        <option value="mal">😔 Mal — Triste</option>
+        <option value="muito_mal">😢 Muito mal</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Observações</label>
+      <textarea id="mh-notes" placeholder="Como você se sentiu..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-health')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveHealthModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tarefa -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mt-title">✅ Nova Tarefa</h3>
+      <button class="modal-close" onclick="closeModal('modal-task')">✕</button>
+    </div>
+    <input type="hidden" id="task-id" />
+    <div class="fg"><label>Título</label><input type="text" id="task-title" placeholder="Ex: Tomar medicação..." /></div>
+    <div class="fg"><label>Descrição (opcional)</label><textarea id="task-desc" style="min-height:56px" placeholder="Detalhes..."></textarea></div>
+    <div class="fg">
+      <label>Período</label>
+      <select id="task-period" class="humor-select">
+        <option value="manha">🌅 Manhã</option>
+        <option value="tarde">☀️ Tarde</option>
+        <option value="noite">🌙 Noite</option>
+      </select>
+    </div>
+    <div class="fg"><label>Data</label><input type="date" id="task-date" /></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-task')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTask()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tratamento -->
+<div class="modal-overlay" id="modal-treatment">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mtr-title">💉 Novo Tratamento</h3>
+      <button class="modal-close" onclick="closeModal('modal-treatment')">✕</button>
+    </div>
+    <input type="hidden" id="treatment-id" />
+    <div class="fg"><label>Nome do tratamento</label><input type="text" id="treatment-name" placeholder="Ex: Fisioterapia..." /></div>
+    <div class="fg"><label>Descrição</label><textarea id="treatment-desc" placeholder="Descreva..."></textarea></div>
+    <div class="fg"><label>Frequência</label><input type="text" id="treatment-freq" placeholder="Ex: Semanal, 3x por semana..." /></div>
+    <div class="fg"><label>Observações</label><textarea id="treatment-notes" placeholder="Notas adicionais..."></textarea></div>
+    <div class="fg">
+      <label>Status</label>
+      <select id="treatment-active" class="humor-select">
+        <option value="true">✅ Ativo</option>
+        <option value="false">⏸️ Inativo</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-treatment')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTreatment()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Profissional -->
+<div class="modal-overlay" id="modal-prof">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mp-title">👨‍⚕️ Novo Profissional</h3>
+      <button class="modal-close" onclick="closeModal('modal-prof')">✕</button>
+    </div>
+    <input type="hidden" id="prof-id" />
+    <div class="fg"><label>Nome completo</label><input type="text" id="prof-name" placeholder="Dr(a). Nome..." /></div>
+    <div class="fg"><label>Especialidade</label><input type="text" id="prof-specialty" placeholder="Ex: Reumatologista..." /></div>
+    <div class="fg"><label>CRM / Registro</label><input type="text" id="prof-registry" placeholder="CRM-SP 123456" /></div>
+    <div class="fg"><label>Telefone / WhatsApp</label><input type="tel" id="prof-phone" placeholder="(85) 99999-9999" /></div>
+    <div class="fg"><label>E-mail</label><input type="email" id="prof-email" placeholder="contato@clinica.com" /></div>
+    <div class="fg"><label>Observações</label><textarea id="prof-notes" placeholder="Notas..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-prof')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProf()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Medicamento -->
+<div class="modal-overlay" id="modal-med">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mm-title">💊 Novo Medicamento</h3>
+      <button class="modal-close" onclick="closeModal('modal-med')">✕</button>
+    </div>
+    <input type="hidden" id="med-id" />
+    <div class="fg"><label>Nome do medicamento</label><input type="text" id="med-name" placeholder="Ex: Amitriptilina..." /></div>
+    <div class="fg"><label>Dosagem</label><input type="text" id="med-dosage" placeholder="Ex: 25mg" /></div>
+    <div class="fg"><label>Horário</label><input type="text" id="med-time" placeholder="Ex: 22:00" /></div>
+    <div class="fg"><label>Frequência</label><input type="text" id="med-freq" placeholder="Ex: 1x ao dia" /></div>
+    <div class="fg" style="display:flex;gap:10px">
+      <div style="flex:1"><label>Estoque (un.)</label><input type="number" id="med-stock" value="0" min="0" /></div>
+      <div style="flex:1"><label>Alerta abaixo de</label><input type="number" id="med-alert" value="5" min="1" /></div>
+    </div>
+    <div class="fg"><label>Observações</label><textarea id="med-notes" placeholder="Efeitos colaterais, notas..."></textarea></div>
+
+    <!-- Receita médica -->
+    <div class="fg">
+      <label>📄 Receita Médica (PDF ou imagem)</label>
+      <div class="file-upload-area" id="med-file-area" onclick="document.getElementById('med-file-input').click()">
+        <div class="fua-icon">📎</div>
+        <div class="fua-text">Clique para anexar a receita</div>
+        <div class="fua-sub">PDF, JPG ou PNG · máx. 10 MB</div>
+      </div>
+      <div class="file-selected-name" id="med-file-name" style="display:none"></div>
+      <input type="file" id="med-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="onMedFileSelected(this)" />
+      <div id="med-receita-atual" style="display:none;margin-top:6px">
+        <a id="med-receita-link" href="#" target="_blank" style="font-size:12px;color:var(--green);font-weight:600">📎 Ver receita atual</a>
+        <button onclick="removeMedReceita()" style="font-size:11px;color:var(--danger);background:none;border:none;cursor:pointer;margin-left:8px">✕ Remover</button>
+      </div>
+    </div>
+    <input type="hidden" id="med-receita-url" />
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-med')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveMed()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Receita -->
+<div class="modal-overlay" id="modal-recipe">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mr-title">🥗 Nova Receita</h3>
+      <button class="modal-close" onclick="closeModal('modal-recipe')">✕</button>
+    </div>
+    <input type="hidden" id="recipe-id" />
+    <div class="fg"><label>Nome da receita</label><input type="text" id="recipe-name" placeholder="Ex: Salada antioxidante..." /></div>
+    <div class="fg"><label>Descrição curta</label><input type="text" id="recipe-desc" placeholder="Breve descrição do prato..." /></div>
+    <div class="fg">
+      <label>Categoria</label>
+      <select id="recipe-category" class="humor-select">
+        <option value="cafe">☕ Café da manhã</option>
+        <option value="almoco">🍽️ Almoço</option>
+        <option value="jantar">🌙 Jantar</option>
+        <option value="lanche">🥜 Lanche</option>
+        <option value="sobremesa">🍓 Sobremesa</option>
+        <option value="suco">🥤 Suco / Smoothie</option>
+      </select>
+    </div>
+    <div class="fg"><label>Imagem (emoji ou URL)</label><input type="text" id="recipe-image" placeholder="Ex: 🥗 ou https://..." /></div>
+    <div class="fg" style="display:flex;gap:8px">
+      <div style="flex:1"><label>Tempo (min)</label><input type="number" id="recipe-time" placeholder="30" /></div>
+      <div style="flex:1"><label>Porções</label><input type="number" id="recipe-servings" placeholder="2" /></div>
+      <div style="flex:1"><label>Calorias</label><input type="number" id="recipe-calories" placeholder="200" /></div>
+    </div>
+    <div class="fg"><label>Tags (vírgula)</label><input type="text" id="recipe-tags" placeholder="vegano, sem glúten..." /></div>
+    <div class="fg"><label>Ingredientes</label><textarea id="recipe-ingredients" placeholder="Liste os ingredientes..."></textarea></div>
+    <div class="fg"><label>Modo de preparo</label><textarea id="recipe-instructions" placeholder="Passo a passo..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-recipe')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRecipe()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ver Receita -->
+<div class="modal-overlay" id="modal-recipe-view">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="rv-title">—</h3>
+      <button class="modal-close" onclick="closeModal('modal-recipe-view')">✕</button>
+    </div>
+    <div id="rv-content"></div>
+  </div>
+</div>
+
+<!-- Modal: Sinais Vitais (edição de registro) -->
+<div class="modal-overlay" id="modal-vitals">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mv-title">📊 Editar Sinais Vitais</h3>
+      <button class="modal-close" onclick="closeModal('modal-vitals')">✕</button>
+    </div>
+    <input type="hidden" id="vitals-edit-id" />
+    <div class="fg"><label>Data</label><input type="date" id="vitals-edit-date" /></div>
+    <div class="vitals-grid" style="margin-top:8px">
+      <div class="vitals-input-group">
+        <label>⚖️ Peso (kg)</label>
+        <div class="vitals-input-row">
+          <input type="number" id="ve-weight" step="0.1" min="20" max="300" placeholder="0.0" />
+          <span class="vunit">kg</span>
+        </div>
+      </div>
+      <div class="vitals-input-group">
+        <label>📏 Cintura (cm)</label>
+        <div class="vitals-input-row">
+          <input type="number" id="ve-waist" step="0.1" min="40" max="200" placeholder="0.0" />
+          <span class="vunit">cm</span>
+        </div>
+      </div>
+      <div class="vitals-input-group span-2">
+        <label>🩺 Pressão Arterial</label>
+        <div class="vitals-input-row">
+          <div class="bp-field-wrap">
+            <span class="bp-field-label">SIS</span>
+            <input type="number" id="ve-systolic" min="60" max="250" placeholder="120" />
+            <span class="vunit">mmHg</span>
+          </div>
+          <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+          <div class="bp-field-wrap">
+            <span class="bp-field-label">DIA</span>
+            <input type="number" id="ve-diastolic" min="40" max="150" placeholder="80" />
+            <span class="vunit">mmHg</span>
+          </div>
+          <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+          <div class="bp-field-wrap">
+            <span class="bp-field-label">PUL</span>
+            <input type="number" id="ve-pulse" min="30" max="220" placeholder="72" />
+            <span class="vunit">bpm</span>
+          </div>
+        </div>
+      </div>
+      <div class="vitals-input-group">
+        <label>🩸 Glicemia (mg/dL)</label>
+        <div class="vitals-input-row">
+          <input type="number" id="ve-glucose" step="0.1" min="30" max="600" placeholder="0.0" />
+          <span class="vunit">mg/dL</span>
+        </div>
+      </div>
+      <div class="vitals-input-group">
+        <label>Tipo de medição</label>
+        <select id="ve-glucose-type" class="humor-select" style="font-size:12px;height:42px">
+          <option value="jejum">Em jejum</option>
+          <option value="pos_prandial">Pós-prandial</option>
+          <option value="aleatoria">Aleatória</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Observações</label><textarea id="ve-notes" placeholder="Notas sobre este registro..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-vitals')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveVitalsModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edição de Gratidão -->
+<div class="modal-overlay" id="modal-gratitude-edit">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🙏 Editar Gratidão</h3>
+      <button class="modal-close" onclick="closeModal('modal-gratitude-edit')">✕</button>
+    </div>
+    <input type="hidden" id="ge-id" />
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">📅 <span id="ge-date"></span></p>
+    <div class="fg">
+      <label>1. Sou grato(a) por...</label>
+      <input type="text" id="ge-1" spellcheck="true" lang="pt-BR" placeholder="Ex: Um café quentinho pela manhã" />
+    </div>
+    <div class="fg">
+      <label>2. Sou grato(a) por...</label>
+      <input type="text" id="ge-2" spellcheck="true" lang="pt-BR" placeholder="Ex: A ligação do meu neto" />
+    </div>
+    <div class="fg">
+      <label>3. Sou grato(a) por...</label>
+      <input type="text" id="ge-3" spellcheck="true" lang="pt-BR" placeholder="Ex: Conseguir fazer minha caminhada" />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-gratitude-edit')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveGratitudeEdit()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Documento de Saúde -->
+<div class="modal-overlay" id="modal-doc">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mdoc-title">📎 Novo Documento</h3>
+      <button class="modal-close" onclick="closeModal('modal-doc')">✕</button>
+    </div>
+    <input type="hidden" id="doc-id" />
+    <div class="fg">
+      <label>Tipo de documento</label>
+      <select id="doc-type" class="humor-select">
+        <option value="receita_medica">💊 Receita Médica</option>
+        <option value="solicitacao_exame">🔬 Solicitação de Exame</option>
+        <option value="resultado_exame">📋 Resultado de Exame</option>
+      </select>
+    </div>
+    <div class="fg"><label>Título / Descrição</label><input type="text" id="doc-title" placeholder="Ex: Receita Amitriptilina — Dr. Silva" /></div>
+    <div class="fg"><label>Data do documento</label><input type="date" id="doc-date" /></div>
+    <div class="fg">
+      <label>Arquivo (PDF ou imagem)</label>
+      <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('doc-file-input').click()">
+        <div class="fua-icon">📎</div>
+        <div class="fua-text">Clique para selecionar o arquivo</div>
+        <div class="fua-sub">PDF, JPG ou PNG · máx. 10 MB</div>
+      </div>
+      <input type="file" id="doc-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="onFileSelected(this)" />
+      <div id="doc-file-name" class="file-selected-name" style="display:none"></div>
+    </div>
+    <div class="fg"><label>Observações (opcional)</label><textarea id="doc-notes" placeholder="Médico responsável, validade, notas..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-doc')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveDoc()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Perfil -->
+<div class="modal-overlay" id="modal-profile">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Editar Perfil</h3>
+      <button class="modal-close" onclick="closeModal('modal-profile')">✕</button>
+    </div>
+    <div class="fg"><label>Nome</label><input type="text" id="profile-name" placeholder="Seu nome completo" /></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-profile')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProfile()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: LGPD -->
+<div class="modal-overlay" id="modal-lgpd">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🔒 Política de Privacidade</h3>
+      <button class="modal-close" onclick="closeModal('modal-lgpd')">✕</button>
+    </div>
+    <div style="font-size:13px;line-height:1.7;color:var(--text2)">
+      <p><strong style="color:var(--text)">Lei Geral de Proteção de Dados (LGPD) — Lei 13.709/2018</strong></p><br>
+      <p><strong>Dados coletados:</strong> Nome, e-mail e dados de saúde inseridos por você.</p><br>
+      <p><strong>Finalidade:</strong> Uso exclusivo para o funcionamento do FibroVida e melhoria da qualidade de vida.</p><br>
+      <p><strong>Compartilhamento:</strong> Seus dados <strong>não são compartilhados</strong> com terceiros.</p><br>
+      <p><strong>Seus direitos:</strong> Acesse, corrija ou exclua seus dados a qualquer momento nas configurações.</p><br>
+      <p><strong>Contato:</strong> nelsontcmagalhaes@gmail.com</p>
+    </div>
+    <button class="btn btn-primary mt-8" onclick="closeModal('modal-lgpd')">Entendi</button>
+  </div>
+</div>
+
+<!-- Modal: Admin -->
+<div class="modal-overlay" id="modal-admin">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>👑 Painel Administrador</h3>
+      <button class="modal-close" onclick="closeModal('modal-admin')">✕</button>
+    </div>
+    <div class="admin-banner-strip">Acesso total a todos os dados do sistema</div>
+    <div class="empty-state">
+      <div class="ei">👑</div>
+      <p>Como administrador, você tem acesso completo a todos os módulos.<br>
+      Navegue pelos menus para gerenciar os dados.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>

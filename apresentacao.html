@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FibroVida — Seu bem-estar em primeiro lugar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #7a9a50;
+      --green-dark: #4a6a28;
+      --green-deep: #2d4a18;
+      --gold:       #c8a840;
+      --cream:      #f5f3e8;
+      --white:      #ffffff;
+      --text:       #1a1a0a;
+      --text2:      #4a4a30;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a2e0a 0%, #2d4a18 40%, #4a6a28 70%, #7a9a50 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 24px 80px;
+      position: relative; overflow: hidden;
+      text-align: center;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(200,168,64,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 20%, rgba(122,154,80,.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-leaves {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    }
+    .leaf {
+      position: absolute; font-size: 28px; opacity: .12;
+      animation: floatLeaf 8s ease-in-out infinite;
+    }
+    .leaf:nth-child(1)  { top:8%;  left:6%;  animation-delay:0s;    font-size:22px; }
+    .leaf:nth-child(2)  { top:15%; right:8%; animation-delay:1.5s;  font-size:30px; }
+    .leaf:nth-child(3)  { top:40%; left:4%;  animation-delay:3s;    font-size:18px; }
+    .leaf:nth-child(4)  { top:60%; right:5%; animation-delay:2s;    font-size:26px; }
+    .leaf:nth-child(5)  { top:80%; left:15%; animation-delay:4.5s;  font-size:20px; }
+    .leaf:nth-child(6)  { top:75%; right:12%;animation-delay:1s;    font-size:34px; }
+    .leaf:nth-child(7)  { top:30%; left:90%; animation-delay:5s;    font-size:16px; }
+    .leaf:nth-child(8)  { top:50%; left:50%; animation-delay:2.5s;  font-size:40px; opacity:.06; }
+
+    @keyframes floatLeaf {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      33%      { transform: translateY(-14px) rotate(8deg); }
+      66%      { transform: translateY(8px) rotate(-5deg); }
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.12); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 30px; padding: 8px 18px;
+      color: #c8e8a0; font-size: 12px; font-weight: 600;
+      letter-spacing: .5px; text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeDown .8s ease both;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #7de87d; animation: pulseDot 1.6s ease infinite; }
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+
+    .hero-logo { font-size: 56px; margin-bottom: 16px; animation: fadeDown .8s .1s ease both; }
+
+    .hero-title {
+      font-size: clamp(38px, 8vw, 72px);
+      font-weight: 900; color: #fff;
+      line-height: 1.05; margin-bottom: 8px;
+      letter-spacing: -1.5px;
+      animation: fadeDown .8s .2s ease both;
+    }
+    .hero-title span { color: #a8d870; }
+
+    .hero-sub {
+      font-size: clamp(14px, 3vw, 20px);
+      color: rgba(255,255,255,.72); font-weight: 400;
+      max-width: 540px; line-height: 1.6;
+      margin: 16px auto 36px;
+      animation: fadeDown .8s .3s ease both;
+    }
+
+    .hero-btns {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center;
+      animation: fadeDown .8s .4s ease both;
+    }
+    .btn-hero-primary {
+      background: #a8d870; color: #1a2e0a;
+      border: none; border-radius: 50px;
+      padding: 16px 36px; font-size: 15px; font-weight: 800;
+      cursor: pointer; text-decoration: none; display: inline-block;
+      box-shadow: 0 4px 20px rgba(168,216,112,.4);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(168,216,112,.5); }
+
+    .btn-hero-outline {
+      background: transparent; color: #fff;
+      border: 2px solid rgba(255,255,255,.35); border-radius: 50px;
+      padding: 14px 32px; font-size: 15px; font-weight: 600;
+      cursor: pointer; text-decoration: none; display: inline-block;
+      backdrop-filter: blur(8px);
+      transition: border-color .2s, background .2s;
+    }
+    .btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,.1); }
+
+    .hero-stats {
+      display: flex; gap: 40px; margin-top: 56px;
+      animation: fadeDown .8s .5s ease both;
+    }
+    .hstat { text-align: center; }
+    .hstat-val { font-size: 28px; font-weight: 900; color: #a8d870; line-height: 1; }
+    .hstat-lbl { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 4px; font-weight: 500; }
+
+    @keyframes fadeDown {
+      from { opacity:0; transform: translateY(-20px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* ── SEÇÃO GENÉRICA ── */
+    .section { padding: 80px 24px; }
+    .section-center { text-align: center; max-width: 700px; margin: 0 auto 56px; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--green);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(26px, 5vw, 42px); font-weight: 900;
+      color: var(--text); line-height: 1.15; letter-spacing: -.5px;
+    }
+    .section-desc { font-size: 15px; color: var(--text2); line-height: 1.7; margin-top: 14px; }
+
+    /* ── PROBLEMA ── */
+    .problema { background: #fff; }
+    .problema-grid {
+      max-width: 900px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+      gap: 20px;
+    }
+    .problema-item {
+      background: var(--cream); border-radius: 14px;
+      padding: 24px; border-left: 4px solid var(--green);
+    }
+    .problema-item .pi-icon { font-size: 28px; margin-bottom: 10px; }
+    .problema-item h3 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .problema-item p  { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+    /* ── FEATURES ── */
+    .features { background: var(--cream); }
+    .features-grid {
+      max-width: 1000px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 16px;
+    }
+    .feat-card {
+      background: #fff; border-radius: 16px;
+      padding: 28px 20px; text-align: center;
+      border: 1px solid #e8e8d8;
+      box-shadow: 0 2px 12px rgba(0,0,0,.05);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .feat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.10); }
+    .feat-icon { font-size: 36px; margin-bottom: 14px; display: block; }
+    .feat-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .feat-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+    /* ── DEPOIMENTO ── */
+    .depoimento {
+      background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-dark) 100%);
+      padding: 80px 24px; text-align: center;
+    }
+    .depoimento-quote {
+      font-size: clamp(18px, 4vw, 28px); font-weight: 600;
+      color: #fff; line-height: 1.6; max-width: 680px;
+      margin: 0 auto 24px; font-style: italic;
+    }
+    .depoimento-quote::before { content: "\201C"; font-size: 60px; color: rgba(255,255,255,.2); display: block; line-height: .5; margin-bottom: 16px; }
+    .depoimento-autor { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 500; }
+    .depoimento-stars { font-size: 20px; margin-bottom: 20px; color: #f0c040; }
+
+    /* ── COMO FUNCIONA ── */
+    .como { background: #fff; }
+    .como-steps {
+      max-width: 760px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .como-step {
+      display: flex; gap: 20px; align-items: flex-start;
+      padding: 24px 0; position: relative;
+    }
+    .como-step:not(:last-child)::after {
+      content: ""; position: absolute;
+      left: 19px; top: 64px; bottom: 0;
+      width: 2px; background: linear-gradient(to bottom, var(--green) 0%, transparent 100%);
+    }
+    .step-num {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--green); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 900; flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(122,154,80,.4);
+    }
+    .step-body h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .step-body p  { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+    /* ── PLANOS ── */
+    .planos { background: var(--cream); }
+    .planos-grid {
+      max-width: 640px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .plano-card {
+      background: #fff; border: 2px solid #e8e8d8;
+      border-radius: 20px; padding: 28px 20px; text-align: center;
+      position: relative; transition: transform .2s;
+    }
+    .plano-card:hover { transform: translateY(-3px); }
+    .plano-card.destaque { border-color: var(--green); background: var(--green-dark); color: #fff; }
+    .plano-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #fff; font-size: 10px; font-weight: 800;
+      padding: 4px 14px; border-radius: 20px; letter-spacing: .5px; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .plano-nome { font-size: 13px; font-weight: 700; margin-bottom: 12px; opacity: .7; }
+    .plano-preco { font-size: 40px; font-weight: 900; line-height: 1; }
+    .plano-preco sub { font-size: 16px; font-weight: 600; }
+    .plano-preco sup { font-size: 18px; font-weight: 700; }
+    .plano-periodo { font-size: 11px; opacity: .6; margin-top: 4px; margin-bottom: 16px; }
+    .plano-economia { font-size: 12px; color: #a8d870; font-weight: 700; margin-bottom: 14px; }
+    .plano-itens { list-style: none; text-align: left; margin-bottom: 20px; }
+    .plano-itens li { font-size: 12px; padding: 3px 0; opacity: .85; }
+    .plano-itens li::before { content: "✓ "; color: var(--green); font-weight: 700; }
+    .plano-card.destaque .plano-itens li::before { color: #a8d870; }
+    .btn-plano {
+      display: block; width: 100%; padding: 12px;
+      border-radius: 50px; font-size: 14px; font-weight: 700;
+      border: 2px solid var(--green); color: var(--green);
+      background: transparent; cursor: pointer;
+      text-decoration: none; transition: all .2s;
+    }
+    .plano-card.destaque .btn-plano { background: #a8d870; color: var(--green-deep); border-color: #a8d870; }
+    .btn-plano:hover { background: var(--green); color: #fff; border-color: var(--green); }
+
+    /* ── FIBROMIALGIA INFO ── */
+    .fibro-info {
+      background: linear-gradient(135deg, #f5f0e0 0%, #edf2e5 100%);
+      padding: 70px 24px;
+    }
+    .fibro-inner { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
+    .fibro-texto h2 { font-size: 28px; font-weight: 900; color: var(--green-dark); margin-bottom: 14px; line-height: 1.2; }
+    .fibro-texto p  { font-size: 14px; color: var(--text2); line-height: 1.75; margin-bottom: 10px; }
+    .fibro-stats    { display: flex; flex-direction: column; gap: 16px; }
+    .fibro-stat {
+      background: #fff; border-radius: 14px; padding: 18px 20px;
+      border-left: 4px solid var(--green); box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .fibro-stat-val { font-size: 30px; font-weight: 900; color: var(--green-dark); line-height: 1; }
+    .fibro-stat-lbl { font-size: 12px; color: var(--text2); margin-top: 3px; }
+
+    /* ── CTA FINAL ── */
+    .cta-final {
+      background: linear-gradient(135deg, #1a2e0a 0%, #2d4a18 50%, #7a9a50 100%);
+      padding: 90px 24px; text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-final::before {
+      content: "🌿"; font-size: 240px; position: absolute;
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      opacity: .04; pointer-events: none;
+    }
+    .cta-final h2 { font-size: clamp(28px, 6vw, 52px); font-weight: 900; color: #fff; margin-bottom: 16px; line-height: 1.1; }
+    .cta-final p  { font-size: 16px; color: rgba(255,255,255,.7); max-width: 480px; margin: 0 auto 36px; line-height: 1.7; }
+    .cta-pix {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+      border-radius: 14px; padding: 14px 22px; margin-bottom: 28px;
+      backdrop-filter: blur(8px);
+    }
+    .cta-pix-label { font-size: 11px; color: rgba(255,255,255,.6); font-weight: 500; }
+    .cta-pix-key   { font-size: 14px; color: #fff; font-weight: 700; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #0e1a06; padding: 32px 24px; text-align: center;
+    }
+    footer .f-logo { font-size: 22px; font-weight: 900; color: #7a9a50; margin-bottom: 6px; }
+    footer p { font-size: 12px; color: rgba(255,255,255,.35); line-height: 1.6; }
+    footer a { color: #7a9a50; text-decoration: none; }
+
+    /* ── RESPONSIVO ── */
+    @media (max-width: 600px) {
+      .hero-stats { gap: 24px; }
+      .hstat-val  { font-size: 22px; }
+      .planos-grid { grid-template-columns: 1fr; }
+      .fibro-inner { grid-template-columns: 1fr; }
+      .como-step::after { display: none; }
+    }
+
+    /* ── ANIMAÇÃO ENTRADA ── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-leaves">
+    <span class="leaf">🌿</span><span class="leaf">🍃</span>
+    <span class="leaf">🌱</span><span class="leaf">🌿</span>
+    <span class="leaf">🍃</span><span class="leaf">🌿</span>
+    <span class="leaf">🌱</span><span class="leaf">🌿</span>
+  </div>
+
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    Novo · Aplicativo de Saúde Integral
+  </div>
+
+  <div class="hero-logo">🌿</div>
+
+  <h1 class="hero-title">
+    Fibro<span>Vida</span>
+  </h1>
+
+  <p class="hero-sub">
+    O primeiro aplicativo brasileiro criado especialmente para quem vive com fibromialgia.
+    Cuide da sua saúde com carinho, inteligência e dignidade.
+  </p>
+
+  <div class="hero-btns">
+    <a href="index.html" class="btn-hero-primary">🌿 Experimentar Grátis</a>
+    <a href="#funcionalidades" class="btn-hero-outline">Ver funcionalidades ↓</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-val">7</div>
+      <div class="hstat-lbl">Dias grátis</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">10+</div>
+      <div class="hstat-lbl">Módulos de saúde</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">100%</div>
+      <div class="hstat-lbl">Em português</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PROBLEMA
+═══════════════════════════════════════════ -->
+<section class="section problema">
+  <div class="section-center reveal">
+    <div class="section-eyebrow">Você se identifica?</div>
+    <h2 class="section-title">Viver com fibromialgia é um desafio diário</h2>
+    <p class="section-desc">São mais de 10 milhões de brasileiros afetados pela fibromialgia. Um app feito por quem entende essa realidade.</p>
+  </div>
+  <div class="problema-grid">
+    <div class="problema-item reveal">
+      <div class="pi-icon">😔</div>
+      <h3>Dores que ninguém vê</h3>
+      <p>Difícil explicar para médicos e familiares o que você sente a cada dia. O FibroVida registra tudo com precisão.</p>
+    </div>
+    <div class="problema-item reveal">
+      <div class="pi-icon">💊</div>
+      <h3>Muitos medicamentos</h3>
+      <p>Controlar horários, dosagens e estoques é exaustivo. O app avisa na hora certa para você não esquecer.</p>
+    </div>
+    <div class="problema-item reveal">
+      <div class="pi-icon">📋</div>
+      <h3>Consultas sem histórico</h3>
+      <p>Sem dados organizados fica difícil mostrar a evolução para o médico. O FibroVida gera relatórios completos em PDF.</p>
+    </div>
+    <div class="problema-item reveal">
+      <div class="pi-icon">🧠</div>
+      <h3>Fibro fog real</h3>
+      <p>Esquecimento e confusão são comuns. O app é simples, intuitivo e funciona no celular com facilidade.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FUNCIONALIDADES
+═══════════════════════════════════════════ -->
+<section class="section features" id="funcionalidades">
+  <div class="section-center reveal">
+    <div class="section-eyebrow">Funcionalidades</div>
+    <h2 class="section-title">Tudo que você precisa em um só lugar</h2>
+    <p class="section-desc">Módulos completos desenvolvidos especialmente para as necessidades de quem vive com fibromialgia.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card reveal">
+      <span class="feat-icon">❤️</span>
+      <div class="feat-name">Diário da Dor</div>
+      <div class="feat-desc">Registre dor, sono, humor e locais de dor no corpo diariamente com gráficos de evolução.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">📊</span>
+      <div class="feat-name">Sinais Vitais</div>
+      <div class="feat-desc">Acompanhe peso, cintura, pressão arterial (SIS/DIA/PUL) e glicemia com histórico completo.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">💊</span>
+      <div class="feat-name">Medicamentos</div>
+      <div class="feat-desc">Alertas sonoros nos horários, controle de estoque, aviso de reposição e anexo de receitas.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">📄</span>
+      <div class="feat-name">Documentos</div>
+      <div class="feat-desc">Armazene receitas médicas, solicitações e resultados de exames em PDF ou imagem na nuvem.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">📈</span>
+      <div class="feat-name">Relatórios PDF</div>
+      <div class="feat-desc">Gere relatórios profissionais com gráficos para levar ao médico nas consultas.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">🥗</span>
+      <div class="feat-name">Receitas Anti-inflamatórias</div>
+      <div class="feat-desc">Biblioteca com receitas saudáveis selecionadas para reduzir inflamação e dor.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">🙏</span>
+      <div class="feat-name">Diário de Gratidão</div>
+      <div class="feat-desc">Anote 3 gratidões por dia e cultive o bem-estar mental e espiritual.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">✝️</span>
+      <div class="feat-name">Evangelho do Dia</div>
+      <div class="feat-desc">Palavra e homilia diária da Cancão Nova direto no dashboard para começar o dia com fé.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">🌙</span>
+      <div class="feat-name">Modo Escuro</div>
+      <div class="feat-desc">Interface adaptada para os dias de fotossensibilidade, suave para os olhos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     DEPOIMENTO
+═══════════════════════════════════════════ -->
+<section class="depoimento">
+  <div class="depoimento-stars">⭐⭐⭐⭐⭐</div>
+  <p class="depoimento-quote reveal">
+    A força não está em nunca sentir dor, mas em continuar mesmo assim.
+    O FibroVida me ajuda a registrar cada dia, mostrar para meu médico e não desistir.
+  </p>
+  <div class="depoimento-autor reveal">— Nelson Magalhães · Paciente com fibromialgia e criador do FibroVida</div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     COMO FUNCIONA
+═══════════════════════════════════════════ -->
+<section class="section como">
+  <div class="section-center reveal">
+    <div class="section-eyebrow">Simples assim</div>
+    <h2 class="section-title">Começar é fácil</h2>
+  </div>
+  <div class="como-steps">
+    <div class="como-step reveal">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Crie sua conta gratuita</h3>
+        <p>Cadastre-se com seu e-mail, confirme e aceite a política de privacidade. Seus dados ficam protegidos e só você tem acesso.</p>
+      </div>
+    </div>
+    <div class="como-step reveal">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>7 dias para explorar tudo</h3>
+        <p>Use todos os módulos gratuitamente durante 7 dias. Registre sua dor, medicamentos, vitais e receitas sem pagar nada.</p>
+      </div>
+    </div>
+    <div class="como-step reveal">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Assine e continue cuidando de você</h3>
+        <p>Plano mensal ou anual por um valor acessível. Menos que uma consulta por mês. Sem mensalidade abusiva.</p>
+      </div>
+    </div>
+    <div class="como-step reveal">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Leve para o médico</h3>
+        <p>Gere relatórios completos em PDF com toda a sua evolução, locais de dor, medicamentos e humor. Consultas mais produtivas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FIBROMIALGIA INFO
+═══════════════════════════════════════════ -->
+<section class="fibro-info">
+  <div class="fibro-inner">
+    <div class="fibro-texto reveal">
+      <h2>Criado por quem vive a realidade da fibromialgia</h2>
+      <p>O FibroVida nasceu da necessidade real de quem convive diariamente com dores crônicas, múltiplos medicamentos e consultas médicas frequentes.</p>
+      <p>Cada funcionalidade foi pensada com cuidado para tornar sua rotina mais organizada, seus dados mais acessíveis e sua qualidade de vida melhor.</p>
+    </div>
+    <div class="fibro-stats">
+      <div class="fibro-stat reveal">
+        <div class="fibro-stat-val">10M+</div>
+        <div class="fibro-stat-lbl">brasileiros com fibromialgia</div>
+      </div>
+      <div class="fibro-stat reveal">
+        <div class="fibro-stat-val">2–7 anos</div>
+        <div class="fibro-stat-lbl">tempo médio para diagnóstico</div>
+      </div>
+      <div class="fibro-stat reveal">
+        <div class="fibro-stat-val">90%</div>
+        <div class="fibro-stat-lbl">dos pacientes são mulheres</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PLANOS
+═══════════════════════════════════════════ -->
+<section class="section planos">
+  <div class="section-center reveal">
+    <div class="section-eyebrow">Investimento no seu bem-estar</div>
+    <h2 class="section-title">Planos acessíveis para quem precisa</h2>
+    <p class="section-desc">Comece grátis por 7 dias. Depois, escolha o plano que cabe no seu bolso.</p>
+  </div>
+  <div class="planos-grid">
+    <div class="plano-card reveal">
+      <div class="plano-nome">Plano Mensal</div>
+      <div class="plano-preco"><sup>R$</sup>14<sub>,90</sub></div>
+      <div class="plano-periodo">por mês</div>
+      <ul class="plano-itens">
+        <li>Todos os módulos</li>
+        <li>Alertas sonoros</li>
+        <li>Relatórios em PDF</li>
+        <li>Documentos na nuvem</li>
+        <li>Suporte por WhatsApp</li>
+      </ul>
+      <a href="index.html" class="btn-plano">Começar agora</a>
+    </div>
+    <div class="plano-card destaque reveal">
+      <div class="plano-badge">⭐ Melhor oferta</div>
+      <div class="plano-nome">Plano Anual</div>
+      <div class="plano-preco"><sup>R$</sup>99<sub>,90</sub></div>
+      <div class="plano-periodo">por ano · R$ 8,32/mês</div>
+      <div class="plano-economia">Economia de 44% 🎉</div>
+      <ul class="plano-itens">
+        <li>Todos os módulos</li>
+        <li>Alertas sonoros</li>
+        <li>Relatórios em PDF</li>
+        <li>Documentos na nuvem</li>
+        <li>Suporte prioritário</li>
+      </ul>
+      <a href="index.html" class="btn-plano">Quero este plano</a>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:20px">
+    Pagamento via PIX · Ativação em até 2 horas · Cancele quando quiser
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CTA FINAL
+═══════════════════════════════════════════ -->
+<section class="cta-final">
+  <h2 class="reveal">Seu bem-estar merece<br>cuidado e tecnologia 💚</h2>
+  <p class="reveal">Comece hoje mesmo. 7 dias grátis, sem compromisso. Acesse pelo celular ou computador — sem instalar nada.</p>
+
+  <div class="cta-pix reveal">
+    <span style="font-size:24px">💳</span>
+    <div>
+      <div class="cta-pix-label">Pagamento via PIX — Chave e-mail</div>
+      <div class="cta-pix-key">nelsontcmagalhaes@gmail.com</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center" class="reveal">
+    <a href="index.html" class="btn-hero-primary">🌿 Criar conta grátis</a>
+    <a href="https://wa.me/5565992393010?text=Olá!%20Quero%20saber%20mais%20sobre%20o%20FibroVida"
+       class="btn-hero-outline" target="_blank">📲 Falar no WhatsApp</a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <div class="f-logo">🌿 FibroVida</div>
+  <p>
+    Desenvolvido com ❤️ por <strong style="color:#7a9a50">Nelson Tomaz Catunda Magalhães</strong><br>
+    <a href="mailto:nelsontcmagalhaes@gmail.com">nelsontcmagalhaes@gmail.com</a><br><br>
+    © 2026 FibroVida · Todos os direitos reservados<br>
+    <small style="opacity:.5">Este aplicativo não substitui acompanhamento médico profissional.</small>
+  </p>
+</footer>
+
+<script>
+  // Animação de entrada ao rolar
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
