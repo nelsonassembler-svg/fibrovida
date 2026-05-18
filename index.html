@@ -249,6 +249,33 @@
           <span id="stat-updated">Atualizando...</span>
           <button class="asp-refresh-btn" onclick="loadAdminStats()">🔄 Atualizar</button>
         </div>
+
+        <!-- ── GERENCIADOR DE USUÁRIOS (admin only) ── -->
+        <div class="admin-users-wrap" id="admin-users-wrap">
+          <div class="auw-header">
+            <span class="auw-title">👥 Gerenciar Usuários</span>
+            <button class="auw-toggle-btn" onclick="toggleAdminUsers()" id="auw-toggle-btn">▼ Expandir</button>
+          </div>
+          <div class="auw-body" id="auw-body" style="display:none">
+            <div class="auw-search-row">
+              <input type="text" id="admin-search-input" placeholder="🔍 Buscar por nome ou e-mail..."
+                oninput="searchAdminUsers(this.value)" autocomplete="off" />
+              <button class="auw-search-btn" onclick="loadAdminUsers()">Todos</button>
+            </div>
+            <div class="auw-legend">
+              <span class="auw-badge auw-badge-premium">⭐ Premium</span>
+              <span class="auw-badge auw-badge-courtesy">🎁 Cortesia</span>
+              <span class="auw-badge auw-badge-trial">🕐 Trial</span>
+              <span class="auw-badge auw-badge-free">🔒 Free</span>
+            </div>
+            <div id="admin-users-list" class="auw-list">
+              <div class="auw-empty">Clique em "Todos" para carregar os usuários</div>
+            </div>
+            <div class="auw-footer" id="auw-footer" style="display:none">
+              <span id="auw-count"></span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Frase motivacional -->

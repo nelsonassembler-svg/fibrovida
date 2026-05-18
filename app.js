@@ -309,7 +309,149 @@ function startStatsAutoRefresh() {
   if (!isAdmin) return;
   loadAdminStats();
   clearInterval(_statsInterval);
-  _statsInterval = setInterval(loadAdminStats, 60_000); // atualiza a cada 1 minuto
+  _statsInterval = setInterval(loadAdminStats, 60_000);
+}
+
+// ── GERENCIADOR DE USUÁRIOS (ADMIN) ──────────────────────────
+
+let _adminUsersCache = [];
+
+function toggleAdminUsers() {
+  const body = document.getElementById("auw-body");
+  const btn  = document.getElementById("auw-toggle-btn");
+  if (!body) return;
+  const open = body.style.display === "none";
+  body.style.display = open ? "block" : "none";
+  btn.textContent = open ? "▲ Recolher" : "▼ Expandir";
+  if (open && _adminUsersCache.length === 0) loadAdminUsers();
+}
+
+async function loadAdminUsers(search = "") {
+  if (!isAdmin) return;
+  const list = document.getElementById("admin-users-list");
+  if (!list) return;
+  list.innerHTML = `<div class="auw-loading">⏳ Carregando usuários...</div>`;
+
+  try {
+    let q = db.from("profiles")
+      .select("id, name, email, plan, courtesy, is_admin, last_seen, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (search.trim()) {
+      q = q.or(`email.ilike.%${search.trim()}%,name.ilike.%${search.trim()}%`);
+    }
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    _adminUsersCache = data || [];
+    renderAdminUsers(_adminUsersCache);
+  } catch(e) {
+    list.innerHTML = `<div class="auw-empty">❌ Erro ao carregar: ${e.message}</div>`;
+  }
+}
+
+function searchAdminUsers(val) {
+  clearTimeout(window._adminSearchTimer);
+  window._adminSearchTimer = setTimeout(() => loadAdminUsers(val), 400);
+}
+
+function renderAdminUsers(users) {
+  const list   = document.getElementById("admin-users-list");
+  const footer = document.getElementById("auw-footer");
+  const count  = document.getElementById("auw-count");
+  if (!list) return;
+
+  if (!users.length) {
+    list.innerHTML = `<div class="auw-empty">Nenhum usuário encontrado.</div>`;
+    if (footer) footer.style.display = "none";
+    return;
+  }
+
+  const agora = new Date();
+
+  list.innerHTML = users.map(u => {
+    const isMe      = u.email === ADMIN_EMAIL;
+    const plan      = u.plan || "free";
+    const courtesy  = u.courtesy || false;
+    const lastSeen  = u.last_seen ? tempoRelativo(new Date(u.last_seen)) : "nunca";
+    const criadoEm  = u.created_at ? new Date(u.created_at).toLocaleDateString("pt-BR") : "—";
+    const diasTrial = u.created_at ? Math.floor((agora - new Date(u.created_at)) / 86400000) : 0;
+
+    let badgeHtml = "";
+    if (isMe)              badgeHtml = `<span class="auw-badge auw-badge-admin">👑 Admin</span>`;
+    else if (plan === "premium" && courtesy) badgeHtml = `<span class="auw-badge auw-badge-courtesy">🎁 Cortesia</span>`;
+    else if (plan === "premium")             badgeHtml = `<span class="auw-badge auw-badge-premium">⭐ Premium</span>`;
+    else if (diasTrial <= 7)                 badgeHtml = `<span class="auw-badge auw-badge-trial">🕐 Trial (${Math.max(0, 7 - diasTrial)}d)</span>`;
+    else                                     badgeHtml = `<span class="auw-badge auw-badge-free">🔒 Free</span>`;
+
+    const acoesBtns = isMe ? "" : `
+      <div class="auw-actions">
+        ${plan !== "premium" ? `
+          <button class="auw-btn auw-btn-premium" onclick="setUserPlan('${u.id}','${u.email}','premium',false)">⭐ Ativar Premium</button>
+          <button class="auw-btn auw-btn-courtesy" onclick="setUserPlan('${u.id}','${u.email}','premium',true)">🎁 Cortesia</button>
+        ` : `
+          <button class="auw-btn auw-btn-revoke" onclick="setUserPlan('${u.id}','${u.email}','free',false)">🔒 Revogar</button>
+        `}
+      </div>`;
+
+    return `
+      <div class="auw-card ${plan === "premium" ? "auw-card-premium" : ""}" id="auw-card-${u.id}">
+        <div class="auw-card-top">
+          <div class="auw-user-info">
+            <div class="auw-user-name">${u.name || "Sem nome"} ${badgeHtml}</div>
+            <div class="auw-user-email">${u.email || "—"}</div>
+          </div>
+          <div class="auw-user-meta">
+            <div class="auw-meta-item">🕐 ${lastSeen}</div>
+            <div class="auw-meta-item">📅 ${criadoEm}</div>
+          </div>
+        </div>
+        ${acoesBtns}
+      </div>`;
+  }).join("");
+
+  if (footer) { footer.style.display = "block"; }
+  if (count)  { count.textContent = `${users.length} usuário(s) encontrado(s)`; }
+}
+
+async function setUserPlan(userId, email, plan, courtesy) {
+  if (!isAdmin) return;
+  const acao = plan === "premium"
+    ? (courtesy ? `conceder cortesia para ${email}` : `ativar premium para ${email}`)
+    : `revogar acesso de ${email}`;
+
+  if (!confirm(`Confirma: ${acao}?`)) return;
+
+  try {
+    const { error } = await db.from("profiles")
+      .update({ plan, courtesy: courtesy || false })
+      .eq("id", userId);
+
+    if (error) throw error;
+
+    toast(plan === "premium"
+      ? `✅ ${email} ativado como ${courtesy ? "cortesia" : "premium"}!`
+      : `🔒 Acesso de ${email} revogado.`, "s");
+
+    // atualiza cache local e re-renderiza
+    _adminUsersCache = _adminUsersCache.map(u =>
+      u.id === userId ? { ...u, plan, courtesy: courtesy || false } : u
+    );
+    renderAdminUsers(_adminUsersCache);
+    loadAdminStats();
+  } catch(e) {
+    toast("Erro ao atualizar: " + e.message, "e");
+  }
+}
+
+function tempoRelativo(date) {
+  const diff = Math.floor((new Date() - date) / 1000);
+  if (diff < 60)   return "agora mesmo";
+  if (diff < 3600) return `${Math.floor(diff/60)}min atrás`;
+  if (diff < 86400)return `${Math.floor(diff/3600)}h atrás`;
+  return `${Math.floor(diff/86400)}d atrás`;
 }
 
 async function updateLastSeen() {

@@ -1385,6 +1385,113 @@ input[type=range].fv-range::-moz-range-thumb {
   margin-bottom: 12px;
 }
 
+/* ── ADMIN: GERENCIAR USUÁRIOS ── */
+.admin-users-wrap {
+  margin-top: 14px;
+  background: rgba(0,0,0,.18);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.auw-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; cursor: pointer;
+}
+.auw-title { font-size: 13px; font-weight: 700; color: #a8d870; }
+.auw-toggle-btn {
+  background: rgba(168,216,112,.15); border: 1px solid rgba(168,216,112,.3);
+  color: #a8d870; font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px; cursor: pointer;
+  transition: background .15s;
+}
+.auw-toggle-btn:hover { background: rgba(168,216,112,.3); }
+
+.auw-body { padding: 0 12px 12px; }
+
+.auw-search-row {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.auw-search-row input {
+  flex: 1; padding: 8px 12px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 8px; color: #fff; font-size: 13px; outline: none;
+}
+.auw-search-row input::placeholder { color: rgba(255,255,255,.4); }
+.auw-search-btn {
+  padding: 8px 14px; background: rgba(168,216,112,.2);
+  border: 1px solid rgba(168,216,112,.4); color: #a8d870;
+  border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.auw-search-btn:hover { background: rgba(168,216,112,.35); }
+
+.auw-legend {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+
+/* badges usados tanto na legenda quanto nos cards */
+.auw-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; display: inline-block;
+}
+.auw-badge-admin   { background: #ffd70022; color: #ffd700; border: 1px solid #ffd70055; }
+.auw-badge-premium { background: rgba(168,216,112,.2); color: #a8d870; border: 1px solid rgba(168,216,112,.4); }
+.auw-badge-courtesy{ background: rgba(255,180,80,.2); color: #ffb450; border: 1px solid rgba(255,180,80,.4); }
+.auw-badge-trial   { background: rgba(100,180,255,.2); color: #64b4ff; border: 1px solid rgba(100,180,255,.4); }
+.auw-badge-free    { background: rgba(255,255,255,.08); color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.12); }
+
+.auw-list {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 360px; overflow-y: auto;
+}
+.auw-list::-webkit-scrollbar { width: 4px; }
+.auw-list::-webkit-scrollbar-track { background: transparent; }
+.auw-list::-webkit-scrollbar-thumb { background: rgba(168,216,112,.3); border-radius: 4px; }
+
+.auw-card {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 10px 12px;
+  transition: background .15s;
+}
+.auw-card:hover { background: rgba(255,255,255,.1); }
+.auw-card-premium { border-color: rgba(168,216,112,.35); }
+
+.auw-card-top {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+}
+.auw-user-name {
+  font-size: 13px; font-weight: 700; color: #fff;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-bottom: 2px;
+}
+.auw-user-email { font-size: 11px; color: rgba(255,255,255,.5); }
+.auw-user-meta  { text-align: right; flex-shrink: 0; }
+.auw-meta-item  { font-size: 10px; color: rgba(255,255,255,.4); }
+
+.auw-actions {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+}
+.auw-btn {
+  font-size: 11px; font-weight: 700; padding: 4px 10px;
+  border-radius: 20px; cursor: pointer; border: 1px solid;
+  transition: all .15s;
+}
+.auw-btn-premium  { background: rgba(168,216,112,.15); color: #a8d870; border-color: rgba(168,216,112,.4); }
+.auw-btn-premium:hover  { background: rgba(168,216,112,.35); }
+.auw-btn-courtesy { background: rgba(255,180,80,.15); color: #ffb450; border-color: rgba(255,180,80,.4); }
+.auw-btn-courtesy:hover { background: rgba(255,180,80,.35); }
+.auw-btn-revoke   { background: rgba(255,80,80,.15); color: #ff8080; border-color: rgba(255,80,80,.35); }
+.auw-btn-revoke:hover   { background: rgba(255,80,80,.3); }
+
+.auw-empty, .auw-loading {
+  text-align: center; padding: 24px 12px;
+  font-size: 13px; color: rgba(255,255,255,.4);
+}
+
+.auw-footer {
+  margin-top: 8px; text-align: right;
+  font-size: 11px; color: rgba(255,255,255,.35);
+}
+
 .btn-whatsapp {
   display: block; width: 100%;
   background: #25d366; color: #fff;
