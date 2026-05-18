@@ -1209,11 +1209,12 @@ input[type=range].fv-range::-moz-range-thumb {
    PAINEL ADMIN — ESTATÍSTICAS
    ============================================================ */
 .admin-stats-panel {
-  background: linear-gradient(135deg, #2a3a1e 0%, #3a5028 100%);
+  background: linear-gradient(135deg, #4a6e32 0%, #5d8a40 60%, #6fa050 100%);
   border-radius: var(--radius);
   padding: 14px 16px;
   margin-bottom: 14px;
-  box-shadow: 0 3px 14px rgba(42,60,30,.35);
+  box-shadow: 0 3px 14px rgba(74,110,50,.4);
+  border: 1px solid rgba(168,216,112,.25);
 }
 
 .asp-header {
@@ -1388,10 +1389,10 @@ input[type=range].fv-range::-moz-range-thumb {
 /* ── ADMIN: GERENCIAR USUÁRIOS ── */
 .admin-users-wrap {
   margin-top: 14px;
-  background: rgba(0,0,0,.18);
+  background: rgba(255,255,255,.12);
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.22);
 }
 .auw-header {
   display: flex; align-items: center; justify-content: space-between;
