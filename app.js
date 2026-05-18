@@ -473,6 +473,14 @@ async function afterLogin(user) {
     showScreen("main-screen");
     showTab("inicio");
     checkLowStock();
+    updateLastSeen();
+    setInterval(updateLastSeen, 5 * 60 * 1000);
+    startMedScheduler();
+    if (isAdmin) {
+      const panel = document.getElementById("admin-stats-panel");
+      if (panel) panel.style.display = "block";
+      startStatsAutoRefresh();
+    }
     return;
   }
 
