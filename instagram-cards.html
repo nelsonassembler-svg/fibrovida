@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cards Instagram — FibroVida</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#1a1a1a;color:#fff;min-height:100vh}
+
+    /* ── CONTROLES ── */
+    .controls{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      background:#111;padding:12px 20px;
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    }
+    .controls h1{font-size:15px;font-weight:800;color:#a8d870;margin-right:8px}
+    .ctrl-btn{
+      padding:7px 16px;border-radius:20px;border:none;cursor:pointer;
+      font-size:12px;font-weight:700;font-family:'Inter',sans-serif;
+      transition:all .15s;
+    }
+    .ctrl-btn-green{background:#4a6e32;color:#a8d870}
+    .ctrl-btn-green:hover{background:#5d8a40}
+    .ctrl-btn-blue{background:#1a3a7a;color:#64b4ff}
+    .ctrl-btn-blue:hover{background:#1e4a9e}
+    .ctrl-btn-gold{background:#7a5000;color:#ffd060}
+    .ctrl-btn-gold:hover{background:#9a6800}
+    .ctrl-sep{width:1px;height:24px;background:#333}
+    .card-nav{display:flex;gap:6px;flex-wrap:wrap}
+    .nav-dot{
+      width:28px;height:28px;border-radius:50%;border:2px solid #444;
+      background:#222;cursor:pointer;font-size:11px;font-weight:700;
+      color:#888;display:flex;align-items:center;justify-content:center;
+      transition:all .15s;
+    }
+    .nav-dot.active{border-color:#a8d870;background:#2a4a1a;color:#a8d870}
+    .nav-dot:hover{border-color:#6a9a40;color:#a8d870}
+    .hint{font-size:11px;color:#666;margin-left:auto}
+
+    /* ── PALCO ── */
+    .stage{
+      padding-top:70px;
+      display:flex;flex-direction:column;align-items:center;gap:40px;
+      padding-bottom:60px;
+    }
+
+    /* ── CARD BASE ── */
+    .card-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+    .card-label{font-size:11px;color:#666;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+
+    .card{
+      width:540px;height:540px; /* metade de 1080 para caber na tela */
+      position:relative;overflow:hidden;
+      border-radius:0; /* Instagram não tem borda */
+      flex-shrink:0;
+    }
+    @media(max-width:580px){.card{width:calc(100vw - 20px);height:calc(100vw - 20px)}}
+
+    /* ── CARD 1 — HERO ── */
+    #card1{
+      background:linear-gradient(145deg,#1a2e0a 0%,#2d4a18 40%,#4a6a28 75%,#7a9a50 100%);
+    }
+    #card1 .c1-leaves{position:absolute;inset:0;pointer-events:none}
+    #card1 .leaf{position:absolute;opacity:.1;font-size:clamp(20px,5vw,48px)}
+    #card1 .leaf:nth-child(1){top:5%;left:5%}
+    #card1 .leaf:nth-child(2){top:10%;right:8%;font-size:clamp(28px,6vw,60px)}
+    #card1 .leaf:nth-child(3){bottom:15%;left:8%;font-size:clamp(16px,3.5vw,34px)}
+    #card1 .leaf:nth-child(4){bottom:20%;right:6%;font-size:clamp(24px,5.5vw,52px)}
+    #card1 .leaf:nth-child(5){top:45%;left:45%;font-size:clamp(60px,12vw,120px);opacity:.04}
+    #card1 .c1-body{
+      position:relative;z-index:1;height:100%;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:clamp(20px,5%,40px);text-align:center;
+    }
+    #card1 .c1-logo{font-size:clamp(36px,8vw,72px);margin-bottom:clamp(8px,2%,16px)}
+    #card1 .c1-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+      border-radius:20px;padding:5px 14px;margin-bottom:clamp(10px,2.5%,20px);
+      font-size:clamp(9px,1.8vw,12px);font-weight:700;color:#a8d870;letter-spacing:.5px;text-transform:uppercase;
+    }
+    #card1 .c1-dot{width:6px;height:6px;border-radius:50%;background:#7de87d}
+    #card1 h1{
+      font-size:clamp(22px,5.5vw,52px);font-weight:900;color:#fff;
+      line-height:1.1;letter-spacing:-1px;margin-bottom:clamp(8px,2%,16px);
+    }
+    #card1 h1 span{color:#a8d870}
+    #card1 p{
+      font-size:clamp(10px,2.2vw,16px);color:rgba(255,255,255,.7);
+      max-width:80%;line-height:1.6;margin-bottom:clamp(14px,3%,28px);
+    }
+    #card1 .c1-stats{display:flex;gap:clamp(16px,4%,36px)}
+    #card1 .c1-stat-val{font-size:clamp(18px,4.5vw,36px);font-weight:900;color:#a8d870;line-height:1}
+    #card1 .c1-stat-lbl{font-size:clamp(8px,1.6vw,11px);color:rgba(255,255,255,.5);margin-top:3px}
+    #card1 .c1-url{
+      position:absolute;bottom:clamp(10px,2.5%,20px);
+      font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.35);font-weight:500;
+    }
+
+    /* ── CARD 2 — FEATURES ── */
+    #card2{background:linear-gradient(160deg,#f5f3e8 0%,#edf5e0 100%)}
+    #card2 .c2-header{
+      background:linear-gradient(135deg,#2d4a18,#5d8a40);
+      padding:clamp(14px,3.5%,28px) clamp(16px,4%,32px) clamp(10px,2.5%,20px);
+    }
+    #card2 .c2-header h2{font-size:clamp(14px,3.2vw,22px);font-weight:900;color:#fff;margin-bottom:3px}
+    #card2 .c2-header p{font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.65)}
+    #card2 .c2-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);
+      gap:clamp(6px,1.5%,12px);padding:clamp(10px,2.5%,20px);
+      height:calc(100% - clamp(60px,15%,90px));
+    }
+    #card2 .c2-feat{
+      background:#fff;border-radius:10px;padding:clamp(8px,2%,14px);
+      border:1.5px solid #e8e8d8;text-align:center;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+    }
+    #card2 .c2-feat .fi{font-size:clamp(18px,4vw,30px);margin-bottom:4px}
+    #card2 .c2-feat .fn{font-size:clamp(8px,1.6vw,11px);font-weight:700;color:#2d4a18;line-height:1.2}
+
+    /* ── CARD 3 — PROBLEMA / DOR INVISÍVEL ── */
+    #card3{background:linear-gradient(160deg,#fff8f0 0%,#fef3e8 100%)}
+    #card3 .c3-top{
+      background:linear-gradient(135deg,#7a3010,#c05020);
+      padding:clamp(14px,3.5%,28px) clamp(16px,4%,32px) clamp(10px,2.5%,20px);
+    }
+    #card3 .c3-top h2{font-size:clamp(14px,3.2vw,22px);font-weight:900;color:#fff;margin-bottom:3px}
+    #card3 .c3-top p{font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.7)}
+    #card3 .c3-items{padding:clamp(10px,2.5%,20px);display:flex;flex-direction:column;gap:clamp(6px,1.5%,12px)}
+    #card3 .c3-item{
+      background:#fff;border-radius:10px;padding:clamp(8px,2%,14px) clamp(12px,3%,20px);
+      border-left:4px solid #c05020;display:flex;align-items:flex-start;gap:10px;
+    }
+    #card3 .c3-item .ci-icon{font-size:clamp(18px,4vw,28px);flex-shrink:0}
+    #card3 .c3-item h3{font-size:clamp(10px,2.2vw,14px);font-weight:700;color:#1a1a0a;margin-bottom:2px}
+    #card3 .c3-item p{font-size:clamp(8px,1.5vw,11px);color:#6a6a50;line-height:1.5}
+    #card3 .c3-bottom{
+      position:absolute;bottom:0;left:0;right:0;
+      background:linear-gradient(135deg,#2d4a18,#5d8a40);
+      padding:clamp(8px,2%,14px) clamp(16px,4%,32px);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    #card3 .c3-bottom span{font-size:clamp(9px,1.8vw,13px);color:#a8d870;font-weight:700}
+
+    /* ── CARD 4 — ESTATÍSTICAS ── */
+    #card4{background:linear-gradient(145deg,#1a2e0a 0%,#3a5028 60%,#5a7838 100%)}
+    #card4 .c4-body{
+      height:100%;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:clamp(20px,5%,40px);text-align:center;
+    }
+    #card4 .c4-eyebrow{
+      font-size:clamp(8px,1.6vw,11px);font-weight:700;letter-spacing:1.5px;
+      text-transform:uppercase;color:#a8d870;margin-bottom:clamp(8px,2%,16px);
+    }
+    #card4 h2{
+      font-size:clamp(16px,3.8vw,28px);font-weight:900;color:#fff;
+      line-height:1.2;margin-bottom:clamp(16px,4%,32px);max-width:85%;
+    }
+    #card4 .c4-stats{display:flex;gap:clamp(12px,3%,24px);margin-bottom:clamp(16px,4%,32px);flex-wrap:wrap;justify-content:center}
+    #card4 .c4-stat{
+      background:rgba(255,255,255,.08);border:1px solid rgba(168,216,112,.2);
+      border-radius:14px;padding:clamp(12px,3%,20px) clamp(14px,3.5%,24px);text-align:center;
+    }
+    #card4 .c4-val{font-size:clamp(22px,5.5vw,42px);font-weight:900;color:#a8d870;line-height:1}
+    #card4 .c4-lbl{font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.55);margin-top:4px;line-height:1.4}
+    #card4 .c4-desc{font-size:clamp(9px,1.8vw,13px);color:rgba(255,255,255,.6);line-height:1.7;max-width:80%}
+    #card4 .c4-logo{position:absolute;bottom:clamp(10px,2.5%,18px);font-size:clamp(11px,2.2vw,16px);font-weight:900;color:rgba(168,216,112,.5)}
+
+    /* ── CARD 5 — COMO FUNCIONA ── */
+    #card5{background:#f5f3e8}
+    #card5 .c5-header{
+      background:linear-gradient(135deg,#2d4a18,#4a7028);
+      padding:clamp(14px,3.5%,28px) clamp(16px,4%,32px) clamp(10px,2.5%,20px);
+    }
+    #card5 .c5-header h2{font-size:clamp(14px,3.2vw,22px);font-weight:900;color:#fff;margin-bottom:3px}
+    #card5 .c5-header p{font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.65)}
+    #card5 .c5-steps{padding:clamp(12px,3%,24px);display:flex;flex-direction:column;gap:clamp(8px,2%,14px)}
+    #card5 .c5-step{display:flex;gap:clamp(10px,2.5%,16px);align-items:flex-start}
+    #card5 .c5-num{
+      width:clamp(28px,6vw,40px);height:clamp(28px,6vw,40px);border-radius:50%;
+      background:#4a7028;color:#fff;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-size:clamp(12px,2.5vw,18px);font-weight:900;
+    }
+    #card5 .c5-text h3{font-size:clamp(10px,2.2vw,14px);font-weight:700;color:#2d4a18;margin-bottom:2px}
+    #card5 .c5-text p{font-size:clamp(8px,1.5vw,11px);color:#6a6a50;line-height:1.5}
+    #card5 .c5-bottom{
+      position:absolute;bottom:0;left:0;right:0;
+      background:linear-gradient(135deg,#4a7028,#7a9a50);
+      padding:clamp(8px,2%,14px) clamp(16px,4%,32px);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    #card5 .c5-bottom span{font-size:clamp(9px,1.8vw,12px);color:#fff;font-weight:700}
+    #card5 .c5-cta{
+      background:rgba(255,255,255,.2);border-radius:20px;
+      padding:4px 12px;font-size:clamp(8px,1.5vw,11px);color:#fff;font-weight:700;
+    }
+
+    /* ── CARD 6 — PLANOS ── */
+    #card6{background:linear-gradient(145deg,#1a2e0a,#2d4a18)}
+    #card6 .c6-body{
+      height:100%;display:flex;flex-direction:column;
+      padding:clamp(18px,4.5%,36px);
+    }
+    #card6 .c6-title{
+      font-size:clamp(14px,3.2vw,24px);font-weight:900;color:#fff;
+      margin-bottom:4px;text-align:center;
+    }
+    #card6 .c6-sub{font-size:clamp(9px,1.8vw,13px);color:rgba(255,255,255,.55);text-align:center;margin-bottom:clamp(14px,3.5%,28px)}
+    #card6 .c6-plans{display:flex;gap:clamp(10px,2.5%,16px);flex:1}
+    #card6 .c6-plan{
+      flex:1;border-radius:16px;padding:clamp(14px,3.5%,24px) clamp(12px,3%,20px);
+      display:flex;flex-direction:column;align-items:center;text-align:center;
+      position:relative;
+    }
+    #card6 .c6-plan-free{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+    #card6 .c6-plan-paid{background:rgba(168,216,112,.12);border:2px solid rgba(168,216,112,.4)}
+    #card6 .c6-badge{
+      position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+      background:#c8a840;color:#fff;font-size:clamp(7px,1.4vw,10px);font-weight:800;
+      padding:3px 10px;border-radius:20px;white-space:nowrap;
+    }
+    #card6 .c6-plan-name{font-size:clamp(9px,1.8vw,12px);font-weight:700;color:rgba(255,255,255,.6);margin-bottom:8px}
+    #card6 .c6-price{font-size:clamp(24px,6vw,44px);font-weight:900;color:#a8d870;line-height:1}
+    #card6 .c6-price-free{color:rgba(255,255,255,.4)}
+    #card6 .c6-period{font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.4);margin-bottom:12px}
+    #card6 .c6-items{list-style:none;text-align:left;width:100%}
+    #card6 .c6-items li{font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.7);padding:2px 0;line-height:1.5}
+    #card6 .c6-items li::before{content:"✓ ";color:#a8d870;font-weight:700}
+    #card6 .c6-items li.no::before{content:"✗ ";color:#ff8080}
+    #card6 .c6-pix{
+      margin-top:clamp(12px,3%,20px);text-align:center;
+      background:rgba(255,255,255,.06);border-radius:10px;
+      padding:clamp(8px,2%,14px);
+    }
+    #card6 .c6-pix p{font-size:clamp(8px,1.6vw,11px);color:rgba(255,255,255,.5);margin-bottom:3px}
+    #card6 .c6-pix strong{font-size:clamp(10px,2vw,14px);color:#a8d870}
+
+    /* ── CARD 7 — FRASE ── */
+    #card7{background:linear-gradient(145deg,#2d4a18 0%,#4a7028 40%,#7a9a50 100%)}
+    #card7 .c7-body{
+      height:100%;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:clamp(30px,7%,60px);text-align:center;
+    }
+    #card7 .c7-icon{font-size:clamp(40px,9vw,80px);margin-bottom:clamp(14px,3.5%,28px);opacity:.8}
+    #card7 blockquote{
+      font-size:clamp(16px,3.8vw,28px);font-weight:700;color:#fff;
+      line-height:1.5;font-style:italic;margin-bottom:clamp(14px,3.5%,28px);
+    }
+    #card7 blockquote::before{content:"\201C";font-size:clamp(40px,9vw,80px);color:rgba(255,255,255,.15);display:block;line-height:.5;margin-bottom:12px}
+    #card7 .c7-author{font-size:clamp(9px,1.8vw,13px);color:rgba(255,255,255,.55)}
+    #card7 .c7-logo{
+      position:absolute;bottom:clamp(14px,3.5%,24px);
+      font-size:clamp(14px,3vw,22px);font-weight:900;color:rgba(255,255,255,.3);
+    }
+
+    /* ── CARD 8 — RECEITAS ── */
+    #card8{background:linear-gradient(160deg,#f0f8e8 0%,#e8f5d8 100%)}
+    #card8 .c8-header{
+      background:linear-gradient(135deg,#4a7028,#7ab040);
+      padding:clamp(14px,3.5%,28px) clamp(16px,4%,32px) clamp(10px,2.5%,20px);
+    }
+    #card8 .c8-header h2{font-size:clamp(14px,3.2vw,22px);font-weight:900;color:#fff;margin-bottom:3px}
+    #card8 .c8-header p{font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.7)}
+    #card8 .c8-grid{
+      display:grid;grid-template-columns:repeat(2,1fr);
+      gap:clamp(6px,1.5%,12px);padding:clamp(10px,2.5%,20px);
+    }
+    #card8 .c8-item{
+      background:#fff;border-radius:12px;padding:clamp(10px,2.5%,18px);
+      border-left:4px solid #5a8a30;
+    }
+    #card8 .c8-item .ri-icon{font-size:clamp(18px,4vw,28px);margin-bottom:4px}
+    #card8 .c8-item h3{font-size:clamp(9px,1.8vw,12px);font-weight:700;color:#2d4a18;margin-bottom:2px}
+    #card8 .c8-item p{font-size:clamp(7px,1.4vw,10px);color:#6a7a50;line-height:1.4}
+    #card8 .c8-bottom{
+      position:absolute;bottom:0;left:0;right:0;
+      background:linear-gradient(135deg,#4a7028,#7ab040);
+      padding:clamp(8px,2%,14px) clamp(16px,4%,32px);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    #card8 .c8-bottom span{font-size:clamp(9px,1.8vw,12px);color:#fff;font-weight:700}
+  </style>
+</head>
+<body>
+
+<!-- CONTROLES -->
+<div class="controls">
+  <h1>🌿 FibroVida — Cards Instagram</h1>
+  <div class="ctrl-sep"></div>
+  <div class="card-nav" id="cardNav">
+    <div class="nav-dot active" onclick="scrollToCard(1)">1</div>
+    <div class="nav-dot" onclick="scrollToCard(2)">2</div>
+    <div class="nav-dot" onclick="scrollToCard(3)">3</div>
+    <div class="nav-dot" onclick="scrollToCard(4)">4</div>
+    <div class="nav-dot" onclick="scrollToCard(5)">5</div>
+    <div class="nav-dot" onclick="scrollToCard(6)">6</div>
+    <div class="nav-dot" onclick="scrollToCard(7)">7</div>
+    <div class="nav-dot" onclick="scrollToCard(8)">8</div>
+  </div>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-btn ctrl-btn-blue" onclick="window.print()">🖨️ Imprimir todos</button>
+  <span class="hint">📸 Tire print de cada card para postar no Instagram</span>
+</div>
+
+<!-- PALCO -->
+<div class="stage">
+
+  <!-- ═══ CARD 1 — HERO ═══ -->
+  <div class="card-wrap" id="wrap1">
+    <div class="card-label">Card 1 — Hero / Capa</div>
+    <div class="card" id="card1">
+      <div class="c1-leaves">
+        <span class="leaf" style="top:5%;left:5%">🌿</span>
+        <span class="leaf" style="top:10%;right:8%">🍃</span>
+        <span class="leaf" style="bottom:15%;left:8%">🌱</span>
+        <span class="leaf" style="bottom:20%;right:6%">🌿</span>
+        <span class="leaf" style="top:45%;left:40%">🌿</span>
+      </div>
+      <div class="c1-body">
+        <div class="c1-logo">🌿</div>
+        <div class="c1-badge"><span class="c1-dot"></span> Aplicativo de Saúde</div>
+        <h1>Fibro<span>Vida</span></h1>
+        <p>O primeiro app brasileiro criado especialmente para quem vive com fibromialgia.</p>
+        <div class="c1-stats">
+          <div>
+            <div class="c1-stat-val">7</div>
+            <div class="c1-stat-lbl">Dias grátis</div>
+          </div>
+          <div>
+            <div class="c1-stat-val">10+</div>
+            <div class="c1-stat-lbl">Módulos</div>
+          </div>
+          <div>
+            <div class="c1-stat-val">100%</div>
+            <div class="c1-stat-lbl">Português</div>
+          </div>
+        </div>
+        <div class="c1-url">nelsonassembler-svg.github.io/fibrovida</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 2 — FUNCIONALIDADES ═══ -->
+  <div class="card-wrap" id="wrap2">
+    <div class="card-label">Card 2 — Funcionalidades</div>
+    <div class="card" id="card2">
+      <div class="c2-header">
+        <h2>✨ Tudo que você precisa</h2>
+        <p>10 módulos completos no seu celular</p>
+      </div>
+      <div class="c2-grid">
+        <div class="c2-feat"><div class="fi">❤️</div><div class="fn">Diário da Dor</div></div>
+        <div class="c2-feat"><div class="fi">📊</div><div class="fn">Sinais Vitais</div></div>
+        <div class="c2-feat"><div class="fi">💊</div><div class="fn">Medicamentos</div></div>
+        <div class="c2-feat"><div class="fi">📄</div><div class="fn">Documentos</div></div>
+        <div class="c2-feat"><div class="fi">📈</div><div class="fn">Relatório PDF</div></div>
+        <div class="c2-feat"><div class="fi">🥗</div><div class="fn">Receitas</div></div>
+        <div class="c2-feat"><div class="fi">🙏</div><div class="fn">Gratidão</div></div>
+        <div class="c2-feat"><div class="fi">✝️</div><div class="fn">Evangelho</div></div>
+        <div class="c2-feat"><div class="fi">🌙</div><div class="fn">Modo Escuro</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 3 — PROBLEMA ═══ -->
+  <div class="card-wrap" id="wrap3">
+    <div class="card-label">Card 3 — A Dor Invisível</div>
+    <div class="card" id="card3">
+      <div class="c3-top">
+        <h2>😔 Você se identifica?</h2>
+        <p>Viver com fibromialgia é um desafio diário</p>
+      </div>
+      <div class="c3-items">
+        <div class="c3-item">
+          <div class="ci-icon">😣</div>
+          <div><h3>Dores que ninguém vê</h3><p>Difícil explicar para médicos e família. O FibroVida registra tudo com precisão.</p></div>
+        </div>
+        <div class="c3-item">
+          <div class="ci-icon">💊</div>
+          <div><h3>Muitos medicamentos</h3><p>Horários, dosagens e estoques são exaustivos de controlar sozinha.</p></div>
+        </div>
+        <div class="c3-item">
+          <div class="ci-icon">🧠</div>
+          <div><h3>Fibro fog real</h3><p>Esquecimento e confusão fazem parte. O app é simples e intuitivo.</p></div>
+        </div>
+      </div>
+      <div class="c3-bottom">
+        <span>🌿 FibroVida resolve isso</span>
+        <span style="font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.6)">Link na bio 👆</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 4 — ESTATÍSTICAS ═══ -->
+  <div class="card-wrap" id="wrap4">
+    <div class="card-label">Card 4 — Estatísticas da Fibromialgia</div>
+    <div class="card" id="card4">
+      <div class="c4-body">
+        <div class="c4-eyebrow">📊 Você não está sozinha</div>
+        <h2>A fibromialgia é mais comum do que parece</h2>
+        <div class="c4-stats">
+          <div class="c4-stat">
+            <div class="c4-val">10M+</div>
+            <div class="c4-lbl">brasileiros com<br>fibromialgia</div>
+          </div>
+          <div class="c4-stat">
+            <div class="c4-val">90%</div>
+            <div class="c4-lbl">dos pacientes<br>são mulheres</div>
+          </div>
+          <div class="c4-stat">
+            <div class="c4-val">2–7</div>
+            <div class="c4-lbl">anos para<br>diagnóstico</div>
+          </div>
+        </div>
+        <p class="c4-desc">O FibroVida foi criado por quem vive essa realidade, para tornar o dia a dia mais organizado e a relação com o médico mais produtiva.</p>
+        <div class="c4-logo">🌿 FibroVida</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 5 — COMO FUNCIONA ═══ -->
+  <div class="card-wrap" id="wrap5">
+    <div class="card-label">Card 5 — Como Funciona</div>
+    <div class="card" id="card5">
+      <div class="c5-header">
+        <h2>🔢 Começar é simples</h2>
+        <p>4 passos para ter controle da sua saúde</p>
+      </div>
+      <div class="c5-steps">
+        <div class="c5-step">
+          <div class="c5-num">1</div>
+          <div class="c5-text"><h3>Acesse pelo celular ou computador</h3><p>Sem instalar nada. Funciona direto no navegador.</p></div>
+        </div>
+        <div class="c5-step">
+          <div class="c5-num">2</div>
+          <div class="c5-text"><h3>Crie sua conta gratuita</h3><p>Só precisa de e-mail. Confirme e aceite a política de privacidade.</p></div>
+        </div>
+        <div class="c5-step">
+          <div class="c5-num">3</div>
+          <div class="c5-text"><h3>7 dias para explorar tudo</h3><p>Registre dor, medicamentos, vitais. Sem pagar nada.</p></div>
+        </div>
+        <div class="c5-step">
+          <div class="c5-num">4</div>
+          <div class="c5-text"><h3>Leve o relatório ao médico</h3><p>PDF completo com toda a sua evolução. Consultas mais produtivas.</p></div>
+        </div>
+      </div>
+      <div class="c5-bottom">
+        <span>🌿 nelsonassembler-svg.github.io/fibrovida</span>
+        <span class="c5-cta">Grátis 7 dias</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 6 — PLANOS ═══ -->
+  <div class="card-wrap" id="wrap6">
+    <div class="card-label">Card 6 — Planos e Preços</div>
+    <div class="card" id="card6">
+      <div class="c6-body">
+        <div class="c6-title">💳 Planos acessíveis</div>
+        <div class="c6-sub">Menos que uma consulta por mês</div>
+        <div class="c6-plans">
+          <div class="c6-plan c6-plan-free">
+            <div class="c6-plan-name">TRIAL GRÁTIS</div>
+            <div class="c6-price c6-price-free">7<span style="font-size:40%;vertical-align:super">dias</span></div>
+            <div class="c6-period">sem cartão</div>
+            <ul class="c6-items">
+              <li>Todos os módulos</li>
+              <li>Alertas sonoros</li>
+              <li>Relatórios PDF</li>
+              <li>Suporte WhatsApp</li>
+            </ul>
+          </div>
+          <div class="c6-plan c6-plan-paid">
+            <div class="c6-badge">⭐ Melhor oferta</div>
+            <div class="c6-plan-name">PLANO ANUAL</div>
+            <div class="c6-price"><sup style="font-size:40%;vertical-align:super">R$</sup>99<sub style="font-size:40%">,90</sub></div>
+            <div class="c6-period">por ano · R$ 8,32/mês</div>
+            <ul class="c6-items">
+              <li>Todos os módulos</li>
+              <li>Alertas sonoros</li>
+              <li>Relatórios PDF</li>
+              <li>Suporte prioritário</li>
+            </ul>
+          </div>
+        </div>
+        <div class="c6-pix">
+          <p>Pagamento via PIX — Chave telefone</p>
+          <strong>85998251219</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 7 — FRASE MOTIVACIONAL ═══ -->
+  <div class="card-wrap" id="wrap7">
+    <div class="card-label">Card 7 — Frase Motivacional</div>
+    <div class="card" id="card7">
+      <div class="c7-body">
+        <div class="c7-icon">💚</div>
+        <blockquote>A força não está em nunca sentir dor, mas em continuar mesmo assim.</blockquote>
+        <div class="c7-author">— Nelson Magalhães · Criador do FibroVida</div>
+      </div>
+      <div class="c7-logo">🌿 FibroVida</div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 8 — RECEITAS ═══ -->
+  <div class="card-wrap" id="wrap8">
+    <div class="card-label">Card 8 — Receitas Anti-inflamatórias</div>
+    <div class="card" id="card8">
+      <div class="c8-header">
+        <h2>🥗 Alimentação que alivia a dor</h2>
+        <p>Receitas anti-inflamatórias no app</p>
+      </div>
+      <div class="c8-grid">
+        <div class="c8-item">
+          <div class="ri-icon">🧡</div>
+          <h3>Smoothie de Cúrcuma</h3>
+          <p>Anti-inflamatório natural para começar o dia</p>
+        </div>
+        <div class="c8-item">
+          <div class="ri-icon">🐟</div>
+          <h3>Salmão com Quinoa</h3>
+          <p>Ômega-3 que reduz a inflamação</p>
+        </div>
+        <div class="c8-item">
+          <div class="ri-icon">🫘</div>
+          <h3>Sopa de Lentilha</h3>
+          <p>Proteína vegetal com gengibre</p>
+        </div>
+        <div class="c8-item">
+          <div class="ri-icon">🍓</div>
+          <h3>Chia com Morango</h3>
+          <p>Antioxidante e rico em fibras</p>
+        </div>
+      </div>
+      <div class="c8-bottom">
+        <span>🌿 10+ receitas no FibroVida</span>
+        <span style="font-size:clamp(8px,1.5vw,11px);color:rgba(255,255,255,.7)">Link na bio 👆</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /stage -->
+
+<!-- LEGENDA DOS CARDS -->
+<div style="background:#111;padding:20px 30px;border-top:1px solid #222">
+  <h2 style="font-size:15px;color:#a8d870;margin-bottom:16px">📋 Legendas prontas para copiar</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+
+    <div style="background:#1a1a1a;border-radius:10px;padding:14px;border:1px solid #333">
+      <div style="font-size:11px;font-weight:700;color:#a8d870;margin-bottom:8px">Card 1 — Capa</div>
+      <pre style="font-size:11px;color:#ccc;white-space:pre-wrap;line-height:1.6">🌿 FibroVida chegou!
+
+O app que eu queria ter quando recebi o diagnóstico de fibromialgia.
+
+✅ Diário da dor diário
+✅ Alertas de medicamentos
+✅ Relatório em PDF para o médico
+✅ Modo escuro 🌙
+
+💚 7 dias GRÁTIS. Link na bio.
+
+#fibromialgia #fibromialgiadobrasil #doracronica #fibrofog</pre>
+    </div>
+
+    <div style="background:#1a1a1a;border-radius:10px;padding:14px;border:1px solid #333">
+      <div style="font-size:11px;font-weight:700;color:#a8d870;margin-bottom:8px">Card 3 — Dor Invisível</div>
+      <pre style="font-size:11px;color:#ccc;white-space:pre-wrap;line-height:1.6">😔 "Mas você parece bem..."
+
+Quem tem fibromialgia sabe como é difícil explicar uma dor que os outros não veem.
+
+O FibroVida registra tudo: dor, sono, humor, locais de dor no corpo — e gera um relatório completo para levar ao médico.
+
+Sua dor tem histórico. Sua dor é real. 💚
+
+Link na bio para experimentar grátis.
+
+#fibromialgia #dorinvisivel #fibroguerreira</pre>
+    </div>
+
+    <div style="background:#1a1a1a;border-radius:10px;padding:14px;border:1px solid #333">
+      <div style="font-size:11px;font-weight:700;color:#a8d870;margin-bottom:8px">Card 4 — Estatísticas</div>
+      <pre style="font-size:11px;color:#ccc;white-space:pre-wrap;line-height:1.6">📊 Você sabia?
+
+🔹 10 MILHÕES de brasileiros têm fibromialgia
+🔹 90% dos pacientes são mulheres
+🔹 Leva em média 2 a 7 anos para o diagnóstico
+
+Você não está sozinha. 💚
+
+O FibroVida foi criado por quem vive essa realidade. Experimente grátis por 7 dias.
+
+Link na bio 👆
+
+#fibromialgia #10milhoesdefibro #fibromialgiadobrasil</pre>
+    </div>
+
+    <div style="background:#1a1a1a;border-radius:10px;padding:14px;border:1px solid #333">
+      <div style="font-size:11px;font-weight:700;color:#a8d870;margin-bottom:8px">Card 7 — Frase</div>
+      <pre style="font-size:11px;color:#ccc;white-space:pre-wrap;line-height:1.6">💚 "A força não está em nunca sentir dor, mas em continuar mesmo assim."
+
+Para toda fibroguerreira que acorda todos os dias e insiste em viver bem, apesar de tudo.
+
+O FibroVida está do seu lado. 🌿
+
+#fibroguerreira #vivendocomfibromialgia #doracronica #fibromialgia #forcaefé</pre>
+    </div>
+
+    <div style="background:#1a1a1a;border-radius:10px;padding:14px;border:1px solid #333">
+      <div style="font-size:11px;font-weight:700;color:#a8d870;margin-bottom:8px">Card 8 — Receitas</div>
+      <pre style="font-size:11px;color:#ccc;white-space:pre-wrap;line-height:1.6">🥗 Sabia que a alimentação pode ajudar a aliviar a dor da fibromialgia?
+
+Alimentos anti-inflamatórios como cúrcuma, gengibre, salmão e frutas vermelhas fazem diferença no dia a dia.
+
+No FibroVida tem uma biblioteca completa de receitas anti-inflamatórias 🌿
+
+Acesse grátis. Link na bio 👆
+
+#alimentacaoantinflamatoria #fibromialgia #receitassaudaveis #curcuma</pre>
+    </div>
+
+    <div style="background:#1a1a1a;border-radius:10px;padding:14px;border:1px solid #333">
+      <div style="font-size:11px;font-weight:700;color:#a8d870;margin-bottom:8px">Story — Chamada rápida</div>
+      <pre style="font-size:11px;color:#ccc;white-space:pre-wrap;line-height:1.6">👆 LINK NA BIO
+
+🌿 FibroVida
+App gratuito por 7 dias
+
+✅ Sem instalar
+✅ No celular
+✅ Em português
+
+Experimente agora!</pre>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function scrollToCard(n) {
+    const el = document.getElementById('wrap'+n);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+    document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===n-1));
+  }
+
+  // Atualiza dot ativo ao rolar
+  const wraps = Array.from({length:8},(_,i)=>document.getElementById('wrap'+(i+1)));
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const idx = wraps.indexOf(e.target);
+        document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+      }
+    });
+  },{threshold:.5});
+  wraps.forEach(w=>{ if(w) observer.observe(w); });
+</script>
+
+</body>
+</html>
