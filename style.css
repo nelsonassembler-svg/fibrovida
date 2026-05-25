@@ -1326,20 +1326,30 @@ input[type=range].fv-range::-moz-range-thumb {
   font-weight: 500;
 }
 
+/* ── PLANOS (3 colunas) ── */
 .paywall-plans {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 20px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; margin-bottom: 16px;
+}
+@media(max-width: 420px){
+  .paywall-plans { grid-template-columns: 1fr; }
 }
 .pw-plan {
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 14px 10px;
+  padding: 14px 8px 12px;
   position: relative; cursor: pointer;
-  transition: border-color .2s;
+  transition: border-color .2s, box-shadow .2s;
+  text-align: center;
 }
+.pw-plan:hover { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-pale); }
 .pw-plan-annual {
   border-color: var(--green);
   background: var(--green-pale);
+}
+.pw-plan-lifetime {
+  border-color: #a060e0;
+  background: rgba(160,96,224,.07);
 }
 .pw-plan-badge {
   position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
@@ -1348,42 +1358,35 @@ input[type=range].fv-range::-moz-range-thumb {
   padding: 2px 8px; border-radius: 20px;
   white-space: nowrap; letter-spacing: 0.5px;
 }
-.pw-plan-name { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.pw-plan-badge-gold {
+  background: linear-gradient(90deg,#a060e0,#7040b0);
+}
+.pw-plan-name { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
 .pw-plan-price {
-  font-size: 28px; font-weight: 900; color: var(--green-dark); line-height: 1;
+  font-size: 24px; font-weight: 900; color: var(--green-dark); line-height: 1;
 }
-.pw-cents { font-size: 16px; font-weight: 700; }
-.pw-plan-period { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-.pw-plan-save { font-size: 11px; color: var(--green); font-weight: 700; margin-top: 4px; }
+.pw-plan-lifetime .pw-plan-price { color: #7040b0; }
+.pw-cents { font-size: 14px; font-weight: 700; }
+.pw-plan-period { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+.pw-plan-save { font-size: 10px; color: var(--green); font-weight: 700; margin-top: 3px; }
 
-.paywall-pix {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 16px;
-  margin-bottom: 14px;
-  text-align: left;
+/* ── BOTÃO STRIPE ── */
+.stripe-plan-btn {
+  display: block; width: 100%;
+  background: linear-gradient(135deg, var(--green-dark), var(--green));
+  color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 12px; font-size: 14px; font-weight: 700;
+  cursor: pointer; margin-top: 4px; margin-bottom: 12px;
+  transition: opacity .15s, transform .1s;
 }
-.pix-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-.pix-key-box {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 6px; background: var(--card);
-  border: 1px solid var(--border); border-radius: var(--radius-xs);
-  padding: 8px 10px; margin-bottom: 10px;
-}
-.pix-label { font-size: 11px; color: var(--text-muted); }
-.pix-key { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; }
-.pix-copy-btn {
-  background: var(--green-pale); border: 1px solid var(--green);
-  color: var(--green-dark); font-size: 11px; font-weight: 600;
-  padding: 4px 10px; border-radius: 20px; cursor: pointer;
-  transition: background .15s;
-}
-.pix-copy-btn:hover { background: var(--green); color: #fff; }
+.stripe-plan-btn:hover { opacity: .9; transform: translateY(-1px); }
+.stripe-plan-btn:active { transform: translateY(0); }
 
-.pix-instrucoes {
-  font-size: 12px; color: var(--text2); line-height: 1.8;
-  margin-bottom: 12px;
+/* ── SEGURANÇA STRIPE ── */
+.stripe-secure {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; color: var(--text-muted);
+  padding: 10px 0 2px;
 }
 
 /* ── ADMIN: GERENCIAR USUÁRIOS ── */

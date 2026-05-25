@@ -559,10 +559,11 @@
     <h2 class="section-title">Planos acessíveis para quem precisa</h2>
     <p class="section-desc">Comece grátis por 7 dias. Depois, escolha o plano que cabe no seu bolso.</p>
   </div>
-  <div class="planos-grid">
+  <div class="planos-grid" style="grid-template-columns:repeat(3,1fr)">
+    <!-- MENSAL -->
     <div class="plano-card reveal">
       <div class="plano-nome">Plano Mensal</div>
-      <div class="plano-preco"><sup>R$</sup>14<sub>,90</sub></div>
+      <div class="plano-preco"><sup>R$</sup>9<sub>,90</sub></div>
       <div class="plano-periodo">por mês</div>
       <ul class="plano-itens">
         <li>Todos os módulos</li>
@@ -573,12 +574,13 @@
       </ul>
       <a href="https://nelsonassembler-svg.github.io/fibrovida/" class="btn-plano">Começar agora</a>
     </div>
+    <!-- ANUAL -->
     <div class="plano-card destaque reveal">
       <div class="plano-badge">⭐ Melhor oferta</div>
       <div class="plano-nome">Plano Anual</div>
-      <div class="plano-preco"><sup>R$</sup>99<sub>,90</sub></div>
-      <div class="plano-periodo">por ano · R$ 8,32/mês</div>
-      <div class="plano-economia">Economia de 44% 🎉</div>
+      <div class="plano-preco"><sup>R$</sup>79<sub>,90</sub></div>
+      <div class="plano-periodo">por ano · R$ 6,65/mês</div>
+      <div class="plano-economia">Economia de 33% 🎉</div>
       <ul class="plano-itens">
         <li>Todos os módulos</li>
         <li>Alertas sonoros</li>
@@ -588,9 +590,25 @@
       </ul>
       <a href="https://nelsonassembler-svg.github.io/fibrovida/" class="btn-plano">Quero este plano</a>
     </div>
+    <!-- VITALÍCIO -->
+    <div class="plano-card reveal" style="border-color:#a060e0;background:rgba(160,96,224,.06)">
+      <div class="plano-badge" style="background:linear-gradient(90deg,#a060e0,#7040b0)">✨ ÚNICO</div>
+      <div class="plano-nome" style="color:#7040b0">Plano Vitalício</div>
+      <div class="plano-preco" style="color:#7040b0"><sup>R$</sup>149<sub>,90</sub></div>
+      <div class="plano-periodo">pagamento único · para sempre</div>
+      <div class="plano-economia" style="color:#a060e0">Melhor investimento 💜</div>
+      <ul class="plano-itens">
+        <li>Todos os módulos</li>
+        <li>Alertas sonoros</li>
+        <li>Relatórios em PDF</li>
+        <li>Documentos na nuvem</li>
+        <li>Suporte vitalício</li>
+      </ul>
+      <a href="https://nelsonassembler-svg.github.io/fibrovida/" class="btn-plano" style="border-color:#a060e0;color:#7040b0">Garantir acesso vitalício</a>
+    </div>
   </div>
   <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:20px">
-    Pagamento via PIX · Ativação em até 2 horas · Cancele quando quiser
+    🔒 Pagamento 100% seguro via <strong>Stripe</strong> · Cartão de crédito · Cancele quando quiser
   </p>
 </section>
 
@@ -601,19 +619,13 @@
   <h2 class="reveal">Seu bem-estar merece<br>cuidado e tecnologia 💚</h2>
   <p class="reveal">Comece hoje mesmo. 7 dias grátis, sem compromisso. Acesse pelo celular ou computador — sem instalar nada.</p>
 
-  <div class="cta-pix reveal">
-    <span style="font-size:24px">💳</span>
-    <div>
-      <div class="cta-pix-label">Pagamento via PIX — Chave telefone</div>
-      <div class="cta-pix-key">85998251219</div>
-    </div>
-  </div>
-
-  <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center" class="reveal">
+  <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:12px" class="reveal">
     <a href="https://nelsonassembler-svg.github.io/fibrovida/" class="btn-hero-primary">🌿 Criar conta grátis</a>
-    <a href="https://wa.me/5585998251219?text=Olá!%20Quero%20saber%20mais%20sobre%20o%20FibroVida"
-       class="btn-hero-outline" target="_blank">📲 Falar no WhatsApp</a>
+    <a href="https://nelsonassembler-svg.github.io/fibrovida/" class="btn-hero-outline">💳 Ver planos</a>
   </div>
+  <p class="reveal" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:8px">
+    🔒 Pagamento seguro via Stripe · Cartão de crédito
+  </p>
 </section>
 
 <!-- ═══════════════════════════════════════════

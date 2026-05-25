@@ -8,6 +8,20 @@ const SUPABASE_URL      = "https://pmupshodvtddlzrohuvi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdXBzaG9kdnRkZGx6cm9odXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzUxNjYsImV4cCI6MjA5NDMxMTE2Nn0.2v3oQrkw9Lz5ZqjM2tftVBEZrbE7Gu86sUe9uzFrNm4";
 const ADMIN_EMAIL       = "nelsontcmagalhaes@gmail.com";
 
+// ── STRIPE ────────────────────────────────────────────────────
+const STRIPE_KEY = "pk_test_51SiipcR5OonznFInkshRhswDLE2OMsIh4ddCsnGT5vkePnZviBbpBjbO60QUnNT7dmrIShDJ0Od19ft5RmysHLQc0001g9GqQR";
+
+// ⚠️ ATENÇÃO: Crie os Payment Links no Stripe Dashboard e substitua as URLs abaixo.
+// Stripe Dashboard → Payment Links → Create Link
+// Em cada link, defina a Success URL como:
+//   https://nelsonassembler-svg.github.io/fibrovida/?payment=success&plan=TIPO&session={CHECKOUT_SESSION_ID}
+// onde TIPO = monthly | annual | lifetime
+const STRIPE_LINKS = {
+  monthly:  "https://buy.stripe.com/test_SUBSTITUA_LINK_MENSAL",
+  annual:   "https://buy.stripe.com/test_SUBSTITUA_LINK_ANUAL",
+  lifetime: "https://buy.stripe.com/test_SUBSTITUA_LINK_VITALICIO",
+};
+
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -521,21 +535,34 @@ async function afterLogin(user) {
 }
 
 function showPaywall() {
-  // Monta link WhatsApp com e-mail do usuário
-  const email = encodeURIComponent(currentUser?.email || "");
-  const waLink = document.getElementById("whatsapp-link");
-  if (waLink) {
-    waLink.href = `https://wa.me/5585998251219?text=Ol%C3%A1!%20Realizei%20o%20pagamento%20do%20FibroVida%20Premium.%20E-mail%3A%20${email}`;
-  }
   showScreen("paywall-screen");
 }
 
-function copiarPix() {
-  navigator.clipboard.writeText("85998251219").then(() => {
-    toast("Chave PIX copiada! ✅", "s");
-  }).catch(() => {
-    toast("Chave PIX: 85998251219", "i");
-  });
+// ── STRIPE: REDIRECIONAR PARA CHECKOUT ───────────────────────
+function assinarPlano(tipo) {
+  const link = STRIPE_LINKS[tipo];
+  if (!link || link.includes("SUBSTITUA")) {
+    toast("Link de pagamento ainda não configurado. Contate o suporte.", "e");
+    return;
+  }
+  const email  = encodeURIComponent(currentUser?.email || "");
+  const userId = currentUser?.id || "";
+  const url    = `${link}?prefilled_email=${email}&client_reference_id=${userId}`;
+  window.open(url, "_blank");
+}
+
+// ── STRIPE: VERIFICAR RETORNO APÓS PAGAMENTO ─────────────────
+function checkPaymentSuccess() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("payment") === "success") {
+    const plano = params.get("plan") || "premium";
+    // Limpa os parâmetros da URL sem recarregar
+    window.history.replaceState({}, document.title, window.location.pathname);
+    // Aguarda o login e mostra mensagem
+    setTimeout(() => {
+      toast("✅ Pagamento confirmado! Fazendo login para ativar sua conta...", "s");
+    }, 800);
+  }
 }
 
 // ── PERFIL ───────────────────────────────────────────────────
@@ -2537,6 +2564,7 @@ async function gerarPDFFibroVida() {
 
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
+  checkPaymentSuccess(); // verifica retorno do Stripe
   applyDarkMode();
   showLoad();
   try {
