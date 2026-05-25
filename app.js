@@ -8,18 +8,12 @@ const SUPABASE_URL      = "https://pmupshodvtddlzrohuvi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdXBzaG9kdnRkZGx6cm9odXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzUxNjYsImV4cCI6MjA5NDMxMTE2Nn0.2v3oQrkw9Lz5ZqjM2tftVBEZrbE7Gu86sUe9uzFrNm4";
 const ADMIN_EMAIL       = "nelsontcmagalhaes@gmail.com";
 
-// ── STRIPE ────────────────────────────────────────────────────
-const STRIPE_KEY = "pk_test_51SiipcR5OonznFInkshRhswDLE2OMsIh4ddCsnGT5vkePnZviBbpBjbO60QUnNT7dmrIShDJ0Od19ft5RmysHLQc0001g9GqQR";
-
-// ⚠️ ATENÇÃO: Crie os Payment Links no Stripe Dashboard e substitua as URLs abaixo.
-// Stripe Dashboard → Payment Links → Create Link
-// Em cada link, defina a Success URL como:
-//   https://nelsonassembler-svg.github.io/fibrovida/?payment=success&plan=TIPO&session={CHECKOUT_SESSION_ID}
-// onde TIPO = monthly | annual | lifetime
+// ── STRIPE (LIVE) ─────────────────────────────────────────────
+// Produtos e Payment Links criados via API em 25/mai/2026
 const STRIPE_LINKS = {
-  monthly:  "https://buy.stripe.com/test_SUBSTITUA_LINK_MENSAL",
-  annual:   "https://buy.stripe.com/test_SUBSTITUA_LINK_ANUAL",
-  lifetime: "https://buy.stripe.com/test_SUBSTITUA_LINK_VITALICIO",
+  monthly:  "https://buy.stripe.com/3cI6oJ73t5joeDgdtXgIo00",  // R$9,90/mês
+  annual:   "https://buy.stripe.com/5kQ3cxbjJ3bg8eS75zgIo01",  // R$79,90/ano
+  lifetime: "https://buy.stripe.com/8x28wRcnN4fkdzc9dHgIo02",  // R$149,90 único
 };
 
 const { createClient } = supabase;
