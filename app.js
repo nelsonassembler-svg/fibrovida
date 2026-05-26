@@ -3233,6 +3233,79 @@ function renderAchievements(unlocked, streak, maxStreak) {
   }
 }
 
+// ── PWA — SERVICE WORKER ──────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/fibrovida/sw.js')
+      .then(reg => {
+        console.log('✅ SW registrado:', reg.scope);
+        // Verifica atualizações a cada visita
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW?.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              toast('🔄 Nova versão do FibroVida disponível! Recarregue para atualizar.', 'i');
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('SW não registrado:', err));
+  });
+}
+
+// ── PWA — INSTALL PROMPT ──────────────────────────────────────
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  if (!localStorage.getItem('pwa-dismissed')) {
+    showInstallBanner();
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  toast('🎉 FibroVida instalado! Acesse pela tela inicial.', 's');
+  _deferredInstallPrompt = null;
+  hideInstallBanner();
+});
+
+function showInstallBanner() {
+  const banner = document.getElementById('install-banner');
+  if (banner) {
+    banner.style.display = 'flex';
+    document.body.classList.add('has-install-banner');
+  }
+}
+
+function hideInstallBanner() {
+  const banner = document.getElementById('install-banner');
+  if (banner) {
+    banner.style.display = 'none';
+    document.body.classList.remove('has-install-banner');
+  }
+}
+
+function installPWA() {
+  if (!_deferredInstallPrompt) {
+    toast('Use o menu do navegador → "Adicionar à tela inicial"', 'i');
+    return;
+  }
+  _deferredInstallPrompt.prompt();
+  _deferredInstallPrompt.userChoice.then(result => {
+    if (result.outcome === 'accepted') {
+      toast('✅ Instalando FibroVida...', 's');
+    }
+    _deferredInstallPrompt = null;
+    hideInstallBanner();
+  });
+}
+
+function dismissInstallBanner() {
+  localStorage.setItem('pwa-dismissed', '1');
+  hideInstallBanner();
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
   checkPaymentSuccess(); // verifica retorno do Stripe
@@ -3246,6 +3319,12 @@ async function init() {
     const { data: { session } } = await db.auth.getSession();
     if (session?.user) {
       await afterLogin(session.user);
+      // Suporte a atalhos do manifest (?tab=saude, ?tab=assistente…)
+      const tabParam = new URLSearchParams(window.location.search).get("tab");
+      if (tabParam) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => showTab(tabParam), 300);
+      }
     } else {
       showScreen("auth-screen");
     }

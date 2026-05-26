@@ -1,0 +1,42 @@
+{
+  "name": "FibroVida — Diário da Dor",
+  "short_name": "FibroVida",
+  "description": "Gestão completa da fibromialgia: dor, sono, medicamentos, crises e bem-estar.",
+  "start_url": "/fibrovida/",
+  "scope": "/fibrovida/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#7A9B57",
+  "background_color": "#f8f8f4",
+  "lang": "pt-BR",
+  "categories": ["health", "medical", "lifestyle"],
+  "icons": [
+    {
+      "src": "icons/fibrovida.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/fibrovida.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Registrar Saúde",
+      "short_name": "Saúde",
+      "url": "/fibrovida/?tab=saude",
+      "icons": [{ "src": "icons/fibrovida.svg", "sizes": "any" }]
+    },
+    {
+      "name": "FibroAssistente",
+      "short_name": "Assistente",
+      "url": "/fibrovida/?tab=assistente",
+      "icons": [{ "src": "icons/fibrovida.svg", "sizes": "any" }]
+    }
+  ]
+}
