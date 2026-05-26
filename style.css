@@ -126,7 +126,7 @@ body { transition: background .25s, color .25s; }
       rgba(0,0,0,0.08) 0%,
       rgba(0,0,0,0.40) 45%,
       rgba(0,0,0,0.80) 100%),
-    url('https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&q=80');
+    url('./Images/login-bg.jpg.png');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
