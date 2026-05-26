@@ -415,6 +415,14 @@
         </button>
       </div>
 
+      <!-- Conquistas mini (home) -->
+      <div id="achiev-mini-section" style="display:none;text-align:center;margin:12px 0 4px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">🏆 Suas conquistas</div>
+        <div class="achiev-mini" id="achiev-mini-row" style="justify-content:center"></div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px;font-size:11px"
+          onclick="showTab('config')">Ver todas ›</button>
+      </div>
+
       <div class="page-footer">
         <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com<br>
@@ -553,6 +561,14 @@
       </div>
       <div id="health-list">
         <div class="empty-state"><div class="ei">📅</div><p>Seus registros aparecerão aqui</p></div>
+      </div>
+
+      <!-- Histórico de Crises -->
+      <div class="section-title-bar mt-12">
+        <span>🚨 Histórico de Crises</span>
+      </div>
+      <div id="crisis-list">
+        <div class="empty-state"><div class="ei">🚨</div><p>Nenhuma crise registrada</p></div>
       </div>
 
       <!-- ── SINAIS VITAIS ────────────────────────────────── -->
@@ -1008,6 +1024,33 @@
         </div>
       </div>
 
+      <!-- Fadiga & Energia médias -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">😩</span> Fadiga &amp; Energia (Média)</div>
+          <div class="report-grid" style="margin:8px 0 0">
+            <div class="report-cell">
+              <div class="rc-icon">😩</div>
+              <div class="rc-val" id="rep-fatigue">—</div>
+              <div class="rc-lbl">Fadiga Média</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">⚡</div>
+              <div class="rc-val" id="rep-energy">—</div>
+              <div class="rc-lbl">Energia Média</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gatilhos mais frequentes -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">⚡</span> Gatilhos Mais Frequentes</div>
+          <div id="rep-triggers"><p class="text-muted" style="font-size:12px">Sem dados registrados</p></div>
+        </div>
+      </div>
+
       <!-- Gráfico SVG — evolução da dor -->
       <div class="card">
         <div class="card-body">
@@ -1057,6 +1100,52 @@
 
 
     <!-- ============================================================
+         FIBROASSISTENTE
+         ============================================================ -->
+    <div class="tab-pane" id="tab-assistente">
+
+      <div class="page-title-bar">
+        <div class="pt-icon" style="background:linear-gradient(135deg,var(--purple),#7b2d8b)">🤖</div>
+        <div class="pt-body">
+          <div class="pt-title">FibroAssistente</div>
+          <div class="pt-sub">Análise inteligente dos seus dados</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding-bottom:14px">
+          <p style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:10px">
+            💡 Analiso seus registros e ofereço insights personalizados. Toque em um tema ou escreva sua pergunta!
+          </p>
+          <div class="chat-quick-btns">
+            <button onclick="askAssistente('resumo')">📊 Semana</button>
+            <button onclick="askAssistente('gatilhos')">⚡ Gatilhos</button>
+            <button onclick="askAssistente('sono')">💤 Sono</button>
+            <button onclick="askAssistente('dor')">❤️ Dor</button>
+            <button onclick="askAssistente('crise')">🚨 Crises</button>
+            <button onclick="askAssistente('motivacao')">💜 Motivação</button>
+          </div>
+          <div class="chat-wrap" id="chat-wrap">
+            <div class="chat-msg chat-msg-bot">
+              <div class="chat-avatar">🤖</div>
+              <div class="chat-bubble">Olá! Sou o FibroAssistente 💚<br>Escolha um tema acima ou me escreva uma pergunta sobre sua saúde.</div>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input"
+              placeholder="Pergunte algo sobre sua saúde..."
+              onkeydown="if(event.key==='Enter')sendChatMsg()" />
+            <button class="chat-send-btn" onclick="sendChatMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer" style="margin-top:8px">
+        <p>O FibroAssistente analisa seus próprios dados.<br>Não substitui orientação médica profissional.</p>
+      </div>
+    </div>
+
+    <!-- ============================================================
          CONFIGURAÇÕES
          ============================================================ -->
     <div class="tab-pane" id="tab-config">
@@ -1103,6 +1192,14 @@
             </div>
             <span class="sr-arrow">›</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Conquistas -->
+      <div class="settings-group">
+        <div class="settings-group-title">🏆 Minhas Conquistas</div>
+        <div class="achievements-grid" id="achievements-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:8px;font-size:12px;color:var(--text-muted)">Carregando...</div>
         </div>
       </div>
 
@@ -1193,6 +1290,15 @@
     </button>
     <button class="nav-item" data-tab="receitas" onclick="showTab('receitas',this)">
       <span class="ni">🥗</span><span class="nl">Receitas</span>
+    </button>
+    <button class="nav-item" data-tab="assistente" onclick="showTab('assistente',this)">
+      <span class="ni">🤖</span><span class="nl">Assistente</span>
+    </button>
+    <button class="nav-item" data-tab="relatorios" onclick="showTab('relatorios',this)">
+      <span class="ni">📊</span><span class="nl">Relatórios</span>
+    </button>
+    <button class="nav-item" data-tab="config" onclick="showTab('config',this)">
+      <span class="ni">⚙️</span><span class="nl">Config</span>
     </button>
   </nav>
 

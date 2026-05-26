@@ -150,7 +150,8 @@ function showTab(name, navEl) {
     medicamentos:  loadMedications,
     receitas:      loadRecipes,
     relatorios:    loadReports,
-    config:        renderConfig,
+    assistente:    loadAssistente,
+    config:        () => { renderConfig(); loadAchievements(); },
   };
   loaders[name]?.();
 }
@@ -718,6 +719,9 @@ async function loadHome() {
     }
   } catch(e) { console.error(e); }
 
+  // Conquistas (mini no home)
+  loadAchievements();
+
   // Evangelho do dia
   loadEvangelhoDodia();
 }
@@ -945,9 +949,10 @@ async function loadHealthRecords() {
     if (error) throw error;
     renderHealthList(data || []);
   } catch(e) { console.error(e); } finally { hideLoad(); }
-  // Carrega vitais e documentos em paralelo
+  // Carrega vitais, documentos e histórico de crises em paralelo
   loadVitals();
   loadDocs();
+  loadCrisisHistory();
 }
 
 function renderHealthList(list) {
@@ -1992,6 +1997,14 @@ async function loadReports() {
       document.getElementById("rep-pain").textContent  = avgPain;
       document.getElementById("rep-sleep").textContent = avgSleep;
 
+      // Fadiga e Energia médias
+      const hdFat = hd.filter(r=>r.fatigue_level!=null);
+      const hdEng = hd.filter(r=>r.energy_level!=null);
+      const fatEl = document.getElementById("rep-fatigue");
+      const engEl = document.getElementById("rep-energy");
+      if (fatEl) fatEl.textContent = hdFat.length ? (hdFat.reduce((s,r)=>s+r.fatigue_level,0)/hdFat.length).toFixed(1) : "—";
+      if (engEl) engEl.textContent = hdEng.length ? (hdEng.reduce((s,r)=>s+r.energy_level,0)/hdEng.length).toFixed(1) : "—";
+
       const moods = hd.filter(r=>r.mood).map(r=>r.mood);
       if (moods.length) {
         const freq = {};
@@ -2012,7 +2025,22 @@ async function loadReports() {
             `<span class="local-chip">${l} <span class="chip-count">(${contagem[l]}x)</span></span>`
           ).join("");
         } else {
-          locaisEl.innerHTML = `<p class="text-muted" style="font-size:12px">Nenhum local registrado ainda. Use a seção "Locais de Dor" ao salvar sua saúde.</p>`;
+          locaisEl.innerHTML = `<p class="text-muted" style="font-size:12px">Nenhum local registrado ainda.</p>`;
+        }
+      }
+
+      // Gatilhos mais frequentes
+      const trigCount = {};
+      hd.forEach(r => { (r.triggers||[]).forEach(t => { trigCount[t]=(trigCount[t]||0)+1; }); });
+      const trigEl = document.getElementById("rep-triggers");
+      if (trigEl) {
+        const topTrigs = Object.keys(trigCount).sort((a,b)=>trigCount[b]-trigCount[a]).slice(0,8);
+        if (topTrigs.length) {
+          trigEl.innerHTML = topTrigs.map(t =>
+            `<span class="trig-report-chip">${triggerLabels[t]||t}<span class="trig-count">${trigCount[t]}x</span></span>`
+          ).join("");
+        } else {
+          trigEl.innerHTML = `<p class="text-muted" style="font-size:12px">Sem gatilhos registrados no período.</p>`;
         }
       }
 
@@ -2024,8 +2052,12 @@ async function loadReports() {
     } else {
       document.getElementById("rep-pain").textContent  = "—";
       document.getElementById("rep-sleep").textContent = "—";
+      const fatEl = document.getElementById("rep-fatigue"); if(fatEl) fatEl.textContent = "—";
+      const engEl = document.getElementById("rep-energy");  if(engEl) engEl.textContent = "—";
       const locaisEl = document.getElementById("rep-locais");
       if (locaisEl) locaisEl.innerHTML = `<p class="text-muted" style="font-size:12px">Sem registros no período selecionado.</p>`;
+      const trigEl = document.getElementById("rep-triggers");
+      if (trigEl) trigEl.innerHTML = `<p class="text-muted" style="font-size:12px">Sem dados no período.</p>`;
       const svgEl = document.getElementById("rep-svg-chart");
       if (svgEl) svgEl.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px 0">Sem dados para exibir</p>`;
     }
@@ -2532,17 +2564,32 @@ async function gerarPDFFibroVida() {
     const topLocais = Object.keys(contagem).sort((a,b)=>contagem[b]-contagem[a]).slice(0,3)
       .map(l=>`${l} (${contagem[l]}x)`).join(", ") || "—";
 
+    // Fadiga, Energia e Gatilhos
+    const hdFat = records.filter(r=>r.fatigue_level!=null);
+    const hdEng = records.filter(r=>r.energy_level!=null);
+    const avgFatigue = hdFat.length ? (hdFat.reduce((s,r)=>s+r.fatigue_level,0)/hdFat.length).toFixed(1) : null;
+    const avgEnergy  = hdEng.length ? (hdEng.reduce((s,r)=>s+r.energy_level,0)/hdEng.length).toFixed(1) : null;
+    const trigCnt = {};
+    records.forEach(r => { (r.triggers||[]).forEach(t => { trigCnt[t]=(trigCnt[t]||0)+1; }); });
+    const topTrigs = Object.keys(trigCnt).sort((a,b)=>trigCnt[b]-trigCnt[a]).slice(0,3)
+      .map(t=>`${triggerLabels[t]||t} (${trigCnt[t]}x)`).join(", ") || "—";
+
+    const resumoH = 52 + (avgFatigue || avgEnergy ? 12 : 0) + (topTrigs !== "—" ? 6 : 0);
     doc.setFillColor(237, 242, 229);
-    doc.rect(marg, y, 180, 40, "F");
+    doc.rect(marg, y, 180, resumoH, "F");
     doc.setFont("helvetica", "bold"); doc.setFontSize(11);
     doc.setTextColor(90, 122, 48);
     doc.text("Resumo do período", marg + 4, y + 7);
     doc.setTextColor(42, 42, 26); doc.setFont("helvetica","normal"); doc.setFontSize(9);
-    doc.text(`Total de registros: ${records.length}`, marg + 4, y + 14);
-    doc.text(`Dor média: ${avgPain}/10  (mín: ${minPain}, máx: ${maxPain})`, marg + 4, y + 20);
-    doc.text(`Sono médio: ${avgSleep}/5`, marg + 4, y + 26);
-    doc.text(`Locais mais frequentes: ${topLocais}`, marg + 4, y + 32);
-    y += 48;
+    let ry = y + 14;
+    doc.text(`Total de registros: ${records.length}`, marg + 4, ry); ry += 6;
+    doc.text(`Dor média: ${avgPain}/10  (mín: ${minPain}, máx: ${maxPain})`, marg + 4, ry); ry += 6;
+    doc.text(`Sono médio: ${avgSleep}/5`, marg + 4, ry); ry += 6;
+    if (avgFatigue) { doc.text(`Fadiga média: ${avgFatigue}/10`, marg + 4, ry); ry += 6; }
+    if (avgEnergy)  { doc.text(`Energia média: ${avgEnergy}/10`, marg + 4, ry); ry += 6; }
+    doc.text(`Locais mais frequentes: ${topLocais}`, marg + 4, ry); ry += 6;
+    if (topTrigs !== "—") { doc.text(`Principais gatilhos: ${topTrigs}`, marg + 4, ry); ry += 6; }
+    y = ry + 6;
 
     // ── Tabela ──
     doc.setFont("helvetica","bold"); doc.setFontSize(11);
@@ -2600,6 +2647,67 @@ async function gerarPDFFibroVida() {
     console.error(e);
     toast("Erro ao gerar PDF.", "e");
   } finally { hideLoad(); }
+}
+
+// ── HISTÓRICO DE CRISES ───────────────────────────────────────
+async function loadCrisisHistory() {
+  const el = document.getElementById("crisis-list");
+  if (!el) return;
+  try {
+    const { data } = await db.from("crisis_logs")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .order("logged_at", { ascending: false })
+      .limit(30);
+    renderCrisisList(data || []);
+  } catch(e) { console.error(e); }
+}
+
+const triggerLabels = {
+  estresse:"Estresse", frio:"Frio/Clima", esforco:"Esforço físico",
+  insonia:"Insônia", alimentacao:"Alimentação", ansiedade:"Ansiedade",
+  hormonal:"Hormonal", barulho:"Barulho", tempo:"Tempo/Umidade",
+  luz:"Luz forte"
+};
+
+function renderCrisisList(list) {
+  const el = document.getElementById("crisis-list");
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="ei">🚨</div><p>Nenhuma crise registrada.<br>Use o botão 🚨 na tela inicial quando sentir uma crise.</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => {
+    const dt   = new Date(c.logged_at);
+    const dtFmt = dt.toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
+    const trigs = (c.triggers || []).map(t => `<span class="chc-trig">${triggerLabels[t]||t}</span>`).join("");
+    return `
+    <div class="crisis-hist-card">
+      <div class="chc-icon">🚨</div>
+      <div class="chc-body">
+        <div class="chc-date">📅 ${dtFmt}</div>
+        <div class="chc-levels">
+          ${c.pain_level    != null ? `<span class="chc-level">❤️ Dor ${c.pain_level}/10</span>` : ""}
+          ${c.fatigue_level != null ? `<span class="chc-level">😩 Fadiga ${c.fatigue_level}/10</span>` : ""}
+          ${c.anxiety_level != null ? `<span class="chc-level">😰 Ansiedade ${c.anxiety_level}/10</span>` : ""}
+        </div>
+        ${trigs ? `<div class="chc-triggers">${trigs}</div>` : ""}
+        ${c.notes ? `<div class="chc-notes">"${esc(c.notes)}"</div>` : ""}
+      </div>
+      <button class="chc-del" onclick="deleteCrisis('${c.id}')" title="Excluir">🗑️</button>
+    </div>`;
+  }).join("");
+}
+
+async function deleteCrisis(id) {
+  if (!confirm("Excluir este registro de crise?")) return;
+  showLoad();
+  try {
+    const { error } = await db.from("crisis_logs").delete().eq("id", id);
+    if (error) throw error;
+    toast("Registro excluído.", "i");
+    loadCrisisHistory();
+  } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
 }
 
 // ── ÍNDICE FIBROVIDA — BARRAS ─────────────────────────────────
@@ -2758,6 +2866,371 @@ async function saveCrise() {
     console.error("Erro ao salvar crise:", e);
     toast("Erro ao registrar crise.", "e");
   } finally { hideLoad(); }
+}
+
+// ── FIBROASSISTENTE ───────────────────────────────────────────
+
+let _assistCtx = null; // cache dos dados do usuário para o chat
+
+async function loadAssistente() {
+  // Abre o assistente e carrega o contexto de dados silenciosamente
+  try {
+    const now   = new Date();
+    const d30   = new Date(now); d30.setDate(d30.getDate() - 30);
+    const start = d30.toISOString().split("T")[0];
+
+    const [{ data: hd }, { data: crises }, { data: meds }] = await Promise.all([
+      db.from("health_records").select("*")
+        .eq("user_id", currentUser.id)
+        .gte("record_date", start)
+        .order("record_date", { ascending: true }),
+      db.from("crisis_logs").select("*")
+        .eq("user_id", currentUser.id)
+        .order("logged_at", { ascending: false })
+        .limit(20),
+      db.from("medications").select("name,schedule_time")
+        .eq("user_id", currentUser.id),
+    ]);
+    _assistCtx = { hd: hd||[], crises: crises||[], meds: meds||[] };
+  } catch(e) {
+    console.warn("Assistente: erro ao carregar contexto", e);
+    _assistCtx = { hd: [], crises: [], meds: [] };
+  }
+}
+
+function chatAppend(role, html) {
+  const wrap = document.getElementById("chat-wrap");
+  if (!wrap) return;
+  const div = document.createElement("div");
+  div.className = `chat-msg chat-msg-${role === "user" ? "user" : "bot"}`;
+  const avatar = role === "user"
+    ? `<div class="chat-avatar">👤</div>`
+    : `<div class="chat-avatar">🤖</div>`;
+  div.innerHTML = `${avatar}<div class="chat-bubble">${html}</div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+function chatTyping() {
+  const wrap = document.getElementById("chat-wrap");
+  if (!wrap) return null;
+  const div = document.createElement("div");
+  div.className = "chat-msg chat-msg-bot";
+  div.id = "typing-indicator";
+  div.innerHTML = `<div class="chat-avatar">🤖</div><div class="chat-bubble"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+async function askAssistente(intent) {
+  const labels = {
+    resumo:"📊 Resumo da semana", gatilhos:"⚡ Meus gatilhos",
+    sono:"💤 Dicas de sono", dor:"❤️ Análise de dor",
+    crise:"🚨 Minhas crises", motivacao:"💜 Me motive!"
+  };
+  chatAppend("user", labels[intent] || intent);
+  await respondAssistente(intent);
+}
+
+async function sendChatMsg() {
+  const input = document.getElementById("chat-input");
+  if (!input) return;
+  const txt = input.value.trim();
+  if (!txt) return;
+  input.value = "";
+  chatAppend("user", esc(txt));
+
+  const lower = txt.toLowerCase();
+  let intent = "geral";
+  if (/semana|resumo|como estou/.test(lower))                    intent = "resumo";
+  else if (/gatilho|causa|piora|provoca/.test(lower))            intent = "gatilhos";
+  else if (/sono|dormir|inso/.test(lower))                       intent = "sono";
+  else if (/dor|dói|ador|doendo/.test(lower))                    intent = "dor";
+  else if (/crise|ataque|pior/.test(lower))                      intent = "crise";
+  else if (/motiv|ânimo|animo|força|coragem/.test(lower))        intent = "motivacao";
+  else if (/medicam|remédio|comprimido|dose/.test(lower))        intent = "medicamento";
+  else if (/energia|disposi|cansad|fadiga/.test(lower))          intent = "energia";
+
+  await respondAssistente(intent, txt);
+}
+
+async function respondAssistente(intent, rawQuestion) {
+  if (!_assistCtx) await loadAssistente();
+
+  const typing = chatTyping();
+  await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+  typing?.remove();
+
+  const { hd, crises, meds } = _assistCtx;
+  const name = currentProfile?.name?.split(" ")[0] || "você";
+
+  // helpers
+  const avg = (arr, key) => {
+    const vals = arr.map(r => r[key]).filter(v => v != null);
+    return vals.length ? (vals.reduce((s,v)=>s+v,0)/vals.length) : null;
+  };
+  const last7 = hd.filter(r => {
+    const d = new Date(r.record_date+"T00:00:00");
+    return (Date.now() - d.getTime()) <= 7 * 86400000;
+  });
+  const topTriggers = (records) => {
+    const cnt = {};
+    records.forEach(r => (r.triggers||[]).forEach(t => { cnt[t]=(cnt[t]||0)+1; }));
+    return Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,3)
+      .map(t => `<strong>${triggerLabels[t]||t}</strong> (${cnt[t]}x)`).join(", ");
+  };
+
+  let msg = "";
+
+  switch(intent) {
+    case "resumo": {
+      if (!last7.length) {
+        msg = `${name}, não encontrei registros de saúde nesta semana. 📅<br><br>Que tal começar registrando como você está na aba <strong>Saúde</strong>? Quanto mais você registrar, mais insights eu consigo oferecer! 💚`;
+      } else {
+        const ap = avg(last7,"pain_level"), as_ = avg(last7,"sleep_quality");
+        const ae = avg(last7,"energy_level"), af = avg(last7,"fatigue_level");
+        const colorPain = ap <= 3 ? "🟢" : ap <= 6 ? "🟡" : "🔴";
+        const colorSleep = as_ >= 4 ? "🟢" : as_ >= 2 ? "🟡" : "🔴";
+        msg = `📊 <strong>Resumo da semana</strong> (${last7.length} registros, ${name})<br><br>` +
+          `${colorPain} Dor média: <strong>${ap.toFixed(1)}/10</strong><br>` +
+          `${colorSleep} Sono médio: <strong>${(as_||0).toFixed(1)}/5</strong><br>` +
+          (ae != null ? `⚡ Energia média: <strong>${ae.toFixed(1)}/10</strong><br>` : "") +
+          (af != null ? `😩 Fadiga média: <strong>${af.toFixed(1)}/10</strong><br>` : "") +
+          `<br>`;
+        if (ap > 6) msg += `⚠️ Sua dor está elevada. Considere reportar ao seu médico.<br>`;
+        if ((as_||0) < 3) msg += `⚠️ Seu sono está comprometido — isso agrava a fibromialgia.<br>`;
+        if (ap <= 4 && (as_||0) >= 3) msg += `✨ Esta foi uma boa semana! Continue assim! 💪`;
+      }
+      break;
+    }
+    case "gatilhos": {
+      const allT = topTriggers([...hd, ...crises]);
+      if (!allT) {
+        msg = `${name}, ainda não tenho dados de gatilhos suficientes. 📝<br><br>Ao registrar sua saúde, marque os <strong>gatilhos</strong> que perceber (estresse, frio, esforço...) — assim consigo identificar padrões! 💚`;
+      } else {
+        msg = `⚡ <strong>Seus principais gatilhos</strong> (últimos 30 dias):<br><br>${allT}<br><br>`;
+        const hasFrio = hd.some(r=>(r.triggers||[]).includes("frio"));
+        const hasEstresse = hd.some(r=>(r.triggers||[]).includes("estresse"));
+        if (hasFrio) msg += `🌡️ <strong>Frio/Clima:</strong> Evite exposição ao frio súbito. Use camadas de roupa e aqueça antes de sair.<br>`;
+        if (hasEstresse) msg += `🧘 <strong>Estresse:</strong> Técnicas de respiração e meditação podem ajudar muito. Tente 5 minutos de respiração profunda ao acordar.<br>`;
+        msg += `<br>💡 Identificar gatilhos é o primeiro passo para reduzi-los!`;
+      }
+      break;
+    }
+    case "sono": {
+      const avgSleep = avg(last7, "sleep_quality");
+      const trend = last7.slice(-3).map(r=>r.sleep_quality).filter(v=>v!=null);
+      const melhorando = trend.length >= 2 && trend[trend.length-1] > trend[0];
+      msg = `💤 <strong>Análise do seu sono</strong><br><br>`;
+      if (avgSleep != null) {
+        const emoji = avgSleep >= 4 ? "😊" : avgSleep >= 2.5 ? "😐" : "😰";
+        msg += `${emoji} Média desta semana: <strong>${avgSleep.toFixed(1)}/5</strong>${melhorando ? " ↗️ melhorando!" : ""}<br><br>`;
+      }
+      msg += `<strong>Dicas para dormir melhor com fibromialgia:</strong><br>` +
+        `🌡️ Mantenha o quarto fresco (18-20°C)<br>` +
+        `📵 Evite telas 1h antes de dormir<br>` +
+        `🛁 Banho morno relaxa os músculos<br>` +
+        `⏰ Horário fixo para acordar e dormir<br>` +
+        `🧘 Alongamentos suaves antes de deitar<br>` +
+        `☕ Evite cafeína após as 14h`;
+      break;
+    }
+    case "dor": {
+      const ap = avg(last7, "pain_level");
+      const max7 = last7.length ? Math.max(...last7.map(r=>r.pain_level||0)) : null;
+      const min7 = last7.length ? Math.min(...last7.map(r=>r.pain_level||0)) : null;
+      msg = `❤️ <strong>Análise da sua dor</strong><br><br>`;
+      if (ap != null) {
+        msg += `Média (7d): <strong>${ap.toFixed(1)}/10</strong>`;
+        if (max7 != null) msg += ` · Máx: ${max7} · Mín: ${min7}<br><br>`;
+      } else {
+        msg += `Sem registros esta semana.<br><br>`;
+      }
+      msg += `<strong>Estratégias para manejo da dor:</strong><br>` +
+        `🌡️ Calor local (bolsa térmica) em pontos doloridos<br>` +
+        `🚶 Caminhadas leves reduzem a sensibilização central<br>` +
+        `💊 Manter horários dos medicamentos regularmente<br>` +
+        `🛌 Descanso de qualidade é tratamento, não preguiça<br>` +
+        `🩺 Dor acima de 7/10 por mais de 3 dias: consulte seu médico`;
+      break;
+    }
+    case "crise": {
+      if (!crises.length) {
+        msg = `🚨 Que bom — não encontrei nenhuma crise registrada! Que sua jornada continue assim. 💚<br><br>Lembre-se: se sentir uma crise, use o botão 🚨 na tela Início para registrá-la e identificar padrões.`;
+      } else {
+        const last30crises = crises.filter(c => (Date.now()-new Date(c.logged_at).getTime()) <= 30*86400000);
+        const cT = topTriggers(crises);
+        const avgCP = avg(crises, "pain_level");
+        msg = `🚨 <strong>Suas crises (últimos 30 dias)</strong><br><br>` +
+          `Total: <strong>${last30crises.length} crise${last30crises.length>1?"s":""}</strong><br>` +
+          (avgCP ? `Dor média nas crises: <strong>${avgCP.toFixed(1)}/10</strong><br>` : "") +
+          (cT ? `Gatilhos nas crises: ${cT}<br>` : "") +
+          `<br>💡 Compartilhe este histórico com seu médico — é informação valiosa para o tratamento.`;
+      }
+      break;
+    }
+    case "medicamento": {
+      if (!meds.length) {
+        msg = `💊 Não encontrei medicamentos cadastrados.<br><br>Na aba <strong>Medicamentos</strong> você pode cadastrar seus remédios, horários e controlar o estoque. Isso ajuda a não perder doses!`;
+      } else {
+        const comHorario = meds.filter(m => m.schedule_time);
+        msg = `💊 Você tem <strong>${meds.length} medicamento${meds.length>1?"s":""}</strong> cadastrado${meds.length>1?"s":""}.<br>` +
+          (comHorario.length ? `⏰ ${comHorario.length} com alarme configurado.<br><br>` : "<br>") +
+          `<strong>Lembretes importantes:</strong><br>` +
+          `✅ Nunca interrompa sem consultar seu médico<br>` +
+          `⏰ Tome sempre no mesmo horário<br>` +
+          `📦 Confira o estoque regularmente<br>` +
+          `📝 Anote efeitos adversos para reportar nas consultas`;
+      }
+      break;
+    }
+    case "energia": {
+      const ae = avg(last7, "energy_level"), af = avg(last7, "fatigue_level");
+      msg = `⚡ <strong>Energia &amp; Fadiga</strong><br><br>`;
+      if (ae != null || af != null) {
+        if (ae != null) msg += `⚡ Energia média: <strong>${ae.toFixed(1)}/10</strong><br>`;
+        if (af != null) msg += `😩 Fadiga média: <strong>${af.toFixed(1)}/10</strong><br>`;
+        msg += `<br>`;
+        if ((af||0) > 6) msg += `⚠️ Fadiga elevada detectada. Priorize o descanso!<br>`;
+      }
+      msg += `<strong>Como gerenciar a fadiga:</strong><br>` +
+        `⏱️ Pace yourself — distribua atividades ao longo do dia<br>` +
+        `💤 Micro-descansos de 5-10 min a cada hora de atividade<br>` +
+        `🥗 Alimentação anti-inflamatória dá mais energia<br>` +
+        `🚶 Exercício leve regular (mesmo 10 min por dia) ajuda<br>` +
+        `💧 Hidratação: beba água regularmente`;
+      break;
+    }
+    case "motivacao": {
+      const frases = [
+        `${name}, você já supera algo difícil todos os dias. Isso exige uma força que a maioria das pessoas não entende. 💜`,
+        `Fibromialgia não define quem você é — você é muito mais do que sua dor. 🌟`,
+        `Cada registro que você faz é um ato de amor por você mesma. Você está no caminho certo. 🌿`,
+        `Nos dias difíceis, lembre: você já superou 100% dos seus dias ruins até hoje. 💪`,
+        `Descansar não é desistir — é parte essencial do seu tratamento. Cuide-se sem culpa. 🛌`,
+        `Pequenas vitórias contam: levantar da cama, tomar água, respirar fundo. Parabéns! 🌸`,
+      ];
+      msg = frases[Math.floor(Math.random() * frases.length)];
+      break;
+    }
+    default: {
+      const total30 = hd.length;
+      msg = `${name}, analisando seus dados dos últimos 30 dias (${total30} registro${total30!==1?"s":""})...<br><br>` +
+        `Use os botões acima para insights específicos, ou me pergunte algo como:<br>` +
+        `• "Como está minha dor esta semana?"<br>` +
+        `• "Quais são meus gatilhos?"<br>` +
+        `• "Me dê dicas para dormir melhor"<br>` +
+        `• "Como está minha energia?"<br><br>` +
+        `Quanto mais você registrar, mais preciso serei! 💚`;
+    }
+  }
+
+  chatAppend("bot", msg);
+}
+
+// ── GAMIFICAÇÃO — CONQUISTAS ──────────────────────────────────
+
+const ACHIEVEMENTS = [
+  { id:"first_record",   icon:"🌱", name:"Primeiros Passos",    desc:"Salve seu 1º registro de saúde" },
+  { id:"week_records",   icon:"📅", name:"Primeira Semana",     desc:"7 registros no total" },
+  { id:"streak7",        icon:"🌿", name:"7 Dias Seguidos",     desc:"7 dias consecutivos registrados" },
+  { id:"med_added",      icon:"💊", name:"Meu Farmacêutico",    desc:"Cadastre seu 1º medicamento" },
+  { id:"gratitude",      icon:"🙏", name:"Gratidão Viva",       desc:"Salve sua 1ª entrada de gratidão" },
+  { id:"crisis_log",     icon:"🦁", name:"Guerreira da Dor",    desc:"Registre sua 1ª crise" },
+  { id:"records_10",     icon:"🚀", name:"10 Registros",        desc:"10 registros de saúde" },
+  { id:"streak30",       icon:"🌳", name:"Mês Completo",        desc:"30 dias consecutivos" },
+  { id:"records_50",     icon:"💪", name:"Resistência",         desc:"50 registros de saúde" },
+  { id:"full_profile",   icon:"🏥", name:"Cuidado Completo",    desc:"Usou saúde, meds e profissionais" },
+];
+
+async function loadAchievements() {
+  try {
+    const [
+      { data: hd },
+      { count: medCount },
+      { count: gratCount },
+      { count: crisisCount },
+      { count: profCount },
+    ] = await Promise.all([
+      db.from("health_records").select("record_date").eq("user_id", currentUser.id).order("record_date"),
+      db.from("medications").select("*", {count:"exact",head:true}).eq("user_id",currentUser.id),
+      db.from("gratitude_entries").select("*",{count:"exact",head:true}).eq("user_id",currentUser.id),
+      db.from("crisis_logs").select("*",{count:"exact",head:true}).eq("user_id",currentUser.id),
+      db.from("professionals").select("*",{count:"exact",head:true}).eq("user_id",currentUser.id),
+    ]);
+
+    const records = hd || [];
+    const totalRec = records.length;
+
+    // Streak calculation
+    const dates = [...new Set(records.map(r=>r.record_date))].sort();
+    let streak = 0, maxStreak = 0, cur = 0;
+    for (let i = 0; i < dates.length; i++) {
+      if (i === 0) { cur = 1; }
+      else {
+        const prev = new Date(dates[i-1]+"T00:00:00");
+        const curr = new Date(dates[i]+"T00:00:00");
+        const diff = Math.round((curr - prev) / 86400000);
+        cur = diff === 1 ? cur + 1 : 1;
+      }
+      if (cur > maxStreak) maxStreak = cur;
+    }
+    // Streak atual (termina hoje ou ontem)
+    if (dates.length) {
+      const lastDate = new Date(dates[dates.length-1]+"T00:00:00");
+      const diffDays = Math.round((new Date() - lastDate) / 86400000);
+      streak = diffDays <= 1 ? cur : 0;
+    }
+
+    const unlocked = new Set();
+    if (totalRec >= 1)  unlocked.add("first_record");
+    if (totalRec >= 7)  unlocked.add("week_records");
+    if (totalRec >= 10) unlocked.add("records_10");
+    if (totalRec >= 50) unlocked.add("records_50");
+    if (maxStreak >= 7)  unlocked.add("streak7");
+    if (maxStreak >= 30) unlocked.add("streak30");
+    if ((medCount||0) >= 1)    unlocked.add("med_added");
+    if ((gratCount||0) >= 1)   unlocked.add("gratitude");
+    if ((crisisCount||0) >= 1) unlocked.add("crisis_log");
+    if (totalRec >= 1 && (medCount||0) >= 1 && (profCount||0) >= 1) unlocked.add("full_profile");
+
+    renderAchievements(unlocked, streak, maxStreak);
+  } catch(e) { console.error("Achievements:", e); }
+}
+
+function renderAchievements(unlocked, streak, maxStreak) {
+  const grid = document.getElementById("achievements-grid");
+  if (!grid) return;
+
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const ok = unlocked.has(a.id);
+    return `
+    <div class="achiev-badge ${ok?"unlocked":"locked"}" title="${ok?"Conquistado!":"Ainda não desbloqueada"}">
+      <div class="ab-icon">${a.icon}</div>
+      <div class="ab-body">
+        <div class="ab-name">${a.name} ${ok?"✅":""}</div>
+        <div class="ab-desc">${a.desc}</div>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Mini no home
+  const miniSection = document.getElementById("achiev-mini-section");
+  const miniRow = document.getElementById("achiev-mini-row");
+  const earned = ACHIEVEMENTS.filter(a => unlocked.has(a.id));
+  if (miniSection && miniRow && earned.length) {
+    miniRow.innerHTML = earned.map(a =>
+      `<span class="achiev-mini-badge" title="${a.name}">${a.icon}</span>`
+    ).join("");
+    miniSection.style.display = "block";
+  }
+
+  // Streak toast se > 0
+  if (streak >= 3) {
+    toast(`🔥 Sequência de ${streak} dias registrando! Continue assim!`, "s");
+  }
 }
 
 // ── INIT ─────────────────────────────────────────────────────
