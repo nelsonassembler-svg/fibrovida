@@ -42,7 +42,18 @@ const motivations = [
   '"Você não está sozinho(a) nessa jornada." 🤝',
   '"A gratidão transforma o que temos em suficiente." 🙏',
   '"Um dia de cada vez. Um respiro de cada vez." 🌬️',
+  '"Seu descanso é tão importante quanto seu tratamento." 🛌',
+  '"Gentileza consigo mesma é o melhor remédio." 💜',
+  '"A fibromialgia não define quem você é. Você é muito mais." 🌟',
+  '"Você fez tudo que podia hoje. Isso é suficiente." 🌺',
+  '"Cada registro que você faz é um ato de amor por você mesma." 📊',
+  '"O progresso não é linear. Ter dias difíceis faz parte." 🌊',
+  '"Cuide da sua mente tanto quanto cuida do seu corpo." 🧘',
+  '"Você merece uma vida com qualidade e bem-estar." 🦋',
+  '"Pequenos momentos de paz também são vitórias." ☮️',
+  '"Seu corpo faz o melhor que pode. Agradeça a ele." 🙌',
 ];
+let _motivIdx = Math.floor(Math.random() * motivations.length);
 
 // ── MODO ESCURO ──────────────────────────────────────────────
 function toggleDarkMode() {
@@ -646,46 +657,57 @@ async function loadHome() {
   document.getElementById("greeting-date").textContent = new Date().toLocaleDateString("pt-BR", {
     weekday:"long", day:"2-digit", month:"long"
   });
-  document.getElementById("motivation-text").textContent =
-    motivations[Math.floor(Math.random() * motivations.length)];
+  // Frase motivacional rotativa
+  const motEl = document.getElementById("motivation-text");
+  if (motEl) motEl.textContent = motivations[_motivIdx % motivations.length];
+  if (!window._motivTimer) {
+    window._motivTimer = setInterval(() => {
+      _motivIdx = (_motivIdx + 1) % motivations.length;
+      const el = document.getElementById("motivation-text");
+      if (el) { el.style.opacity = "0"; setTimeout(() => { el.textContent = motivations[_motivIdx]; el.style.opacity = "1"; }, 400); }
+    }, 30000);
+  }
 
-  // Saúde de hoje
+  // Data no Índice FibroVida
+  const ficDate = document.getElementById("fic-date");
+  if (ficDate) ficDate.textContent = new Date().toLocaleDateString("pt-BR", { day:"2-digit", month:"short" });
+
+  // Saúde de hoje (inclui novos campos)
   try {
     const { data } = await db.from("health_records")
-      .select("pain_level,sleep_quality,mood")
+      .select("pain_level,sleep_quality,mood,fatigue_level,energy_level")
       .eq("user_id", currentUser.id).eq("record_date", todayISO())
       .order("created_at", { ascending: false }).limit(1);
+
     if (data?.[0]) {
       const r = data[0];
+      // ── Summary strip ──
       const painEl  = document.getElementById("sum-pain");
       const sleepEl = document.getElementById("sum-sleep");
-      const painU   = document.getElementById("sum-pain-unit");
-      const sleepU  = document.getElementById("sum-sleep-unit");
+      if (r.pain_level  != null) { painEl.textContent  = r.pain_level;  document.getElementById("sum-pain-unit").textContent  = "/10"; painEl.style.color  = r.pain_level  <= 3 ? "var(--success)" : r.pain_level  <= 6 ? "var(--warning)" : "var(--danger)"; }
+      if (r.sleep_quality != null) { sleepEl.textContent = r.sleep_quality; document.getElementById("sum-sleep-unit").textContent = "/5";  sleepEl.style.color = r.sleep_quality >= 4 ? "var(--success)" : r.sleep_quality >= 2 ? "var(--warning)" : "var(--danger)"; }
 
-      if (r.pain_level != null) {
-        painEl.textContent = r.pain_level;
-        painEl.style.color = r.pain_level <= 3 ? "var(--success)" : r.pain_level <= 6 ? "var(--warning)" : "var(--danger)";
-        if (painU) painU.textContent = "/10";
-      }
-      if (r.sleep_quality != null) {
-        sleepEl.textContent = r.sleep_quality;
-        sleepEl.style.color = r.sleep_quality >= 4 ? "var(--success)" : r.sleep_quality >= 2 ? "var(--warning)" : "var(--danger)";
-        if (sleepU) sleepU.textContent = "/5";
-      }
-
+      // ── Home mini ──
       document.getElementById("home-health-mini").innerHTML =
         `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
            <span style="font-size:12px;color:var(--text2)">Dor: <strong style="color:${r.pain_level<=3?'var(--success)':r.pain_level<=6?'var(--warning)':'var(--danger)'}">${r.pain_level ?? "—"}/10</strong></span>
            <span style="font-size:12px;color:var(--text2)">Sono: <strong>${r.sleep_quality ?? "—"}/5</strong></span>
+           <span style="font-size:12px;color:var(--text2)">Energia: <strong>${r.energy_level ?? "—"}/10</strong></span>
            <span style="font-size:12px;color:var(--text2)">Humor: <strong>${moodEmoji(r.mood)}</strong></span>
          </div>`;
+
+      // ── Índice FibroVida ──
+      renderFibroIndex(r);
+
+      // ── Marca humor no seletor rápido ──
+      if (r.mood) setMoodQuickActive(r.mood);
+
     } else {
       document.getElementById("home-health-mini").innerHTML =
-        `<div class="hgc-empty" style="cursor:pointer" onclick="showTab('saude')">
-           Ainda não há registro hoje. Toque para registrar como você está sentindo. 💚
-         </div>`;
+        `<div class="hgc-empty" style="cursor:pointer" onclick="showTab('saude')">Ainda não há registro hoje. Toque para registrar 💚</div>`;
+      renderFibroIndex(null);
     }
-  } catch(e) { console.error(e); }
+  } catch(e) { console.error(e); renderFibroIndex(null); }
 
   // Tarefas de hoje
   try {
@@ -798,11 +820,17 @@ function renderEvangelho(dados, el) {
 
 // Salva o formulário inline da aba Saúde
 async function saveHealthInline() {
-  const pain   = parseInt(document.getElementById("pain-slider").value);
-  const sleep  = parseInt(document.getElementById("sleep-slider").value);
-  const humor  = document.getElementById("humor-select").value;
-  const notes  = document.getElementById("health-notes").value.trim();
-  const locais = getSelectedLocais();
+  const pain    = parseInt(document.getElementById("pain-slider").value);
+  const sleep   = parseInt(document.getElementById("sleep-slider").value);
+  const humor   = document.getElementById("humor-select").value;
+  const notes   = document.getElementById("health-notes").value.trim();
+  const locais  = getSelectedLocais();
+
+  // Novos campos FibroVida 2.0
+  const fatigue = parseInt(document.getElementById("fatigue-slider")?.value) || null;
+  const energy  = parseInt(document.getElementById("energy-slider")?.value)  || null;
+  const triggers = [];
+  document.querySelectorAll(".health-trigger:checked").forEach(cb => triggers.push(cb.value));
 
   showLoad();
   try {
@@ -814,10 +842,13 @@ async function saveHealthInline() {
       mood:           humor || null,
       notes:          notes || null,
       body_locations: locais.length ? locais : null,
+      fatigue_level:  fatigue,
+      energy_level:   energy,
+      triggers:       triggers.length ? triggers : [],
     });
     if (error) throw error;
 
-    // Reset
+    // Reset sliders principais
     ["pain-slider","sleep-slider"].forEach(id => {
       const el = document.getElementById(id);
       el.value = "0";
@@ -825,6 +856,21 @@ async function saveHealthInline() {
     });
     document.getElementById("pain-val").textContent  = "0";
     document.getElementById("sleep-val").textContent = "0";
+
+    // Reset novos sliders
+    const fatEl = document.getElementById("fatigue-slider");
+    if (fatEl) { fatEl.value = "0"; fatEl.style.setProperty("--pct","0%"); }
+    const fatValEl = document.getElementById("fatigue-val");
+    if (fatValEl) fatValEl.textContent = "0";
+
+    const engEl = document.getElementById("energy-slider");
+    if (engEl) { engEl.value = "5"; engEl.style.setProperty("--pct","50%"); }
+    const engValEl = document.getElementById("energy-val");
+    if (engValEl) engValEl.textContent = "5";
+
+    // Desmarca gatilhos
+    document.querySelectorAll(".health-trigger:checked").forEach(cb => { cb.checked = false; });
+
     document.getElementById("humor-select").value = "";
     document.getElementById("health-notes").value = "";
     clearBodyLocations();
@@ -2553,6 +2599,164 @@ async function gerarPDFFibroVida() {
   } catch(e) {
     console.error(e);
     toast("Erro ao gerar PDF.", "e");
+  } finally { hideLoad(); }
+}
+
+// ── ÍNDICE FIBROVIDA — BARRAS ─────────────────────────────────
+function renderFibroIndex(data) {
+  const card    = document.getElementById("fibro-index-card");
+  const empty   = document.getElementById("fic-empty");
+  const barsWrap = document.getElementById("fic-bars-wrap");
+  const ficBtn  = card?.querySelector(".fic-btn");
+
+  if (!data) {
+    if (empty)    empty.style.display = "block";
+    if (barsWrap) barsWrap.style.display = "none";
+    return;
+  }
+
+  if (empty)    empty.style.display = "none";
+  if (barsWrap) barsWrap.style.display = "block";
+
+  const setBar = (id, valId, pct, label) => {
+    const bar = document.getElementById(id);
+    const val = document.getElementById(valId);
+    if (bar) bar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+    if (val) val.textContent = label;
+  };
+
+  // Dor: 0-10 → barra cheia = dor alta (cor vermelha pelo CSS)
+  const pain = data.pain_level != null ? data.pain_level : null;
+  setBar("fib-pain", "fib-pain-val",
+    pain != null ? (pain / 10 * 100) : 0,
+    pain != null ? `${pain}/10` : "—");
+
+  // Sono: 0-5 → barra cheia = sono ótimo (cor azul)
+  const sleep = data.sleep_quality != null ? data.sleep_quality : null;
+  setBar("fib-sleep", "fib-sleep-val",
+    sleep != null ? (sleep / 5 * 100) : 0,
+    sleep != null ? `${sleep}/5` : "—");
+
+  // Energia: 0-10 → barra cheia = muita energia (cor laranja)
+  const energy = data.energy_level != null ? data.energy_level : null;
+  setBar("fib-energy", "fib-energy-val",
+    energy != null ? (energy / 10 * 100) : 0,
+    energy != null ? `${energy}/10` : "—");
+
+  // Humor: mapeia categórico → %
+  const moodMap = { muito_bem: 100, bem: 80, neutro: 60, mal: 35, muito_mal: 15 };
+  const moodPct = data.mood ? (moodMap[data.mood] || 0) : 0;
+  setBar("fib-mood", "fib-mood-val",
+    moodPct,
+    data.mood ? moodEmoji(data.mood) : "—");
+}
+
+// ── SELETOR RÁPIDO DE HUMOR (HOME) ───────────────────────────
+async function selectMoodQuick(value) {
+  if (!currentUser) return;
+
+  // Atualiza visual imediatamente
+  setMoodQuickActive(value);
+
+  try {
+    // Verifica se já existe registro de hoje
+    const { data: existing } = await db.from("health_records")
+      .select("id, mood")
+      .eq("user_id", currentUser.id)
+      .eq("record_date", todayISO())
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existing?.[0]) {
+      // Atualiza o humor do registro existente
+      await db.from("health_records")
+        .update({ mood: value, updated_at: new Date().toISOString() })
+        .eq("id", existing[0].id);
+    } else {
+      // Cria registro mínimo só com o humor
+      await db.from("health_records").insert({
+        user_id:     currentUser.id,
+        record_date: todayISO(),
+        mood:        value,
+        pain_level:  0,
+        sleep_quality: 0,
+      });
+    }
+    toast(`Humor registrado: ${moodEmoji(value)} ${moodLabel(value)}`, "s");
+  } catch(e) {
+    console.error("Erro ao salvar humor rápido:", e);
+    toast("Não foi possível salvar o humor.", "e");
+  }
+}
+
+function setMoodQuickActive(mood) {
+  document.querySelectorAll(".mqc-btn").forEach(btn => {
+    btn.classList.remove("mqc-active");
+    if (btn.dataset.mood === mood) btn.classList.add("mqc-active");
+  });
+}
+
+// ── REGISTRO DE CRISE ─────────────────────────────────────────
+function openCriseModal() {
+  const overlay = document.getElementById("crise-modal");
+  if (!overlay) return;
+
+  // Reseta sliders para valores padrão
+  ["crise-pain","crise-fatigue","crise-anxiety"].forEach((id, i) => {
+    const defaults = [8, 7, 5];
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = defaults[i];
+      el.style.setProperty("--pct", (defaults[i] / 10 * 100) + "%");
+    }
+    const valEl = document.getElementById(id + "-val");
+    if (valEl) valEl.textContent = defaults[i];
+  });
+
+  // Desmarca todos os gatilhos
+  overlay.querySelectorAll(".crise-trigger").forEach(cb => { cb.checked = false; });
+
+  // Limpa notas
+  const notesEl = document.getElementById("crise-notes");
+  if (notesEl) notesEl.value = "";
+
+  overlay.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeCriseModal() {
+  const overlay = document.getElementById("crise-modal");
+  if (overlay) overlay.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+async function saveCrise() {
+  const pain     = parseInt(document.getElementById("crise-pain").value);
+  const fatigue  = parseInt(document.getElementById("crise-fatigue").value);
+  const anxiety  = parseInt(document.getElementById("crise-anxiety").value);
+  const notes    = document.getElementById("crise-notes").value.trim();
+
+  // Coleta gatilhos marcados
+  const triggers = [];
+  document.querySelectorAll(".crise-trigger:checked").forEach(cb => triggers.push(cb.value));
+
+  showLoad();
+  try {
+    const { error } = await db.from("crisis_logs").insert({
+      user_id:       currentUser.id,
+      logged_at:     new Date().toISOString(),
+      pain_level:    pain,
+      fatigue_level: fatigue,
+      anxiety_level: anxiety,
+      triggers:      triggers.length ? triggers : [],
+      notes:         notes || null,
+    });
+    if (error) throw error;
+    closeCriseModal();
+    toast("🚨 Crise registrada. Cuide-se! 💜", "s");
+  } catch(e) {
+    console.error("Erro ao salvar crise:", e);
+    toast("Erro ao registrar crise.", "e");
   } finally { hideLoad(); }
 }
 

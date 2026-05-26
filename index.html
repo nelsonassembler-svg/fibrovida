@@ -281,6 +281,50 @@
         </div>
       </div>
 
+      <!-- 🌡️ Índice FibroVida -->
+      <div class="fibro-index-card" id="fibro-index-card">
+        <div class="fic-header">
+          <div class="fic-title">🌡️ Índice FibroVida — Hoje</div>
+          <div class="fic-date" id="fic-date"></div>
+        </div>
+        <div id="fic-bars-wrap">
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">❤️ Dor</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-pain" id="fib-pain" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-pain-val">—</div>
+          </div>
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">💤 Sono</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-sleep" id="fib-sleep" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-sleep-val">—</div>
+          </div>
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">⚡ Energia</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-energy" id="fib-energy" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-energy-val">—</div>
+          </div>
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">😊 Humor</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-mood" id="fib-mood" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-mood-val">—</div>
+          </div>
+        </div>
+        <div class="fic-empty" id="fic-empty" style="display:none">Registre sua saúde para ver o índice de hoje 💚</div>
+        <button class="fic-btn" onclick="showTab('saude')">📝 Registrar agora</button>
+      </div>
+
+      <!-- 😊 Seletor de Humor Rápido -->
+      <div class="mood-quick-card">
+        <div class="mqc-label">Como você está agora?</div>
+        <div class="mqc-emojis">
+          <button class="mqc-btn" onclick="selectMoodQuick('muito_bem')" data-mood="muito_bem" title="Muito Bem">😊<span class="mqc-txt">Muito Bem</span></button>
+          <button class="mqc-btn" onclick="selectMoodQuick('bem')" data-mood="bem" title="Bem">🙂<span class="mqc-txt">Bem</span></button>
+          <button class="mqc-btn" onclick="selectMoodQuick('neutro')" data-mood="neutro" title="Regular">😐<span class="mqc-txt">Regular</span></button>
+          <button class="mqc-btn mqc-warn" onclick="selectMoodQuick('mal')" data-mood="mal" title="Dor Moderada">😣<span class="mqc-txt">Dor Mod.</span></button>
+          <button class="mqc-btn mqc-bad" onclick="selectMoodQuick('muito_mal')" data-mood="muito_mal" title="Crise Forte">😭<span class="mqc-txt">Crise</span></button>
+        </div>
+      </div>
+
       <!-- Frase motivacional -->
       <div class="motive-banner" id="motivation-text"></div>
 
@@ -288,6 +332,11 @@
       <div class="stock-alert-bar" id="stock-alert">
         ⚠️ Medicamento com estoque baixo: <span id="stock-alert-names"></span>
       </div>
+
+      <!-- 🚨 Botão de Crise -->
+      <button class="crisis-fab" onclick="openCriseModal()">
+        🚨 Estou em Crise — Registrar Agora
+      </button>
 
       <!-- Cards Como está + Dicas -->
       <div class="home-grid">
@@ -304,27 +353,27 @@
             <span class="hgc-icon">💡</span> Dicas do Dia
           </div>
           <ul class="dica-list" id="dica-list">
-            <li>Lembre-se de fazer pausas regulares</li>
-            <li>Hidrate-se ao longo do dia</li>
-            <li>Pratique respiração profunda quando sentir tensão</li>
-            <li>Celebre cada pequena conquista</li>
+            <li>Faça pausas regulares durante o dia</li>
+            <li>Hidrate-se: beba água a cada hora</li>
+            <li>Pratique respiração profunda ao sentir tensão</li>
+            <li>Celebre cada pequena conquista 🎉</li>
           </ul>
         </div>
       </div>
 
       <!-- Resumo -->
       <div class="summary-strip">
-        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer" title="Registrar saúde">
+        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer">
           <div class="sc-val" id="sum-pain">—</div>
           <div class="sc-lbl">Dor hoje</div>
           <div class="sc-unit" id="sum-pain-unit"></div>
         </div>
-        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer" title="Registrar saúde">
+        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer">
           <div class="sc-val" id="sum-sleep">—</div>
           <div class="sc-lbl">Sono</div>
           <div class="sc-unit" id="sum-sleep-unit"></div>
         </div>
-        <div class="summary-cell" onclick="showTab('tarefas')" style="cursor:pointer" title="Ver tarefas">
+        <div class="summary-cell" onclick="showTab('tarefas')" style="cursor:pointer">
           <div class="sc-val" id="sum-tasks">0</div>
           <div class="sc-lbl">Tarefas</div>
         </div>
@@ -434,6 +483,50 @@
               <option value="mal">😔 Mal — Triste</option>
               <option value="muito_mal">😢 Muito mal</option>
             </select>
+          </div>
+
+          <!-- Fadiga -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">⚡</span> Nível de Fadiga</div>
+            <div class="saude-section-sub">Quão cansada você está hoje?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="fatigue-slider" min="0" max="10" value="0"
+                  oninput="updateRange(this,'fatigue-val',10)" style="--pct:0%" />
+                <div class="slider-hints"><span>Sem fadiga</span><span>Exaustão total</span></div>
+              </div>
+              <div class="slider-val"><span id="fatigue-val">0</span>/10</div>
+            </div>
+          </div>
+
+          <!-- Energia -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">🔋</span> Nível de Energia</div>
+            <div class="saude-section-sub">Como está sua energia hoje?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="energy-slider" min="0" max="10" value="5"
+                  oninput="updateRange(this,'energy-val',10)" style="--pct:50%" />
+                <div class="slider-hints"><span>Sem energia</span><span>Energia plena</span></div>
+              </div>
+              <div class="slider-val"><span id="energy-val">5</span>/10</div>
+            </div>
+          </div>
+
+          <!-- Gatilhos -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">⚠️</span> Gatilhos Identificados</div>
+            <div class="saude-section-sub">O que pode ter influenciado como você está se sentindo?</div>
+            <div class="trigger-grid">
+              <label class="trig-item"><input type="checkbox" value="estresse" class="health-trigger"> Estresse</label>
+              <label class="trig-item"><input type="checkbox" value="frio" class="health-trigger"> Frio/Clima</label>
+              <label class="trig-item"><input type="checkbox" value="esforco" class="health-trigger"> Esforço físico</label>
+              <label class="trig-item"><input type="checkbox" value="insonia" class="health-trigger"> Insônia</label>
+              <label class="trig-item"><input type="checkbox" value="alimentacao" class="health-trigger"> Alimentação</label>
+              <label class="trig-item"><input type="checkbox" value="ansiedade" class="health-trigger"> Ansiedade</label>
+              <label class="trig-item"><input type="checkbox" value="hormonal" class="health-trigger"> Hormonal</label>
+              <label class="trig-item"><input type="checkbox" value="barulho" class="health-trigger"> Barulho/Luz</label>
+            </div>
           </div>
 
           <!-- Observações -->
@@ -1506,6 +1599,83 @@
       <div class="ei">👑</div>
       <p>Como administrador, você tem acesso completo a todos os módulos.<br>
       Navegue pelos menus para gerenciar os dados.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL DE CRISE
+     ================================================================ -->
+<div class="crisis-modal-overlay" id="crise-modal" style="display:none" onclick="if(event.target===this)closeCriseModal()">
+  <div class="crisis-modal-content">
+    <div class="crisis-modal-header">
+      <span>🚨 Registrar Crise</span>
+      <button onclick="closeCriseModal()">✕</button>
+    </div>
+    <div class="crisis-modal-body">
+      <p class="crisis-time">📍 Registrando em: <strong id="crise-hora"></strong></p>
+
+      <div class="saude-section">
+        <div class="saude-section-label">❤️ Nível de Dor</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="8" id="crise-pain"
+              oninput="updateRange(this,'crise-pain-val',10)" style="--pct:80%" />
+            <div class="slider-hints"><span>Sem dor</span><span>Dor intensa</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-pain-val">8</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">⚡ Fadiga</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="7" id="crise-fatigue"
+              oninput="updateRange(this,'crise-fatigue-val',10)" style="--pct:70%" />
+            <div class="slider-hints"><span>Sem fadiga</span><span>Exaustão</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-fatigue-val">7</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">😰 Ansiedade</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="5" id="crise-anxiety"
+              oninput="updateRange(this,'crise-anxiety-val',10)" style="--pct:50%" />
+            <div class="slider-hints"><span>Calma</span><span>Ansiedade intensa</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-anxiety-val">5</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">⚠️ Possíveis Gatilhos</div>
+        <div class="trigger-grid">
+          <label class="trig-item"><input type="checkbox" value="estresse" class="crise-trigger"> Estresse</label>
+          <label class="trig-item"><input type="checkbox" value="frio" class="crise-trigger"> Frio/Clima</label>
+          <label class="trig-item"><input type="checkbox" value="esforco" class="crise-trigger"> Esforço físico</label>
+          <label class="trig-item"><input type="checkbox" value="insonia" class="crise-trigger"> Insônia</label>
+          <label class="trig-item"><input type="checkbox" value="alimentacao" class="crise-trigger"> Alimentação</label>
+          <label class="trig-item"><input type="checkbox" value="ansiedade" class="crise-trigger"> Ansiedade</label>
+          <label class="trig-item"><input type="checkbox" value="tempo" class="crise-trigger"> Tempo/Umidade</label>
+          <label class="trig-item"><input type="checkbox" value="hormonal" class="crise-trigger"> Hormonal</label>
+          <label class="trig-item"><input type="checkbox" value="barulho" class="crise-trigger"> Barulho</label>
+          <label class="trig-item"><input type="checkbox" value="luz" class="crise-trigger"> Luz forte</label>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">📝 O que estava acontecendo?</div>
+        <textarea id="crise-notes" placeholder="Descreva o que você estava fazendo ou sentindo quando a crise começou..."
+          style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);min-height:72px;resize:vertical;font-family:var(--font);outline:none"></textarea>
+      </div>
+    </div>
+    <div class="crisis-modal-footer">
+      <button class="btn btn-secondary btn-sm" onclick="closeCriseModal()">Cancelar</button>
+      <button class="btn btn-danger" onclick="saveCrise()" style="flex:2">🚨 Registrar Crise</button>
     </div>
   </div>
 </div>

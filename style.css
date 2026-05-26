@@ -4,18 +4,25 @@
    ============================================================ */
 
 :root {
-  --bg:           #f0f0e4;
-  --bg2:          #e8e8d8;
+  --bg:           #f8f8f4;
+  --bg2:          #eeeee6;
   --card:         #ffffff;
   --border:       #deded0;
   --border-light: #eaeade;
 
-  --green:        #7a9a50;
+  --green:        #7A9B57;
   --green-dark:   #5a7a30;
   --green-light:  #9ab870;
   --green-pale:   #edf2e5;
   --green-ultra:  #f5f7f0;
-  --green-banner: #7a9a50;
+  --green-banner: #7A9B57;
+
+  --secondary:    #5A7E9E;
+  --secondary-bg: #eaf2f8;
+  --accent:       #C98A42;
+  --accent-bg:    #fdf3e7;
+  --purple:       #9b59b6;
+  --purple-bg:    #f5eefa;
 
   --text:         #2a2a1a;
   --text2:        #5a5a40;
@@ -56,6 +63,13 @@ body.dark {
   --green-pale:   #1e2e16;
   --green-ultra:  #1a2412;
   --green-banner: #3a5a24;
+
+  --secondary:    #6a9ab8;
+  --secondary-bg: #0e1e2e;
+  --accent:       #d9a060;
+  --accent-bg:    #2a1e0e;
+  --purple:       #b880d0;
+  --purple-bg:    #1e0e2a;
 
   --text:         #e8e8d8;
   --text2:        #b8c4a0;
@@ -1898,3 +1912,147 @@ input[type=range].fv-range::-moz-range-thumb {
   .recipe-grid     { grid-template-columns: repeat(3,1fr); }
   .modal { border-radius: var(--radius); margin-bottom: 36px; }
 }
+
+/* ============================================================
+   FIBROVIDA 2.0 — Novos Componentes
+   ============================================================ */
+
+/* ── BOTÃO DANGER ── */
+.btn-danger {
+  background: var(--danger); color: #fff; border: none;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-danger:hover { opacity: .88; }
+
+/* ── ÍNDICE FIBROVIDA ── */
+.fibro-index-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  margin-bottom: 12px; box-shadow: var(--shadow);
+}
+.fic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.fic-title { font-size: 14px; font-weight: 800; color: var(--text); }
+.fic-date  { font-size: 11px; color: var(--text-muted); }
+.fic-bar-row {
+  display: grid; grid-template-columns: 70px 1fr 36px;
+  align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.fic-bar-label { font-size: 12px; font-weight: 600; color: var(--text2); }
+.fic-bar-track {
+  height: 10px; background: var(--bg2); border-radius: 10px; overflow: hidden;
+}
+.fic-bar {
+  height: 100%; border-radius: 10px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+  min-width: 2px;
+}
+.fic-bar-pain   { background: linear-gradient(90deg,#27ae60,#e67e22,#c0392b); }
+.fic-bar-sleep  { background: var(--secondary); }
+.fic-bar-energy { background: var(--accent); }
+.fic-bar-mood   { background: var(--purple); }
+.fic-bar-val { font-size: 11px; font-weight: 700; color: var(--text2); text-align: right; }
+.fic-empty  { font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px 0 4px; }
+.fic-btn {
+  display: block; width: 100%; margin-top: 12px;
+  background: var(--green-ultra); border: 1.5px solid var(--green);
+  color: var(--green-dark); font-size: 12px; font-weight: 700;
+  padding: 8px; border-radius: var(--radius-sm); cursor: pointer;
+  transition: background .15s;
+}
+.fic-btn:hover { background: var(--green-pale); }
+
+/* ── SELETOR DE HUMOR RÁPIDO ── */
+.mood-quick-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 12px; box-shadow: var(--shadow);
+}
+.mqc-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.mqc-emojis { display: flex; gap: 6px; justify-content: space-between; }
+.mqc-btn {
+  flex: 1; background: var(--bg); border: 2px solid var(--border);
+  border-radius: 12px; padding: 8px 4px; font-size: 22px;
+  cursor: pointer; transition: all .15s; display: flex;
+  flex-direction: column; align-items: center; gap: 2px;
+}
+.mqc-btn span.mqc-txt { font-size: 9px; font-weight: 600; color: var(--text-muted); }
+.mqc-btn:hover { border-color: var(--green); transform: scale(1.08); }
+.mqc-btn.mqc-active { border-color: var(--green); background: var(--green-pale); box-shadow: 0 0 0 3px var(--green-pale); }
+.mqc-btn.mqc-active.mqc-bad { border-color: var(--danger); background: var(--danger-bg); box-shadow: 0 0 0 3px var(--danger-bg); }
+.mqc-btn.mqc-active.mqc-warn { border-color: var(--warning); background: var(--warning-bg); box-shadow: 0 0 0 3px var(--warning-bg); }
+
+/* ── FRASE MOTIVACIONAL ── */
+.motive-banner {
+  background: linear-gradient(135deg, var(--green-pale), var(--accent-bg));
+  border: 1px solid var(--border-light); border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 13px; font-style: italic; color: var(--text2);
+  margin-bottom: 12px; line-height: 1.6;
+  transition: opacity .4s;
+}
+
+/* ── BOTÃO DE CRISE ── */
+.crisis-fab {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: #fff; border: none; border-radius: var(--radius);
+  padding: 14px 20px; font-size: 15px; font-weight: 800;
+  cursor: pointer; margin-bottom: 14px;
+  box-shadow: 0 4px 14px rgba(192,57,43,.35);
+  transition: all .15s; letter-spacing: .3px;
+  animation: pulse-red 2.5s infinite;
+}
+.crisis-fab:hover { opacity: .92; transform: translateY(-1px); }
+.crisis-fab:active { transform: translateY(0); animation: none; }
+@keyframes pulse-red {
+  0%,100% { box-shadow: 0 4px 14px rgba(192,57,43,.35); }
+  50%      { box-shadow: 0 4px 22px rgba(192,57,43,.6);  }
+}
+
+/* ── MODAL DE CRISE ── */
+.crisis-modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0;
+}
+.crisis-modal-content {
+  background: var(--card); width: 100%; max-width: 480px;
+  border-radius: 20px 20px 0 0; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 -8px 40px rgba(0,0,0,.3);
+}
+.crisis-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--card); z-index: 1;
+}
+.crisis-modal-header span { font-size: 16px; font-weight: 800; color: var(--danger); }
+.crisis-modal-header button {
+  background: var(--bg2); border: none; width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer; font-size: 14px; color: var(--text2);
+}
+.crisis-modal-body { padding: 16px 20px; }
+.crisis-time { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.crisis-modal-footer {
+  display: flex; gap: 10px; padding: 14px 20px 24px;
+  border-top: 1px solid var(--border);
+}
+.crisis-modal-footer .btn { flex: 1; }
+
+/* ── GATILHOS / TRIGGERS ── */
+.trigger-grid {
+  display: grid; grid-template-columns: repeat(2,1fr);
+  gap: 6px; margin-top: 6px;
+}
+.trig-item {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  cursor: pointer; transition: all .15s;
+}
+.trig-item:hover { border-color: var(--accent); }
+.trig-item input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+.trig-item:has(input:checked) { border-color: var(--accent); background: var(--accent-bg); color: var(--text); font-weight: 700; }
