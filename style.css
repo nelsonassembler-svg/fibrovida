@@ -130,9 +130,9 @@ body { transition: background .25s, color .25s; }
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0 16px 28px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px 36px;
   min-height: 100dvh;
   min-height: 100vh;
 }
