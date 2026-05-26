@@ -116,11 +116,20 @@ body { transition: background .25s, color .25s; }
 /* ============================================================
    AUTH
    ============================================================ */
+/* ── AUTH SCREEN — background image + glass card ── */
 #auth-screen {
-  background: var(--bg);
-  align-items: center;
+  background:
+    linear-gradient(to bottom,
+      rgba(0,0,0,0.08) 0%,
+      rgba(0,0,0,0.38) 45%,
+      rgba(0,0,0,0.78) 100%),
+    url('https://images.unsplash.com/photo-1566732834664-71a7ad7073d0?w=900&q=80')
+      center/cover no-repeat,
+    linear-gradient(135deg, #3d6020, #7A9B57); /* fallback se a foto não carregar */
+  align-items: flex-end;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 0 16px 28px;
+  min-height: 100dvh;
   min-height: 100vh;
 }
 
@@ -129,37 +138,75 @@ body { transition: background .25s, color .25s; }
   max-width: 420px;
 }
 
+/* Logo — branco sobre a foto */
 .auth-logo {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 14px;
 }
 
 .auth-logo-icon {
-  width: 72px; height: 72px;
-  background: var(--green);
+  width: 68px; height: 68px;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(255,255,255,0.38);
   border-radius: 50%;
-  margin: 0 auto 14px;
+  margin: 0 auto 12px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 32px;
-  box-shadow: 0 4px 16px rgba(122,154,80,0.28);
+  font-size: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
 }
 
 .auth-logo h1 {
-  font-size: 26px; font-weight: 800;
-  color: var(--green-dark); letter-spacing: -0.3px;
+  font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
 
-.auth-logo p { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.auth-logo p {
+  font-size: 13px; color: rgba(255,255,255,0.88);
+  margin-top: 3px; text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
 
+/* Frase inspiracional sobre a imagem */
+.auth-quote-strip {
+  text-align: center;
+  margin-bottom: 18px;
+  padding: 0 4px;
+}
+
+.auth-chip {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+  padding: 4px 12px; border-radius: 20px;
+  margin-bottom: 8px; display: inline-block;
+}
+
+.auth-quote-text {
+  font-size: 17px; font-weight: 700; line-height: 1.4;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Card — glass morphism */
 .auth-card {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 28px 24px;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 26px 24px 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.32), 0 1px 0 rgba(255,255,255,0.6) inset;
+  border: 1px solid rgba(255,255,255,0.65);
 }
 
-.auth-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+.auth-card h2 { font-size: 17px; font-weight: 700; margin-bottom: 18px; color: var(--text); }
 
 .auth-panel { display: none; }
 .auth-panel.active { display: block; }
