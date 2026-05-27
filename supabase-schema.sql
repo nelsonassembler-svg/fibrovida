@@ -293,3 +293,37 @@ CREATE TRIGGER update_recipes_updated_at BEFORE UPDATE ON recipes FOR EACH ROW E
 -- ============================================================
 -- Nota: Ajuste a política de receitas se quiser receitas globais compartilhadas
 -- Por padrão cada usuário cria suas próprias receitas
+
+-- ============================================================
+-- MIGRAÇÃO v2 — Execute no Supabase SQL Editor
+-- ============================================================
+
+-- 1. Profissional que prescreveu o medicamento
+ALTER TABLE medications ADD COLUMN IF NOT EXISTS professional_id UUID REFERENCES professionals(id) ON DELETE SET NULL;
+
+-- 2. Notas de sessão de terapia
+CREATE TABLE IF NOT EXISTS therapy_notes (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  session_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  professional_id UUID REFERENCES professionals(id) ON DELETE SET NULL,
+  discussed TEXT,
+  bring_next TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE therapy_notes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "therapy_notes_own" ON therapy_notes FOR ALL USING (auth.uid() = user_id);
+CREATE TRIGGER update_therapy_notes_updated_at BEFORE UPDATE ON therapy_notes FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 3. Bloco de notas pessoal (fibromialgia)
+CREATE TABLE IF NOT EXISTS user_notes (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  content TEXT DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+ALTER TABLE user_notes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "user_notes_own" ON user_notes FOR ALL USING (auth.uid() = user_id);
+CREATE TRIGGER update_user_notes_updated_at BEFORE UPDATE ON user_notes FOR EACH ROW EXECUTE FUNCTION update_updated_at();

@@ -17,7 +17,7 @@
   <meta name="application-name" content="FibroVida" />
   <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
 
-  <link rel="stylesheet" href="style.css?v=7" />
+  <link rel="stylesheet" href="style.css?v=8" />
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
@@ -793,6 +793,29 @@
         </div>
       </div>
 
+      <!-- ── Notas de Sessão ── -->
+      <div class="section-label-bar">
+        <span>📋 Notas de Sessão</span>
+        <button class="btn btn-sm btn-primary" onclick="openTherapyNoteModal()">+ Nova nota</button>
+      </div>
+      <div id="therapy-notes-list"></div>
+
+      <!-- ── Bloco de Notas ── -->
+      <div class="section-label-bar" style="margin-top:16px">
+        <span>📝 Bloco de Notas</span>
+        <span id="notepad-status" style="font-size:11px;color:var(--text-muted)"></span>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+            Anote dúvidas, sintomas, lembretes e tudo relacionado à fibromialgia. Salva automaticamente. 💾
+          </p>
+          <textarea id="notepad-content" class="notepad-textarea"
+            placeholder="O que preciso falar com meu médico...&#10;Sintomas que percebi esta semana...&#10;Dúvidas sobre medicamentos..."
+            oninput="onNotepadChange()"></textarea>
+        </div>
+      </div>
+
       <div class="page-footer">
         <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
@@ -1500,6 +1523,36 @@
   </div>
 </div>
 
+<!-- Modal: Nota de Sessão -->
+<div class="modal-overlay" id="modal-therapy-note">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mtn-title">📋 Nova Nota de Sessão</h3>
+      <button class="modal-close" onclick="closeModal('modal-therapy-note')">✕</button>
+    </div>
+    <input type="hidden" id="tn-id" />
+    <div class="fg"><label>📅 Data da sessão</label><input type="date" id="tn-date" /></div>
+    <div class="fg">
+      <label>👨‍⚕️ Profissional</label>
+      <select id="tn-professional" class="humor-select">
+        <option value="">— Selecione o profissional —</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>💬 O que foi discutido na sessão</label>
+      <textarea id="tn-discussed" placeholder="Resumo do que foi conversado..." style="min-height:90px"></textarea>
+    </div>
+    <div class="fg">
+      <label>📌 O que devo falar / fazer na próxima</label>
+      <textarea id="tn-bring-next" placeholder="Lembretes, perguntas, tarefas para a próxima sessão..." style="min-height:90px"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-therapy-note')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTherapyNote()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Medicamento -->
 <div class="modal-overlay" id="modal-med">
   <div class="modal">
@@ -1517,6 +1570,12 @@
       <div style="flex:1"><label>Alerta abaixo de</label><input type="number" id="med-alert" value="5" min="1" /></div>
     </div>
     <div class="fg"><label>Observações</label><textarea id="med-notes" placeholder="Efeitos colaterais, notas..."></textarea></div>
+    <div class="fg">
+      <label>👨‍⚕️ Prescrito por</label>
+      <select id="med-professional" class="humor-select">
+        <option value="">— Sem prescrição vinculada —</option>
+      </select>
+    </div>
 
     <!-- Receita médica -->
     <div class="fg">

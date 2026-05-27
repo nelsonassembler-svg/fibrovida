@@ -1138,6 +1138,144 @@ async function loadTreatments() {
     if (error) throw error;
     renderTreatments(data || []);
   } catch(e) { console.error(e); } finally { hideLoad(); }
+  loadTherapyNotes();
+  loadNotepad();
+}
+
+// ── NOTAS DE SESSÃO DE TERAPIA ────────────────────────────────
+async function openTherapyNoteModal(n = null) {
+  document.getElementById("mtn-title").textContent = n ? "✏️ Editar Nota" : "📋 Nova Nota de Sessão";
+  document.getElementById("tn-id").value        = n?.id || "";
+  document.getElementById("tn-date").value      = n?.session_date || todayISO();
+  document.getElementById("tn-discussed").value = n?.discussed || "";
+  document.getElementById("tn-bring-next").value= n?.bring_next || "";
+
+  // Carrega profissionais
+  const sel = document.getElementById("tn-professional");
+  sel.innerHTML = '<option value="">— Selecione o profissional —</option>';
+  try {
+    const { data: profs } = await db.from("professionals")
+      .select("id,name,specialty").eq("user_id", currentUser.id).order("name");
+    (profs || []).forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.name + (p.specialty ? ` (${p.specialty})` : "");
+      if (n?.professional_id === p.id) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  } catch(e) { /* ignora */ }
+  openModal("modal-therapy-note");
+}
+
+async function saveTherapyNote() {
+  const id   = document.getElementById("tn-id").value;
+  const date = document.getElementById("tn-date").value;
+  if (!date) { toast("Selecione a data da sessão.", "e"); return; }
+  const payload = {
+    user_id:        currentUser.id,
+    session_date:   date,
+    professional_id: document.getElementById("tn-professional").value || null,
+    discussed:      document.getElementById("tn-discussed").value.trim() || null,
+    bring_next:     document.getElementById("tn-bring-next").value.trim() || null,
+    updated_at:     new Date().toISOString()
+  };
+  showLoad();
+  try {
+    if (id) {
+      const { error } = await db.from("therapy_notes").update(payload).eq("id", id);
+      if (error) throw error;
+      toast("Nota atualizada! ✅", "s");
+    } else {
+      const { error } = await db.from("therapy_notes").insert(payload);
+      if (error) throw error;
+      toast("Nota salva! 📋", "s");
+    }
+    closeModal("modal-therapy-note");
+    loadTherapyNotes();
+  } catch(e) { toast("Erro ao salvar nota.", "e"); console.error(e); } finally { hideLoad(); }
+}
+
+async function loadTherapyNotes() {
+  try {
+    const { data } = await db.from("therapy_notes")
+      .select("*, professionals(name,specialty)")
+      .eq("user_id", currentUser.id)
+      .order("session_date", { ascending: false });
+    renderTherapyNotes(data || []);
+  } catch(e) { console.error(e); }
+}
+
+function renderTherapyNotes(list) {
+  const el = document.getElementById("therapy-notes-list");
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = `<div class="card"><div class="card-body">
+      <div class="empty-state" style="padding:6px 0">
+        <div class="ei">📋</div>
+        <p>Nenhuma nota de sessão ainda.<br>Registre o que foi discutido e o que precisa falar!</p>
+      </div></div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(n => {
+    const prof = n.professionals ? `<span class="tn-badge">👨‍⚕️ ${esc(n.professionals.name)}</span>` : "";
+    const dateStr = n.session_date ? new Date(n.session_date + "T12:00:00").toLocaleDateString("pt-BR") : "";
+    return `<div class="tn-card">
+      <div class="tn-card-header">
+        <div>
+          <span class="tn-date">📅 ${dateStr}</span>
+          ${prof}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="ia-btn edit" onclick='openTherapyNoteModal(${JSON.stringify(n).replace(/'/g,"&#39;")})'>✏️</button>
+          <button class="ia-btn del"  onclick="deleteTherapyNote('${n.id}')">🗑️</button>
+        </div>
+      </div>
+      ${n.discussed ? `<div class="tn-section"><div class="tn-label">💬 O que foi discutido</div><div class="tn-text">${esc(n.discussed)}</div></div>` : ""}
+      ${n.bring_next ? `<div class="tn-section"><div class="tn-label">📌 O que devo falar/fazer</div><div class="tn-text tn-text-highlight">${esc(n.bring_next)}</div></div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+async function deleteTherapyNote(id) {
+  if (!confirm("Excluir esta nota de sessão?")) return;
+  showLoad();
+  try {
+    const { error } = await db.from("therapy_notes").delete().eq("id", id);
+    if (error) throw error;
+    toast("Nota excluída.", "i");
+    loadTherapyNotes();
+  } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
+}
+
+// ── BLOCO DE NOTAS ────────────────────────────────────────────
+let _notepadTimer = null;
+
+async function loadNotepad() {
+  try {
+    const { data } = await db.from("user_notes")
+      .select("content").eq("user_id", currentUser.id).single();
+    const ta = document.getElementById("notepad-content");
+    if (ta) ta.value = data?.content || "";
+  } catch(e) { /* tabela pode não existir ainda */ }
+}
+
+function onNotepadChange() {
+  const status = document.getElementById("notepad-status");
+  if (status) status.textContent = "digitando...";
+  clearTimeout(_notepadTimer);
+  _notepadTimer = setTimeout(saveNotepad, 1800);
+}
+
+async function saveNotepad() {
+  const content = document.getElementById("notepad-content")?.value || "";
+  const status  = document.getElementById("notepad-status");
+  try {
+    await db.from("user_notes").upsert(
+      { user_id: currentUser.id, content, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
+    if (status) { status.textContent = "✅ Salvo"; setTimeout(() => { if(status) status.textContent = ""; }, 2000); }
+  } catch(e) { if (status) status.textContent = "⚠️ Erro ao salvar"; }
 }
 
 function renderTreatments(list) {
@@ -1368,7 +1506,7 @@ function removeMedReceita() {
   document.getElementById("med-file-area").style.display = "block";
 }
 
-function openMedModal(m = null) {
+async function openMedModal(m = null) {
   document.getElementById("mm-title").textContent = m ? "✏️ Editar Medicamento" : "💊 Novo Medicamento";
   document.getElementById("med-id").value          = m?.id || "";
   document.getElementById("med-name").value        = m?.name || "";
@@ -1381,6 +1519,23 @@ function openMedModal(m = null) {
   document.getElementById("med-receita-url").value = m?.receita_url || "";
   document.getElementById("med-file-input").value  = "";
   document.getElementById("med-file-name").style.display  = "none";
+
+  // Carrega profissionais no dropdown
+  const profSel = document.getElementById("med-professional");
+  if (profSel) {
+    profSel.innerHTML = '<option value="">— Sem prescrição vinculada —</option>';
+    try {
+      const { data: profs } = await db.from("professionals")
+        .select("id,name,specialty").eq("user_id", currentUser.id).order("name");
+      (profs || []).forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name + (p.specialty ? ` (${p.specialty})` : "");
+        if (m?.professional_id === p.id) opt.selected = true;
+        profSel.appendChild(opt);
+      });
+    } catch(e) { /* ignora */ }
+  }
 
   const atualDiv  = document.getElementById("med-receita-atual");
   const atualLink = document.getElementById("med-receita-link");
@@ -1427,6 +1582,7 @@ async function saveMed() {
       stock:           parseInt(document.getElementById("med-stock").value) || 0,
       low_stock_alert: parseInt(document.getElementById("med-alert").value) || 5,
       notes:           document.getElementById("med-notes").value.trim() || null,
+      professional_id: document.getElementById("med-professional")?.value || null,
       receita_url:     receitaUrl,
       receita_name:    receitaName,
       updated_at:      new Date().toISOString()

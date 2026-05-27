@@ -2277,3 +2277,51 @@ input[type=range].fv-range::-moz-range-thumb {
 
 /* Offset para o app quando o banner está visível */
 body.has-install-banner #app { padding-top: 52px; }
+
+/* ── SECTION LABEL BAR ── */
+.section-label-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin: 18px 0 10px; padding: 0 2px;
+}
+.section-label-bar span:first-child { display: flex; align-items: center; gap: 6px; }
+
+/* ── NOTAS DE SESSÃO ── */
+.tn-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 14px 14px 10px;
+  margin-bottom: 10px; box-shadow: var(--shadow);
+}
+.tn-card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 10px; gap: 8px;
+}
+.tn-date { font-size: 12px; font-weight: 700; color: var(--text); margin-right: 8px; }
+.tn-badge {
+  font-size: 11px; background: var(--secondary-bg); color: var(--secondary);
+  border-radius: 20px; padding: 2px 9px; font-weight: 600;
+}
+.tn-section { margin-bottom: 8px; }
+.tn-label {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
+}
+.tn-text {
+  font-size: 13px; color: var(--text); line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+}
+.tn-text-highlight {
+  background: var(--accent-bg); border-left: 3px solid var(--accent);
+  padding: 6px 10px; border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+}
+
+/* ── BLOCO DE NOTAS ── */
+.notepad-textarea {
+  width: 100%; min-height: 180px; resize: vertical;
+  font-family: var(--font); font-size: 13px; line-height: 1.6;
+  background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px;
+  color: var(--text); transition: border-color .2s;
+  box-sizing: border-box;
+}
+.notepad-textarea:focus { outline: none; border-color: var(--green); background: var(--card); }
