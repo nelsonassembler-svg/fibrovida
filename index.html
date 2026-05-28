@@ -17,7 +17,7 @@
   <meta name="application-name" content="FibroVida" />
   <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
 
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
@@ -948,21 +948,22 @@
         <div class="pt-icon pt-icon-purple">💊</div>
         <div class="pt-body">
           <div class="pt-title">Medicamentos</div>
-          <div class="pt-sub">Gerencie seus medicamentos</div>
+          <div class="pt-sub">Estoque automático diário</div>
         </div>
         <button class="btn-fab" onclick="openMedModal()" title="Novo medicamento">+</button>
       </div>
 
-      <div id="medications-list">
-        <div class="card">
-          <div class="card-body">
-            <div class="empty-state" style="padding:8px 0">
-              <div class="ei">💊</div>
-              <p>Nenhum medicamento cadastrado.<br>Controle seus remédios e estoque.</p>
-            </div>
-          </div>
+      <!-- Filtro + Relatório -->
+      <div class="med-filter-row">
+        <div class="med-filter-tabs">
+          <button class="mft-btn active" id="mft-fibro" onclick="setMedFilter('fibro')">💊 Fibromialgia</button>
+          <button class="mft-btn" id="mft-extra" onclick="setMedFilter('extra')">🏠 Outros</button>
+          <button class="mft-btn" id="mft-all" onclick="setMedFilter('all')">📋 Todos</button>
         </div>
+        <button class="btn btn-sm btn-secondary" onclick="gerarRelatorioMedicamentos()" style="white-space:nowrap">📄 PDF</button>
       </div>
+
+      <div id="medications-list"></div>
 
       <div class="page-footer">
         <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
@@ -1561,16 +1562,29 @@
       <button class="modal-close" onclick="closeModal('modal-med')">✕</button>
     </div>
     <input type="hidden" id="med-id" />
+    <!-- Tipo -->
+    <div class="fg med-type-toggle">
+      <label class="toggle-label">
+        <input type="checkbox" id="med-is-extra" onchange="toggleMedType(this)" />
+        <span class="toggle-slider"></span>
+        <span id="med-type-label">💊 Medicamento para fibromialgia</span>
+      </label>
+    </div>
     <div class="fg"><label>Nome do medicamento</label><input type="text" id="med-name" placeholder="Ex: Amitriptilina..." /></div>
     <div class="fg"><label>Dosagem</label><input type="text" id="med-dosage" placeholder="Ex: 25mg" /></div>
     <div class="fg"><label>Horário</label><input type="text" id="med-time" placeholder="Ex: 22:00" /></div>
     <div class="fg"><label>Frequência</label><input type="text" id="med-freq" placeholder="Ex: 1x ao dia" /></div>
-    <div class="fg" style="display:flex;gap:10px">
+    <div class="fg" style="display:flex;gap:8px">
       <div style="flex:1"><label>Estoque (un.)</label><input type="number" id="med-stock" value="0" min="0" /></div>
       <div style="flex:1"><label>Alerta abaixo de</label><input type="number" id="med-alert" value="5" min="1" /></div>
+      <div style="flex:1"><label>Un./embalagem</label><input type="number" id="med-qty-pkg" value="0" min="0" placeholder="30" /></div>
+    </div>
+    <div class="fg" style="display:flex;gap:8px">
+      <div style="flex:1"><label>Valor por unidade (R$)</label><input type="number" id="med-unit-price" step="0.01" min="0" placeholder="0,00" /></div>
+      <div style="flex:1"><label>Un. tomadas por dia</label><input type="number" id="med-daily-units" value="0" min="0" placeholder="1" title="Para dedução automática do estoque" /></div>
     </div>
     <div class="fg"><label>Observações</label><textarea id="med-notes" placeholder="Efeitos colaterais, notas..."></textarea></div>
-    <div class="fg">
+    <div class="fg" id="fg-med-professional">
       <label>👨‍⚕️ Prescrito por</label>
       <select id="med-professional" class="humor-select">
         <option value="">— Sem prescrição vinculada —</option>

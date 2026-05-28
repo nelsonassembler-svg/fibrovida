@@ -1506,6 +1506,28 @@ function removeMedReceita() {
   document.getElementById("med-file-area").style.display = "block";
 }
 
+let _medFilter = "fibro"; // "fibro" | "extra" | "all"
+
+function setMedFilter(f) {
+  _medFilter = f;
+  ["fibro","extra","all"].forEach(id => {
+    document.getElementById("mft-" + id)?.classList.toggle("active", id === f);
+  });
+  loadMedications();
+}
+
+function toggleMedType(cb) {
+  const lbl = document.getElementById("med-type-label");
+  const profFg = document.getElementById("fg-med-professional");
+  if (cb.checked) {
+    lbl.textContent = "🏠 Outro medicamento (uso geral)";
+    if (profFg) profFg.style.display = "none";
+  } else {
+    lbl.textContent = "💊 Medicamento para fibromialgia";
+    if (profFg) profFg.style.display = "";
+  }
+}
+
 async function openMedModal(m = null) {
   document.getElementById("mm-title").textContent = m ? "✏️ Editar Medicamento" : "💊 Novo Medicamento";
   document.getElementById("med-id").value          = m?.id || "";
@@ -1516,9 +1538,15 @@ async function openMedModal(m = null) {
   document.getElementById("med-stock").value       = m?.stock ?? 0;
   document.getElementById("med-alert").value       = m?.low_stock_alert ?? 5;
   document.getElementById("med-notes").value       = m?.notes || "";
+  document.getElementById("med-unit-price").value  = m?.unit_price || "";
+  document.getElementById("med-qty-pkg").value     = m?.qty_per_package || "";
+  document.getElementById("med-daily-units").value = m?.daily_units || 0;
   document.getElementById("med-receita-url").value = m?.receita_url || "";
   document.getElementById("med-file-input").value  = "";
-  document.getElementById("med-file-name").style.display  = "none";
+  document.getElementById("med-file-name").style.display = "none";
+  const isExtraCb = document.getElementById("med-is-extra");
+  isExtraCb.checked = m?.is_extra || false;
+  toggleMedType(isExtraCb);
 
   // Carrega profissionais no dropdown
   const profSel = document.getElementById("med-professional");
@@ -1583,6 +1611,10 @@ async function saveMed() {
       low_stock_alert: parseInt(document.getElementById("med-alert").value) || 5,
       notes:           document.getElementById("med-notes").value.trim() || null,
       professional_id: document.getElementById("med-professional")?.value || null,
+      unit_price:      parseFloat(document.getElementById("med-unit-price").value) || 0,
+      qty_per_package: parseInt(document.getElementById("med-qty-pkg").value) || 0,
+      daily_units:     parseInt(document.getElementById("med-daily-units").value) || 0,
+      is_extra:        document.getElementById("med-is-extra")?.checked || false,
       receita_url:     receitaUrl,
       receita_name:    receitaName,
       updated_at:      new Date().toISOString()
@@ -1606,19 +1638,43 @@ async function saveMed() {
 async function loadMedications() {
   showLoad();
   try {
-    let q = db.from("medications").select("*").order("name",{ascending:true});
+    let q = db.from("medications")
+      .select("*, professionals(name,specialty)")
+      .order("name", {ascending: true});
     if (!isAdmin) q = q.eq("user_id", currentUser.id);
+    if (_medFilter === "fibro") q = q.eq("is_extra", false);
+    else if (_medFilter === "extra") q = q.eq("is_extra", true);
     const { data, error } = await q;
     if (error) throw error;
+    await performDailyStockDeduction(data || []);
     renderMedications(data || []);
   } catch(e) { console.error(e); } finally { hideLoad(); }
+}
+
+async function performDailyStockDeduction(meds) {
+  const today = todayISO();
+  const toDeduct = meds.filter(m =>
+    m.active !== false && m.daily_units > 0 && m.last_deduction_date !== today
+  );
+  if (!toDeduct.length) return;
+  for (const m of toDeduct) {
+    const newStock = Math.max(0, (m.stock || 0) - m.daily_units);
+    await db.from("medications")
+      .update({ stock: newStock, last_deduction_date: today, updated_at: new Date().toISOString() })
+      .eq("id", m.id);
+    m.stock = newStock;
+    m.last_deduction_date = today;
+  }
+  toast(`📦 Estoque deduzido: ${toDeduct.length} medicamento(s) atualizados`, "i");
+  checkLowStock();
 }
 
 function renderMedications(list) {
   const el = document.getElementById("medications-list");
   if (!list.length) {
+    const msg = _medFilter === "extra" ? "Nenhum medicamento de uso geral cadastrado." : "Nenhum medicamento cadastrado.";
     el.innerHTML = `<div class="card"><div class="card-body"><div class="empty-state" style="padding:8px 0">
-      <div class="ei">💊</div><p>Nenhum medicamento cadastrado.<br>Controle seus remédios e estoque.</p>
+      <div class="ei">${_medFilter === "extra" ? "🏠" : "💊"}</div><p>${msg}</p>
     </div></div></div>`;
     return;
   }
@@ -1627,9 +1683,12 @@ function renderMedications(list) {
     const empty = m.stock <= 0;
     const badgeClass = empty ? "badge-out" : low ? "badge-low" : "badge-ok";
     const badgeTxt   = empty ? "⚠️ Sem estoque" : low ? `⚠️ ${m.stock} un.` : `✅ ${m.stock} un.`;
+    const totalVal   = (m.unit_price || 0) * (m.stock || 0);
+    const profName   = m.professionals?.name;
+    const safeM      = JSON.stringify({...m, professionals: undefined}).replace(/'/g,"&#39;");
     return `
-      <div class="list-card">
-        <div style="font-size:24px">💊</div>
+      <div class="list-card ${m.is_extra ? "med-extra-card" : ""}">
+        <div style="font-size:24px">${m.is_extra ? "🏠" : "💊"}</div>
         <div class="lc-body">
           <div class="lc-name">${esc(m.name)}</div>
           <div class="lc-sub">
@@ -1637,11 +1696,18 @@ function renderMedications(list) {
             ${m.schedule_time ? " · ⏰ " + esc(m.schedule_time) : ""}
             ${m.frequency     ? " · " + esc(m.frequency) : ""}
           </div>
-          <span class="lc-badge ${badgeClass}">${badgeTxt}</span>
+          ${profName ? `<div class="lc-sub">👨‍⚕️ <em>${esc(profName)}</em></div>` : ""}
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="lc-badge ${badgeClass}">${badgeTxt}</span>
+            ${m.unit_price ? `<span class="lc-badge badge-info">R$ ${parseFloat(m.unit_price).toFixed(2)}/un</span>` : ""}
+            ${totalVal > 0 ? `<span class="lc-badge badge-info">R$ ${totalVal.toFixed(2)}</span>` : ""}
+            ${m.daily_units > 0 ? `<span class="lc-badge badge-info">📅 ${m.daily_units}/dia</span>` : ""}
+            ${m.qty_per_package > 0 ? `<span class="lc-badge badge-neutral">${m.qty_per_package} un/cx</span>` : ""}
+          </div>
           ${m.receita_url ? `<a href="${m.receita_url}" target="_blank" class="med-receita-link">📄 Ver receita</a>` : ""}
         </div>
         <div class="lc-actions">
-          <button class="ia-btn edit" onclick='openMedModal(${JSON.stringify(m).replace(/'/g,"&#39;")})'>✏️</button>
+          <button class="ia-btn edit" onclick='openMedModal(${safeM})'>✏️</button>
           <button class="ia-btn del"  onclick="deleteMed('${m.id}')">🗑️</button>
         </div>
       </div>`;
@@ -1677,6 +1743,104 @@ async function checkLowStock() {
       bar.style.display = "none";
     }
   } catch(e) { console.error(e); }
+}
+
+async function gerarRelatorioMedicamentos() {
+  if (!window.jspdf) { toast("Biblioteca PDF não carregada. Aguarde e tente novamente.", "e"); return; }
+  showLoad();
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const now = new Date();
+
+    // ── Cabeçalho ──
+    doc.setFillColor(122, 155, 87);
+    doc.rect(0, 0, 210, 30, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16); doc.setFont(undefined, "bold");
+    doc.text("FibroVida — Relatório de Medicamentos", 14, 13);
+    doc.setFontSize(9); doc.setFont(undefined, "normal");
+    doc.text(`${currentProfile?.name || ""}  ·  Gerado em: ${now.toLocaleString("pt-BR")}`, 14, 22);
+
+    // ── Busca todos os medicamentos ──
+    const { data: meds } = await db.from("medications")
+      .select("*, professionals(name)")
+      .eq("user_id", currentUser.id)
+      .order("is_extra").order("name");
+
+    const fibro = (meds || []).filter(m => !m.is_extra);
+    const extra = (meds || []).filter(m => m.is_extra);
+
+    const drawTable = (list, titulo, startY) => {
+      let y = startY;
+      // Título da seção
+      doc.setFontSize(11); doc.setFont(undefined, "bold");
+      doc.setTextColor(122, 155, 87);
+      doc.text(titulo, 14, y); y += 7;
+
+      // Header da tabela
+      const cols = [14, 54, 86, 112, 130, 150, 175];
+      const hdrs = ["Medicamento","Dosagem/Freq.","Estoque","Vlr/un","Total R$","Un/cx","Prescrito por"];
+      doc.setFillColor(237, 245, 228);
+      doc.rect(12, y - 4, 186, 7, "F");
+      doc.setFontSize(7.5); doc.setFont(undefined, "bold");
+      doc.setTextColor(60, 80, 30);
+      hdrs.forEach((h, i) => doc.text(h, cols[i], y));
+      y += 6;
+
+      let totalGeral = 0;
+      list.forEach((m, idx) => {
+        if (y > 272) { doc.addPage(); y = 20; }
+        if (idx % 2 === 0) {
+          doc.setFillColor(252, 254, 249);
+          doc.rect(12, y - 4, 186, 7, "F");
+        }
+        const totalVal = (m.unit_price || 0) * (m.stock || 0);
+        totalGeral += totalVal;
+        const low = m.stock <= (m.low_stock_alert || 5);
+        doc.setFont(undefined, "normal");
+        doc.setFontSize(7.5);
+        doc.setTextColor(low ? 180 : 40, low ? 40 : 40, 40);
+        doc.text((m.name || "").substring(0, 20), cols[0], y);
+        doc.setTextColor(40, 40, 40);
+        const freqStr = ((m.dosage || "") + " " + (m.frequency || "")).trim().substring(0, 18);
+        doc.text(freqStr, cols[1], y);
+        doc.setTextColor(low ? 180 : 40, 40, 40);
+        doc.text(`${m.stock || 0} un.`, cols[2], y);
+        doc.setTextColor(40, 40, 40);
+        doc.text(m.unit_price ? `R$ ${parseFloat(m.unit_price).toFixed(2)}` : "—", cols[3], y);
+        doc.text(totalVal > 0 ? `R$ ${totalVal.toFixed(2)}` : "—", cols[4], y);
+        doc.text(m.qty_per_package ? `${m.qty_per_package}` : "—", cols[5], y);
+        doc.text((m.professionals?.name || "—").substring(0, 18), cols[6], y);
+        y += 7;
+      });
+
+      // Total da seção
+      y += 2;
+      doc.setDrawColor(200, 220, 180);
+      doc.line(12, y, 198, y); y += 5;
+      doc.setFontSize(9); doc.setFont(undefined, "bold");
+      doc.setTextColor(90, 120, 50);
+      doc.text(`Total em estoque: R$ ${totalGeral.toFixed(2)}  ·  ${list.length} medicamento(s)`, 14, y);
+      return y + 10;
+    };
+
+    let y = 38;
+    if (fibro.length) y = drawTable(fibro, "💊 Medicamentos para Fibromialgia", y);
+    if (extra.length) drawTable(extra, "🏠 Outros Medicamentos (uso geral)", y);
+
+    // Rodapé
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8); doc.setFont(undefined, "normal");
+      doc.setTextColor(160, 160, 160);
+      doc.text(`FibroVida · Página ${i}/${pageCount}`, 14, 292);
+    }
+
+    doc.save(`fibrovida-medicamentos-${todayISO()}.pdf`);
+    toast("📄 Relatório gerado com sucesso!", "s");
+  } catch(e) { toast("Erro ao gerar relatório: " + (e.message || ""), "e"); console.error(e); } finally { hideLoad(); }
 }
 
 async function deleteMed(id) {

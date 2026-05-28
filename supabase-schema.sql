@@ -298,8 +298,13 @@ CREATE TRIGGER update_recipes_updated_at BEFORE UPDATE ON recipes FOR EACH ROW E
 -- MIGRAÇÃO v2 — Execute no Supabase SQL Editor
 -- ============================================================
 
--- 1. Profissional que prescreveu o medicamento
-ALTER TABLE medications ADD COLUMN IF NOT EXISTS professional_id UUID REFERENCES professionals(id) ON DELETE SET NULL;
+-- 1. Novos campos em medications
+ALTER TABLE medications ADD COLUMN IF NOT EXISTS professional_id    UUID REFERENCES professionals(id) ON DELETE SET NULL;
+ALTER TABLE medications ADD COLUMN IF NOT EXISTS unit_price         DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE medications ADD COLUMN IF NOT EXISTS qty_per_package    INTEGER DEFAULT 0;
+ALTER TABLE medications ADD COLUMN IF NOT EXISTS daily_units        INTEGER DEFAULT 0;
+ALTER TABLE medications ADD COLUMN IF NOT EXISTS is_extra           BOOLEAN DEFAULT FALSE;
+ALTER TABLE medications ADD COLUMN IF NOT EXISTS last_deduction_date DATE;
 
 -- 2. Notas de sessão de terapia
 CREATE TABLE IF NOT EXISTS therapy_notes (
