@@ -17,7 +17,7 @@
   <meta name="application-name" content="FibroVida" />
   <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
 
-  <link rel="stylesheet" href="style.css?v=9" />
+  <link rel="stylesheet" href="style.css?v=10" />
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
@@ -869,6 +869,121 @@
             <div class="empty-state" style="padding:8px 0">
               <p>Seus diários de gratidão aparecerão aqui</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Entenda a Fibromialgia ── -->
+      <div class="section-label-bar" style="margin-top:8px">
+        <span>📚 Entenda a Fibromialgia</span>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#1a2f6e,#2a4aaa);border:none;margin-bottom:4px">
+        <div class="card-body" style="text-align:center;padding:18px 16px">
+          <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:6px;font-weight:600;letter-spacing:.5px">CONSCIENTIZAÇÃO</div>
+          <div style="font-size:17px;font-weight:700;color:#fff;line-height:1.4">
+            Como explicar os <strong>sintomas</strong> da fibromialgia a quem <em>não tem</em>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:8px">Toque em cada sintoma para entender</div>
+        </div>
+      </div>
+
+      <!-- DOR -->
+      <div class="fibro-edu-card" onclick="toggleEdu(this)">
+        <div class="fec-header">
+          <div class="fec-icon" style="background:#fdf0ef;color:#c0392b">❤️‍🩹</div>
+          <div class="fec-title">Dor</div>
+          <div class="fec-chevron">▼</div>
+        </div>
+        <div class="fec-body">
+          <div class="fec-analogy">
+            💭 <em>Imagine que você caiu de uma escada e ficou com o corpo inteiro dolorido. Nos primeiros dias, dói ao se movimentar, ao toque e até para realizar tarefas simples, como vestir-se ou arrumar o cabelo. Agora imagine que essa dor nunca vai embora. Ela está sempre presente. É uma dor profunda, difusa, persistente e imprevisível.</em>
+          </div>
+          <div class="fec-science">
+            🔬 A dor da fibromialgia não é "exagero" nem "imaginação". Trata-se de uma alteração na forma como o sistema nervoso processa os sinais de dor, como se o botão do volume estivesse permanentemente ajustado no máximo.
+          </div>
+        </div>
+      </div>
+
+      <!-- FADIGA -->
+      <div class="fibro-edu-card" onclick="toggleEdu(this)">
+        <div class="fec-header">
+          <div class="fec-icon" style="background:#fef9f0;color:#e67e22">🔋</div>
+          <div class="fec-title">Fadiga</div>
+          <div class="fec-chevron">▼</div>
+        </div>
+        <div class="fec-body">
+          <div class="fec-analogy">
+            💭 <em>Imagine um telemóvel com 1% de bateria. Deixa-o a carregar durante a noite e, de manhã, verificas que ele continua com exatamente 1% de bateria.</em>
+          </div>
+          <div class="fec-science">
+            🔬 A fadiga da fibromialgia é assim. Não melhora com o sono ou com o descanso, pois a sua origem está na disfunção do sistema nervoso central.
+          </div>
+        </div>
+      </div>
+
+      <!-- INSÔNIA -->
+      <div class="fibro-edu-card" onclick="toggleEdu(this)">
+        <div class="fec-header">
+          <div class="fec-icon" style="background:#eaf2f8;color:#2980b9">💤</div>
+          <div class="fec-title">Insônias</div>
+          <div class="fec-chevron">▼</div>
+        </div>
+        <div class="fec-body">
+          <div class="fec-analogy">
+            💭 <em>Imagine estar exausto, com sono, deitar-se na cama e... o corpo simplesmente não colabora. Ou adormece e acorda várias vezes, ou acorda como se não tivesse dormido nada, ou nem sequer consegue adormecer.</em>
+          </div>
+          <div class="fec-science">
+            🔬 A insônia da fibromialgia, que também pode evoluir para <strong>painsomnia</strong> (insônia provocada pela dor), é assim. O sono deixa de ser reparador porque o sistema nervoso nunca entra verdadeiramente no modo descanso.
+          </div>
+        </div>
+      </div>
+
+      <!-- FIBRO FOG -->
+      <div class="fibro-edu-card" onclick="toggleEdu(this)">
+        <div class="fec-header">
+          <div class="fec-icon" style="background:#f5eefa;color:#9b59b6">🌫️</div>
+          <div class="fec-title">Fibro Fog</div>
+          <div class="fec-chevron">▼</div>
+        </div>
+        <div class="fec-body">
+          <div class="fec-analogy">
+            💭 <em>Imagine que você dormiu apenas duas horas, está sob estresse e com a mente sobrecarregada. Agora alguém pede que você faça contas, lembre nomes, organize tarefas ou acompanhe uma conversa mais complexa. As palavras parecem fugir, a memória falha e o raciocínio fica mais lento. Agora imagine viver isso todos os dias, mesmo depois de descansar.</em>
+          </div>
+          <div class="fec-science">
+            🔬 O <strong>fibro fog</strong> é como tentar pensar através de um nevoeiro. Há confusão mental, dificuldade de concentração, lapsos de memória e a sensação constante de uma mente cansada. Não é falta de inteligência nem desinteresse. É um sintoma real da fibromialgia que afeta a forma como o cérebro processa informações.
+          </div>
+        </div>
+      </div>
+
+      <!-- ALODINIA -->
+      <div class="fibro-edu-card" onclick="toggleEdu(this)">
+        <div class="fec-header">
+          <div class="fec-icon" style="background:#edf2e5;color:#5a7a30">🖐️</div>
+          <div class="fec-title">Alodinia</div>
+          <div class="fec-chevron">▼</div>
+        </div>
+        <div class="fec-body">
+          <div class="fec-analogy">
+            💭 <em>Imagine que tem uma ferida no braço. Se tocar com essa ferida na roupa ou em algum objeto, ou mesmo se alguém tocar nessa ferida, vai doer bastante, certo? Agora imagine que tem o seu corpo coberto de feridas abertas.</em>
+          </div>
+          <div class="fec-science">
+            🔬 A sensação da <strong>alodinia</strong> é muito semelhante a essa. Qualquer estímulo, como a própria roupa ou um toque suave, é interpretado pelo sistema nervoso como dor intensa.
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensagem final -->
+      <div class="card" style="background:linear-gradient(135deg,#1a2f6e,#2a4aaa);border:none;margin-bottom:16px">
+        <div class="card-body" style="text-align:center;padding:16px">
+          <div style="font-size:16px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px">
+            💜 Fibromialgia <em>não é frescura</em>.
+          </div>
+          <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.5">
+            É uma condição real, complexa e invisível para quem vê de fora.
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:10px">
+            Fonte: @jorgequintinooficial
           </div>
         </div>
       </div>

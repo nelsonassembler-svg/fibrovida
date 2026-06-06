@@ -1516,6 +1516,11 @@ function setMedFilter(f) {
   loadMedications();
 }
 
+/* ── Accordion: Entenda a Fibromialgia ── */
+function toggleEdu(card) {
+  card.classList.toggle('open');
+}
+
 function toggleMedType(cb) {
   const lbl = document.getElementById("med-type-label");
   const profFg = document.getElementById("fg-med-professional");

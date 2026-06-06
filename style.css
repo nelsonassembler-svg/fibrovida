@@ -2356,6 +2356,48 @@ body.has-install-banner #app { padding-top: 52px; }
   padding: 6px 10px; border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
 }
 
+/* ── SEÇÃO: ENTENDA A FIBROMIALGIA ── */
+.fibro-edu-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow .2s;
+}
+.fibro-edu-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.fec-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px;
+}
+.fec-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.fec-title {
+  flex: 1; font-size: 15px; font-weight: 700; color: var(--text);
+}
+.fec-chevron {
+  font-size: 11px; color: var(--text2);
+  transition: transform .25s;
+}
+.fibro-edu-card.open .fec-chevron { transform: rotate(180deg); }
+.fec-body {
+  display: none; padding: 0 14px 14px;
+}
+.fibro-edu-card.open .fec-body { display: block; }
+.fec-analogy {
+  font-size: 13px; color: var(--text); line-height: 1.65;
+  background: var(--bg2); border-left: 3px solid var(--border);
+  padding: 10px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 10px; font-style: italic;
+}
+.fec-science {
+  font-size: 13px; color: var(--text2); line-height: 1.6;
+}
+
 /* ── BLOCO DE NOTAS ── */
 .notepad-textarea {
   width: 100%; min-height: 180px; resize: vertical;
