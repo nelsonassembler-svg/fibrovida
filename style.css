@@ -2356,47 +2356,114 @@ body.has-install-banner #app { padding-top: 52px; }
   padding: 6px 10px; border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
 }
 
-/* ── SEÇÃO: ENTENDA A FIBROMIALGIA ── */
-.fibro-edu-card {
-  background: var(--card);
-  border: 1.5px solid var(--border);
+/* ── SEÇÃO: ENTENDA A FIBROMIALGIA (visual infográfico) ── */
+
+/* Capa */
+.fec-capa {
+  background: linear-gradient(150deg,#1a2f6e 0%,#2a4aaa 60%,#4a6fd4 100%);
   border-radius: var(--radius);
+  padding: 22px 20px 18px;
+  text-align: center;
   margin-bottom: 8px;
+}
+.fec-capa-tag {
+  display: inline-block;
+  background: rgba(255,255,255,.18);
+  color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 12px;
+}
+.fec-capa-titulo {
+  font-size: 17px; font-weight: 700; color: #fff; line-height: 1.45;
+}
+.fec-capa-sub {
+  margin-top: 10px; font-size: 12px; color: rgba(255,255,255,.6);
+}
+
+/* Card infográfico */
+.fec2-card {
+  border-radius: var(--radius);
   overflow: hidden;
+  margin-bottom: 10px;
   cursor: pointer;
-  transition: box-shadow .2s;
+  box-shadow: 0 2px 10px rgba(0,0,0,.10);
+  transition: box-shadow .2s, transform .15s;
 }
-.fibro-edu-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-.fec-header {
-  display: flex; align-items: center; gap: 12px;
-  padding: 13px 14px;
+.fec2-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.16); transform: translateY(-1px); }
+
+/* Cabeçalho colorido */
+.fec2-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 16px 14px;
+  color: #fff;
 }
-.fec-icon {
-  width: 38px; height: 38px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
+.fec2-emoji {
+  font-size: 34px; line-height: 1; flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
 }
-.fec-title {
-  flex: 1; font-size: 15px; font-weight: 700; color: var(--text);
+.fec2-head-txt { flex: 1; }
+.fec2-num {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  opacity: .7; margin-bottom: 2px;
 }
-.fec-chevron {
-  font-size: 11px; color: var(--text2);
+.fec2-nome {
+  font-size: 20px; font-weight: 800; letter-spacing: -.3px;
+  line-height: 1.1;
+}
+.fec2-chevron {
+  font-size: 12px; opacity: .8;
   transition: transform .25s;
 }
-.fibro-edu-card.open .fec-chevron { transform: rotate(180deg); }
-.fec-body {
-  display: none; padding: 0 14px 14px;
+.fec2-card.open .fec2-chevron { transform: rotate(180deg); }
+
+/* Corpo branco */
+.fec2-body {
+  display: none;
+  background: var(--card);
+  padding: 16px 16px 14px;
+  border-top: none;
 }
-.fibro-edu-card.open .fec-body { display: block; }
-.fec-analogy {
-  font-size: 13px; color: var(--text); line-height: 1.65;
-  background: var(--bg2); border-left: 3px solid var(--border);
-  padding: 10px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  margin-bottom: 10px; font-style: italic;
+.fec2-card.open .fec2-body { display: block; }
+
+.fec2-tag {
+  display: inline-block;
+  font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  padding: 3px 10px; border-radius: 12px;
+  margin-bottom: 8px;
 }
-.fec-science {
-  font-size: 13px; color: var(--text2); line-height: 1.6;
+.fec2-analogy {
+  font-size: 13.5px; color: var(--text); line-height: 1.7;
+  margin: 0 0 14px;
 }
+.fec2-science {
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+  margin: 0;
+}
+
+/* Card final */
+.fec2-final {
+  background: linear-gradient(135deg,#4a235a,#7d3c98,#a855c8);
+  border-radius: var(--radius);
+  text-align: center;
+  padding: 24px 20px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(120,50,160,.3);
+}
+.fec2-final-titulo {
+  font-size: 20px; font-weight: 800; color: #fff;
+  line-height: 1.35; margin-bottom: 10px;
+}
+.fec2-final-titulo em { font-style: italic; opacity: .9; }
+.fec2-final-sub {
+  font-size: 13px; color: rgba(255,255,255,.85);
+  line-height: 1.6; margin: 0 0 12px;
+}
+.fec2-final-fonte {
+  font-size: 11px; color: rgba(255,255,255,.45);
+}
+
+/* Compatibilidade: manter classe antiga caso haja referência */
+.fibro-edu-card { display: none; }
 
 /* ── BLOCO DE NOTAS ── */
 .notepad-textarea {

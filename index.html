@@ -17,7 +17,7 @@
   <meta name="application-name" content="FibroVida" />
   <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
 
-  <link rel="stylesheet" href="style.css?v=10" />
+  <link rel="stylesheet" href="style.css?v=11" />
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
@@ -878,114 +878,109 @@
         <span>📚 Entenda a Fibromialgia</span>
       </div>
 
-      <div class="card" style="background:linear-gradient(135deg,#1a2f6e,#2a4aaa);border:none;margin-bottom:4px">
-        <div class="card-body" style="text-align:center;padding:18px 16px">
-          <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:6px;font-weight:600;letter-spacing:.5px">CONSCIENTIZAÇÃO</div>
-          <div style="font-size:17px;font-weight:700;color:#fff;line-height:1.4">
-            Como explicar os <strong>sintomas</strong> da fibromialgia a quem <em>não tem</em>
-          </div>
-          <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:8px">Toque em cada sintoma para entender</div>
-        </div>
+      <!-- Capa -->
+      <div class="fec-capa">
+        <div class="fec-capa-tag">💜 CONSCIENTIZAÇÃO</div>
+        <div class="fec-capa-titulo">Como explicar os <strong>sintomas</strong> da fibromialgia<br>a quem <em>não tem</em></div>
+        <div class="fec-capa-sub">Toque em cada sintoma para entender</div>
       </div>
 
       <!-- DOR -->
-      <div class="fibro-edu-card" onclick="toggleEdu(this)">
-        <div class="fec-header">
-          <div class="fec-icon" style="background:#fdf0ef;color:#c0392b">❤️‍🩹</div>
-          <div class="fec-title">Dor</div>
-          <div class="fec-chevron">▼</div>
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">
+          <div class="fec2-emoji">❤️‍🩹</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">01</div>
+            <div class="fec2-nome">Dor</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
         </div>
-        <div class="fec-body">
-          <div class="fec-analogy">
-            💭 <em>Imagine que você caiu de uma escada e ficou com o corpo inteiro dolorido. Nos primeiros dias, dói ao se movimentar, ao toque e até para realizar tarefas simples, como vestir-se ou arrumar o cabelo. Agora imagine que essa dor nunca vai embora. Ela está sempre presente. É uma dor profunda, difusa, persistente e imprevisível.</em>
-          </div>
-          <div class="fec-science">
-            🔬 A dor da fibromialgia não é "exagero" nem "imaginação". Trata-se de uma alteração na forma como o sistema nervoso processa os sinais de dor, como se o botão do volume estivesse permanentemente ajustado no máximo.
-          </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#c0392b;background:#fdf0ef">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine que você caiu de uma escada e ficou com o corpo inteiro dolorido. Nos primeiros dias, dói ao se movimentar, ao toque e até para realizar tarefas simples, como vestir-se ou arrumar o cabelo. <strong>Agora imagine que essa dor nunca vai embora.</strong></p>
+          <div class="fec2-tag" style="color:#c0392b;background:#fdf0ef">🔬 O que acontece</div>
+          <p class="fec2-science">A dor da fibromialgia não é "exagero" nem "imaginação". É uma alteração na forma como o sistema nervoso processa os sinais de dor — como se o botão do volume estivesse <strong>permanentemente ajustado no máximo</strong>.</p>
         </div>
       </div>
 
       <!-- FADIGA -->
-      <div class="fibro-edu-card" onclick="toggleEdu(this)">
-        <div class="fec-header">
-          <div class="fec-icon" style="background:#fef9f0;color:#e67e22">🔋</div>
-          <div class="fec-title">Fadiga</div>
-          <div class="fec-chevron">▼</div>
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#d35400,#e67e22)">
+          <div class="fec2-emoji">🔋</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">02</div>
+            <div class="fec2-nome">Fadiga</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
         </div>
-        <div class="fec-body">
-          <div class="fec-analogy">
-            💭 <em>Imagine um telemóvel com 1% de bateria. Deixa-o a carregar durante a noite e, de manhã, verificas que ele continua com exatamente 1% de bateria.</em>
-          </div>
-          <div class="fec-science">
-            🔬 A fadiga da fibromialgia é assim. Não melhora com o sono ou com o descanso, pois a sua origem está na disfunção do sistema nervoso central.
-          </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#d35400;background:#fef3ea">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine um celular com <strong>1% de bateria</strong>. Você o deixa carregando a noite toda e, de manhã, ele continua com exatamente 1% de bateria.</p>
+          <div class="fec2-tag" style="color:#d35400;background:#fef3ea">🔬 O que acontece</div>
+          <p class="fec2-science">A fadiga da fibromialgia <strong>não melhora com o sono ou com o descanso</strong>, pois sua origem está na disfunção do sistema nervoso central.</p>
         </div>
       </div>
 
       <!-- INSÔNIA -->
-      <div class="fibro-edu-card" onclick="toggleEdu(this)">
-        <div class="fec-header">
-          <div class="fec-icon" style="background:#eaf2f8;color:#2980b9">💤</div>
-          <div class="fec-title">Insônias</div>
-          <div class="fec-chevron">▼</div>
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#1a3a6e,#2980b9)">
+          <div class="fec2-emoji">💤</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">03</div>
+            <div class="fec2-nome">Insônias</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
         </div>
-        <div class="fec-body">
-          <div class="fec-analogy">
-            💭 <em>Imagine estar exausto, com sono, deitar-se na cama e... o corpo simplesmente não colabora. Ou adormece e acorda várias vezes, ou acorda como se não tivesse dormido nada, ou nem sequer consegue adormecer.</em>
-          </div>
-          <div class="fec-science">
-            🔬 A insônia da fibromialgia, que também pode evoluir para <strong>painsomnia</strong> (insônia provocada pela dor), é assim. O sono deixa de ser reparador porque o sistema nervoso nunca entra verdadeiramente no modo descanso.
-          </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#1a3a6e;background:#eaf2f8">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine estar exausto, com sono, deitar na cama e... o corpo simplesmente não colabora. Ou adormece e acorda várias vezes, ou acorda como se <strong>não tivesse dormido nada</strong>.</p>
+          <div class="fec2-tag" style="color:#1a3a6e;background:#eaf2f8">🔬 O que acontece</div>
+          <p class="fec2-science">A insônia da fibromialgia pode evoluir para <strong>painsomnia</strong> (insônia provocada pela dor). O sono deixa de ser reparador porque o sistema nervoso nunca entra verdadeiramente no modo descanso.</p>
         </div>
       </div>
 
       <!-- FIBRO FOG -->
-      <div class="fibro-edu-card" onclick="toggleEdu(this)">
-        <div class="fec-header">
-          <div class="fec-icon" style="background:#f5eefa;color:#9b59b6">🌫️</div>
-          <div class="fec-title">Fibro Fog</div>
-          <div class="fec-chevron">▼</div>
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#6c3483,#9b59b6)">
+          <div class="fec2-emoji">🌫️</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">04</div>
+            <div class="fec2-nome">Fibro Fog</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
         </div>
-        <div class="fec-body">
-          <div class="fec-analogy">
-            💭 <em>Imagine que você dormiu apenas duas horas, está sob estresse e com a mente sobrecarregada. Agora alguém pede que você faça contas, lembre nomes, organize tarefas ou acompanhe uma conversa mais complexa. As palavras parecem fugir, a memória falha e o raciocínio fica mais lento. Agora imagine viver isso todos os dias, mesmo depois de descansar.</em>
-          </div>
-          <div class="fec-science">
-            🔬 O <strong>fibro fog</strong> é como tentar pensar através de um nevoeiro. Há confusão mental, dificuldade de concentração, lapsos de memória e a sensação constante de uma mente cansada. Não é falta de inteligência nem desinteresse. É um sintoma real da fibromialgia que afeta a forma como o cérebro processa informações.
-          </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#6c3483;background:#f5eefa">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine que você dormiu apenas duas horas e está sobrecarregado. Alguém pede que você faça contas, lembre nomes e organize tarefas. As palavras fogem, a memória falha. <strong>Agora imagine viver isso todos os dias</strong>, mesmo depois de descansar.</p>
+          <div class="fec2-tag" style="color:#6c3483;background:#f5eefa">🔬 O que acontece</div>
+          <p class="fec2-science">O fibro fog é como <strong>tentar pensar através de um nevoeiro</strong>. Confusão mental, dificuldade de concentração, lapsos de memória. Não é falta de inteligência — é um sintoma real que afeta como o cérebro processa informações.</p>
         </div>
       </div>
 
       <!-- ALODINIA -->
-      <div class="fibro-edu-card" onclick="toggleEdu(this)">
-        <div class="fec-header">
-          <div class="fec-icon" style="background:#edf2e5;color:#5a7a30">🖐️</div>
-          <div class="fec-title">Alodinia</div>
-          <div class="fec-chevron">▼</div>
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#1e6e42,#27ae60)">
+          <div class="fec2-emoji">🖐️</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">05</div>
+            <div class="fec2-nome">Alodinia</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
         </div>
-        <div class="fec-body">
-          <div class="fec-analogy">
-            💭 <em>Imagine que tem uma ferida no braço. Se tocar com essa ferida na roupa ou em algum objeto, ou mesmo se alguém tocar nessa ferida, vai doer bastante, certo? Agora imagine que tem o seu corpo coberto de feridas abertas.</em>
-          </div>
-          <div class="fec-science">
-            🔬 A sensação da <strong>alodinia</strong> é muito semelhante a essa. Qualquer estímulo, como a própria roupa ou um toque suave, é interpretado pelo sistema nervoso como dor intensa.
-          </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#1e6e42;background:#eafaf1">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine que você tem uma ferida no braço. Se tocar na roupa ou em algum objeto, vai doer bastante. <strong>Agora imagine que seu corpo inteiro está coberto de feridas abertas.</strong></p>
+          <div class="fec2-tag" style="color:#1e6e42;background:#eafaf1">🔬 O que acontece</div>
+          <p class="fec2-science">A sensação da alodinia é muito semelhante a essa. Qualquer estímulo — a própria roupa ou um toque suave — é interpretado pelo sistema nervoso como <strong>dor intensa</strong>.</p>
         </div>
       </div>
 
       <!-- Mensagem final -->
-      <div class="card" style="background:linear-gradient(135deg,#1a2f6e,#2a4aaa);border:none;margin-bottom:16px">
-        <div class="card-body" style="text-align:center;padding:16px">
-          <div style="font-size:16px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px">
-            💜 Fibromialgia <em>não é frescura</em>.
-          </div>
-          <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.5">
-            É uma condição real, complexa e invisível para quem vê de fora.
-          </div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:10px">
-            Fonte: @jorgequintinooficial
-          </div>
-        </div>
+      <div class="fec2-final">
+        <div style="font-size:32px;margin-bottom:10px">💜</div>
+        <div class="fec2-final-titulo">Fibromialgia<br><em>não é frescura</em>.</div>
+        <p class="fec2-final-sub">É uma condição real, complexa e invisível para quem vê de fora.<br>Compartilhe com quem precisa entender.</p>
+        <div class="fec2-final-fonte">Fonte: @jorgequintinooficial</div>
       </div>
 
       <!-- Técnicas de Respiração -->

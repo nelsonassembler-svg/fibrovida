@@ -83,6 +83,13 @@ function fmtDate(s) {
   return d.toLocaleDateString("pt-BR");
 }
 
+function fmtMoeda(valor) {
+  return Number(valor || 0).toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
 function getInitials(name) {
   if (!name) return "?";
   return name.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
@@ -1704,8 +1711,8 @@ function renderMedications(list) {
           ${profName ? `<div class="lc-sub">👨‍⚕️ <em>${esc(profName)}</em></div>` : ""}
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
             <span class="lc-badge ${badgeClass}">${badgeTxt}</span>
-            ${m.unit_price ? `<span class="lc-badge badge-info">R$ ${parseFloat(m.unit_price).toFixed(2)}/un</span>` : ""}
-            ${totalVal > 0 ? `<span class="lc-badge badge-info">R$ ${totalVal.toFixed(2)}</span>` : ""}
+            ${m.unit_price ? `<span class="lc-badge badge-info">R$ ${fmtMoeda(m.unit_price)}/un</span>` : ""}
+            ${totalVal > 0 ? `<span class="lc-badge badge-info">R$ ${fmtMoeda(totalVal)}</span>` : ""}
             ${m.daily_units > 0 ? `<span class="lc-badge badge-info">📅 ${m.daily_units}/dia</span>` : ""}
             ${m.qty_per_package > 0 ? `<span class="lc-badge badge-neutral">${m.qty_per_package} un/cx</span>` : ""}
           </div>
@@ -1813,8 +1820,8 @@ async function gerarRelatorioMedicamentos() {
         doc.setTextColor(low ? 180 : 40, 40, 40);
         doc.text(`${m.stock || 0} un.`, cols[2], y);
         doc.setTextColor(40, 40, 40);
-        doc.text(m.unit_price ? `R$ ${parseFloat(m.unit_price).toFixed(2)}` : "—", cols[3], y);
-        doc.text(totalVal > 0 ? `R$ ${totalVal.toFixed(2)}` : "—", cols[4], y);
+        doc.text(m.unit_price ? `R$ ${fmtMoeda(m.unit_price)}` : "—", cols[3], y);
+        doc.text(totalVal > 0 ? `R$ ${fmtMoeda(totalVal)}` : "—", cols[4], y);
         doc.text(m.qty_per_package ? `${m.qty_per_package}` : "—", cols[5], y);
         doc.text((m.professionals?.name || "—").substring(0, 18), cols[6], y);
         y += 7;
@@ -1826,7 +1833,7 @@ async function gerarRelatorioMedicamentos() {
       doc.line(12, y, 198, y); y += 5;
       doc.setFontSize(9); doc.setFont(undefined, "bold");
       doc.setTextColor(90, 120, 50);
-      doc.text(`Total em estoque: R$ ${totalGeral.toFixed(2)}  ·  ${list.length} medicamento(s)`, 14, y);
+      doc.text(`Total em estoque: R$ ${fmtMoeda(totalGeral)}  ·  ${list.length} medicamento(s)`, 14, y);
       return y + 10;
     };
 
