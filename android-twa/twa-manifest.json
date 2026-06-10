@@ -1,0 +1,52 @@
+{
+  "packageId": "br.com.fibrovida.app",
+  "host": "nelsonassembler-svg.github.io",
+  "name": "FibroVida — Diário da Dor",
+  "launcherName": "FibroVida",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#7A9B57",
+  "navigationColor": "#7A9B57",
+  "navigationColorDark": "#5a7a30",
+  "navigationDividerColor": "#7A9B57",
+  "navigationDividerColorDark": "#5a7a30",
+  "backgroundColor": "#f8f8f4",
+  "startUrl": "/fibrovida/",
+  "iconUrl": "https://nelsonassembler-svg.github.io/fibrovida/icons/icon-512.png",
+  "maskableIconUrl": "https://nelsonassembler-svg.github.io/fibrovida/icons/icon-512.png",
+  "monochromeIconUrl": "https://nelsonassembler-svg.github.io/fibrovida/icons/icon-512.png",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "signingKey": {
+    "path": "fibrovida-release.keystore",
+    "alias": "fibrovida"
+  },
+  "shortcuts": [
+    {
+      "name": "Registrar Saúde",
+      "short_name": "Saúde",
+      "url": "/fibrovida/?tab=saude",
+      "chosenIconUrl": "https://nelsonassembler-svg.github.io/fibrovida/icons/icon-96.png",
+      "icons": [{ "src": "https://nelsonassembler-svg.github.io/fibrovida/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "FibroAssistente",
+      "short_name": "Assistente",
+      "url": "/fibrovida/?tab=assistente",
+      "chosenIconUrl": "https://nelsonassembler-svg.github.io/fibrovida/icons/icon-96.png",
+      "icons": [{ "src": "https://nelsonassembler-svg.github.io/fibrovida/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://nelsonassembler-svg.github.io/fibrovida/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "enableNotifications": false,
+  "alphaDependencies": { "enabled": false },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://nelsonassembler-svg.github.io/fibrovida/",
+  "minSdkVersion": 21,
+  "fingerprints": []
+}
