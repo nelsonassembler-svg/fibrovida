@@ -488,17 +488,29 @@
 
     <h3>📌 O que aparece no Dashboard</h3>
     <ul>
+      <li><strong>💜 Faixa "FIBROMIALGIA, COMO LIDAR"</strong> — banner roxo no topo com foco e conscientização sobre a condição.</li>
       <li><strong>Saudação personalizada</strong> — exibe seu nome e um emoji que muda conforme o horário (☀️ manhã, 🌤️ tarde, 🌙 noite).</li>
-      <li><strong>Data de hoje</strong> — exibida de forma amigável, ex: "Quinta, 15 de maio".</li>
-      <li><strong>Resumo de saúde do dia</strong> — células clicáveis mostrando: dor atual, humor, sono e tarefas pendentes (com cores: verde = bom, amarelo = atenção, vermelho = ruim).</li>
-      <li><strong>Ações rápidas</strong> — botões para acessar Saúde, Tarefas, Medicamentos, Bem-estar, Receitas e Relatórios com um toque.</li>
-      <li><strong>Evangelho do Dia</strong> — trecho do Evangelho e homilia diária, buscado automaticamente da Cancão Nova.</li>
+      <li><strong>Data de hoje</strong> — exibida de forma amigável, ex: "Domingo, 14 de junho".</li>
+      <li><strong>Resumo de saúde do dia</strong> — células clicáveis mostrando: dor atual, humor, sono e tarefas pendentes.</li>
+      <li><strong>Ações rápidas</strong> — botões para Saúde, Tarefas, Medicamentos, Bem-estar, Receitas, Relatórios, Tutorial e <strong>Medições</strong>.</li>
+      <li><strong>🆘 Botão de Pânico</strong> — botão vermelho pulsante para contato de emergência em crises graves.</li>
+      <li><strong>Evangelho do Dia</strong> — trecho do Evangelho e homilia diária, buscado automaticamente.</li>
     </ul>
 
     <div class="tip-card">
       <span class="tip-icon">💡</span>
       <p>Clique em qualquer célula do resumo (dor, humor, sono) para ir diretamente à tela de registro de saúde daquele dia.</p>
     </div>
+
+    <h3>📏 Botão Medições</h3>
+    <p>O botão <strong>Medições</strong> nas Ações Rápidas abre um modal para registrar seus sinais vitais do dia:</p>
+    <ul>
+      <li>⚖️ <strong>Peso</strong> (kg)</li>
+      <li>📏 <strong>Circunferência Abdominal</strong> (cm)</li>
+      <li>🩺 <strong>Pressão Arterial</strong> — SIS mmHg / DIA mmHg / PUL /min</li>
+      <li>🩸 <strong>Glicemia</strong> (mg/dL) — em jejum, pós-prandial ou aleatória</li>
+    </ul>
+    <p>Os registros ficam salvos no histórico da aba <strong>Saúde</strong> para acompanhamento ao longo do tempo.</p>
 
     <h3>📊 Células de Resumo — Significado das Cores</h3>
     <table class="data-table">
@@ -509,6 +521,59 @@
         <tr><td><strong>Sono</strong></td><td>7+ horas</td><td>5–6 horas</td><td>Menos de 5h</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       4B. BOTÃO DE PÂNICO
+  ══════════════════════════════════════ -->
+  <section class="doc-section" id="panico">
+    <h2>🆘 Botão de Pânico</h2>
+    <p>O <strong>Botão de Pânico</strong> é um recurso de segurança para situações de crise grave, como travamento da coluna, crise intensa de dor ou qualquer emergência que exija ajuda imediata de um familiar.</p>
+
+    <h3>⚙️ Configurar seus contatos de emergência</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Acesse Configurações</h4>
+          <p>Toque no ícone ⚙️ na barra inferior do app ou toque em "Config".</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Localize "Contatos de Emergência"</h4>
+          <p>Role a tela até encontrar a seção <strong>🆘 Contatos de Emergência</strong>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Cadastre até 2 contatos</h4>
+          <p>Preencha o nome e o telefone de cada contato (familiar, cuidador ou pessoa de confiança).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Salve</h4>
+          <p>Toque em <strong>💾 Salvar Contatos</strong>. Os dados ficam guardados no seu dispositivo.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>🚨 Como usar em uma crise</h3>
+    <ol>
+      <li>Na tela inicial, toque no botão vermelho <strong>🆘 BOTÃO DE PÂNICO</strong>.</li>
+      <li>O modal abre mostrando seus contatos cadastrados.</li>
+      <li>Toque em <strong>"Ligar"</strong> ao lado do contato desejado — o discador do celular abre automaticamente com o número já preenchido.</li>
+      <li>Se estiver bem, toque em <strong>"Cancelar — Estou bem"</strong> para fechar.</li>
+    </ol>
+
+    <div class="tip-card">
+      <span class="tip-icon">⚠️</span>
+      <p><strong>Configure antes de precisar!</strong> Cadastre seus contatos agora, com calma, para que estejam disponíveis imediatamente em uma situação de emergência.</p>
+    </div>
   </section>
 
   <!-- ══════════════════════════════════════
@@ -651,14 +716,20 @@
 
     <h3>🔔 Alertas e Notificações</h3>
     <ul>
-      <li><strong>Alerta sonoro de horário:</strong> Um som melodioso (Dó-Mi-Sol) toca no navegador no horário cadastrado, junto com uma mensagem na tela.</li>
+      <li><strong>Alerta sonoro de horário:</strong> Um som melodioso (Dó-Mi-Sol) toca no navegador no horário cadastrado.</li>
+      <li><strong>Card fixo "Tomei ✓":</strong> Um cartão aparece no topo da tela com o nome do medicamento e o botão <strong>Tomei ✓</strong>. Ao tocar, o app registra que a dose foi tomada e deduz automaticamente 1 unidade do estoque.</li>
       <li><strong>Notificação do sistema:</strong> Se você permitir, o celular exibe uma notificação mesmo com a tela bloqueada.</li>
-      <li><strong>Alerta de estoque baixo:</strong> Quando o estoque chega ao mínimo cadastrado, um som grave toca e uma mensagem de aviso aparece.</li>
+      <li><strong>Alerta de estoque baixo:</strong> Quando o estoque chega ao mínimo cadastrado, um aviso é exibido automaticamente.</li>
     </ul>
 
     <div class="tip-card">
       <span class="tip-icon">💡</span>
-      <p><strong>Múltiplos horários:</strong> No campo "Horário", você pode informar vários horários separados por vírgula. Exemplo: <code>08:00, 14:00, 22:00</code></p>
+      <p><strong>Múltiplos horários:</strong> No campo "Horário", informe vários horários separados por vírgula. Exemplo: <code>08:00, 14:00, 22:00</code> — o alerta dispara em cada horário separadamente.</p>
+    </div>
+
+    <div class="tip-card">
+      <span class="tip-icon">📦</span>
+      <p><strong>Dedução automática de estoque:</strong> Ao tocar em <strong>Tomei ✓</strong> no alerta, o estoque é deduzido em 1 unidade automaticamente. Cadastre o estoque inicial no campo "Estoque (un.)" ao criar o medicamento.</p>
     </div>
 
     <div class="info-card">
@@ -929,17 +1000,30 @@
        17. PLANOS E PAGAMENTO
   ══════════════════════════════════════ -->
   <section class="doc-section" id="planos">
-    <h2>💳 Planos e Pagamento via PIX</h2>
-    <p>Após o período de trial de 7 dias, escolha o plano que melhor se adapta à sua necessidade.</p>
+    <h2>💳 Planos e Pagamento</h2>
+
+    <div class="tip-card" style="background:#fef9e7;border-left:4px solid #f39c12">
+      <span class="tip-icon">🎉</span>
+      <p><strong>Período de Testes — GRATUITO até julho/2026!</strong><br>
+      O FibroVida está em fase de testes na Google Play Store. Durante esse período, <strong>todos os recursos estão liberados gratuitamente</strong> para os testadores cadastrados. Aproveite!</p>
+    </div>
+
+    <p>Após o período de testes, os planos disponíveis serão:</p>
 
     <table class="data-table">
-      <thead><tr><th>Plano</th><th>Preço</th><th>Equivalente</th><th>Economia</th></tr></thead>
+      <thead><tr><th>Plano</th><th>Preço</th><th>Equivalente</th><th>Destaque</th></tr></thead>
       <tbody>
+        <tr>
+          <td><strong>Grátis</strong></td>
+          <td>R$ 0</td>
+          <td>—</td>
+          <td>Registros básicos, últimos 7 dias</td>
+        </tr>
         <tr>
           <td><strong>Mensal</strong></td>
           <td>R$ 14,90/mês</td>
           <td>R$ 0,49/dia</td>
-          <td>—</td>
+          <td>Histórico completo + relatórios PDF</td>
         </tr>
         <tr>
           <td><strong>Anual ⭐</strong></td>
