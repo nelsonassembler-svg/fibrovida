@@ -17,7 +17,7 @@
   <meta name="application-name" content="FibroVida" />
   <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
 
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
@@ -447,6 +447,18 @@
           <span class="acao-icon">📖</span>
           <span class="acao-label">Tutorial</span>
         </button>
+        <button class="acao-btn" onclick="openVitalsModal()">
+          <span class="acao-icon">📏</span>
+          <span class="acao-label">Medições</span>
+        </button>
+      </div>
+
+      <!-- Botão de Pânico -->
+      <div class="panico-section">
+        <button class="btn-panico" onclick="openPanicoModal()">
+          🆘 BOTÃO DE PÂNICO
+        </button>
+        <div class="panico-sub">Pressione em caso de crise grave</div>
       </div>
 
       <!-- Conquistas mini (home) -->
@@ -458,7 +470,7 @@
       </div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com<br>
         © 2026 Todos os direitos reservados</p>
       </div>
@@ -708,7 +720,7 @@
       </div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -762,7 +774,7 @@
       </div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -817,7 +829,7 @@
       </div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -1011,7 +1023,7 @@
       </div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -1043,7 +1055,7 @@
       </div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -1076,7 +1088,7 @@
       <div id="medications-list"></div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -1122,7 +1134,7 @@
       </div>
 
       <div class="page-footer" style="margin-top:16px">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -1261,7 +1273,7 @@
       </div>
 
       <div class="page-footer" style="margin-top:12px">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com · © 2026</p>
       </div>
     </div>
@@ -1386,6 +1398,31 @@
         </div>
       </div>
 
+      <!-- Contatos de Emergência -->
+      <div class="settings-group">
+        <div class="settings-group-title">🆘 Contatos de Emergência</div>
+        <div style="padding:12px 16px">
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Esses números serão exibidos no Botão de Pânico para contato rápido em crises graves.</p>
+          <div class="fg" style="margin-bottom:10px">
+            <label>Contato 1 — Nome</label>
+            <input type="text" id="panic-name-1" placeholder="Ex: Maria (mãe)" />
+          </div>
+          <div class="fg" style="margin-bottom:14px">
+            <label>Contato 1 — Telefone</label>
+            <input type="tel" id="panic-phone-1" placeholder="(85) 99999-9999" />
+          </div>
+          <div class="fg" style="margin-bottom:10px">
+            <label>Contato 2 — Nome</label>
+            <input type="text" id="panic-name-2" placeholder="Ex: João (marido)" />
+          </div>
+          <div class="fg" style="margin-bottom:14px">
+            <label>Contato 2 — Telefone</label>
+            <input type="tel" id="panic-phone-2" placeholder="(85) 99999-9999" />
+          </div>
+          <button class="btn btn-primary" onclick="saveEmergencyContacts()">💾 Salvar Contatos</button>
+        </div>
+      </div>
+
       <!-- Ajuda -->
       <div class="settings-group">
         <div class="settings-group-title">Ajuda</div>
@@ -1456,7 +1493,7 @@
       </div>
 
       <div class="page-footer">
-        <p>Desenvolvido por <strong>Nelson Tomaz Emanuel Magalhães</strong><br>
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
         nelsontcmagalhaes@gmail.com<br>
         © 2026 Todos os direitos reservados</p>
       </div>
@@ -2035,6 +2072,27 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- ================================================================
+     MODAL DE PÂNICO
+     ================================================================ -->
+<div class="modal-overlay" id="modal-panico" style="display:none" onclick="if(event.target===this)closeModal('modal-panico')">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header" style="background:#c0392b">
+      <h3 style="color:#fff">🆘 Contato de Emergência</h3>
+      <button class="modal-close" onclick="closeModal('modal-panico')" style="color:#fff">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;text-align:center">
+        Selecione quem chamar agora:
+      </p>
+      <div id="panico-contatos"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <button class="btn btn-secondary" style="width:100%;font-size:12px" onclick="closeModal('modal-panico')">Cancelar — Estou bem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 </body>

@@ -158,7 +158,7 @@ function showTab(name, navEl) {
     receitas:      loadRecipes,
     relatorios:    loadReports,
     assistente:    loadAssistente,
-    config:        () => { renderConfig(); loadAchievements(); },
+    config:        () => { renderConfig(); loadAchievements(); loadEmergencyContacts(); },
   };
   loaders[name]?.();
 }
@@ -1468,7 +1468,8 @@ function checkMedSchedule() {
           if (h === hhmm && !_medAlertados.has(chave)) {
             _medAlertados.add(chave);
             playMedAlert();
-            toast(`⏰ Hora de tomar: ${m.name}${m.dosage ? " — " + m.dosage : ""}`, "i");
+            // Toast com botão "Tomei"
+            showMedAlert(m, chave);
             // Notificação do sistema (se permitida)
             if (Notification.permission === "granted") {
               new Notification("💊 FibroVida — Medicamento", {
@@ -1476,7 +1477,6 @@ function checkMedSchedule() {
                 icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>"
               });
             }
-            // Remove da lista após 2 minutos para não repetir
             setTimeout(() => _medAlertados.delete(chave), 120_000);
           }
         });
@@ -1491,6 +1491,41 @@ function startMedScheduler() {
   }
   checkMedSchedule();
   setInterval(checkMedSchedule, 60_000); // verifica a cada minuto
+}
+
+function showMedAlert(m, chave) {
+  // Cria alerta fixo com botão "Tomei ✓"
+  const id = "med-alert-" + chave.replace(/[^a-z0-9]/gi, "_");
+  const div = document.createElement("div");
+  div.id = id;
+  div.className = "med-alert-toast";
+  div.innerHTML = `
+    <div class="med-alert-ico">💊</div>
+    <div class="med-alert-txt">
+      <strong>Hora do medicamento!</strong><br>
+      ${m.name}${m.dosage ? " — " + m.dosage : ""}
+    </div>
+    <button class="med-alert-btn" onclick="marcarMedTomado('${m.id}','${id}')">Tomei ✓</button>
+  `;
+  document.body.appendChild(div);
+  // Remove automaticamente após 5 minutos
+  setTimeout(() => div.remove(), 300_000);
+}
+
+async function marcarMedTomado(medId, alertId) {
+  document.getElementById(alertId)?.remove();
+  try {
+    // Deduz 1 unidade do estoque
+    const { data } = await db.from("medications").select("stock,name").eq("id", medId).single();
+    if (data && (data.stock || 0) > 0) {
+      const novoEstoque = data.stock - 1;
+      await db.from("medications").update({ stock: novoEstoque, updated_at: new Date().toISOString() }).eq("id", medId);
+      toast(`✅ ${data.name} marcado como tomado. Estoque: ${novoEstoque} un.`, "s");
+      checkLowStock();
+    } else {
+      toast(`✅ Medicamento marcado como tomado.`, "s");
+    }
+  } catch(e) { toast("✅ Medicamento marcado como tomado.", "s"); }
 }
 
 // ── MEDICAMENTOS ─────────────────────────────────────────────
@@ -3672,3 +3707,77 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+// ── BOTÃO DE PÂNICO ───────────────────────────────────────────
+
+function saveEmergencyContacts() {
+  const c = {
+    name1:  document.getElementById("panic-name-1")?.value.trim()  || "",
+    phone1: document.getElementById("panic-phone-1")?.value.trim() || "",
+    name2:  document.getElementById("panic-name-2")?.value.trim()  || "",
+    phone2: document.getElementById("panic-phone-2")?.value.trim() || "",
+  };
+  localStorage.setItem("fibro_emergency", JSON.stringify(c));
+  toast("✅ Contatos de emergência salvos!", "s");
+}
+
+function loadEmergencyContacts() {
+  try {
+    const c = JSON.parse(localStorage.getItem("fibro_emergency") || "{}");
+    if (document.getElementById("panic-name-1")) {
+      document.getElementById("panic-name-1").value  = c.name1  || "";
+      document.getElementById("panic-phone-1").value = c.phone1 || "";
+      document.getElementById("panic-name-2").value  = c.name2  || "";
+      document.getElementById("panic-phone-2").value = c.phone2 || "";
+    }
+    return c;
+  } catch { return {}; }
+}
+
+function openPanicoModal() {
+  const c = loadEmergencyContacts();
+  const el = document.getElementById("panico-contatos");
+  if (!el) return;
+
+  const temContato = c.phone1 || c.phone2;
+  if (!temContato) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:12px">
+        <div style="font-size:36px;margin-bottom:8px">📋</div>
+        <p style="font-size:13px;color:var(--text-muted)">Nenhum contato cadastrado ainda.</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Vá em <strong>Configurações → Contatos de Emergência</strong> para cadastrar.</p>
+        <button class="btn btn-primary" style="margin-top:14px;width:100%" onclick="closeModal('modal-panico');showTab('config')">Ir para Configurações</button>
+      </div>`;
+    openModal("modal-panico");
+    return;
+  }
+
+  let html = "";
+  if (c.phone1) {
+    const num = c.phone1.replace(/\D/g, "");
+    html += `
+      <a href="tel:+55${num}" class="btn-emergencia">
+        <div class="btn-emerg-icon">📞</div>
+        <div class="btn-emerg-info">
+          <div class="btn-emerg-nome">${c.name1 || "Contato 1"}</div>
+          <div class="btn-emerg-fone">${c.phone1}</div>
+        </div>
+        <div class="btn-emerg-ligar">Ligar</div>
+      </a>`;
+  }
+  if (c.phone2) {
+    const num = c.phone2.replace(/\D/g, "");
+    html += `
+      <a href="tel:+55${num}" class="btn-emergencia" style="margin-top:10px">
+        <div class="btn-emerg-icon">📞</div>
+        <div class="btn-emerg-info">
+          <div class="btn-emerg-nome">${c.name2 || "Contato 2"}</div>
+          <div class="btn-emerg-fone">${c.phone2}</div>
+        </div>
+        <div class="btn-emerg-ligar">Ligar</div>
+      </a>`;
+  }
+  el.innerHTML = html;
+  openModal("modal-panico");
+}
+

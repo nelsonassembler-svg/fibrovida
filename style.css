@@ -2475,3 +2475,100 @@ body.has-install-banner #app { padding-top: 52px; }
   box-sizing: border-box;
 }
 .notepad-textarea:focus { outline: none; border-color: var(--green); background: var(--card); }
+
+/* ── BOTÃO DE PÂNICO ─────────────────────────────────────── */
+.panico-section {
+  margin: 18px 0 8px;
+  text-align: center;
+}
+.btn-panico {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(192,57,43,0.4);
+  animation: panico-pulse 2s infinite;
+  transition: transform .1s;
+}
+.btn-panico:active { transform: scale(0.97); }
+@keyframes panico-pulse {
+  0%,100% { box-shadow: 0 4px 18px rgba(192,57,43,0.4); }
+  50%      { box-shadow: 0 4px 28px rgba(192,57,43,0.7); }
+}
+.panico-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ── MODAL DE PÂNICO — BOTÕES DE CONTATO ─────────────────── */
+.btn-emergencia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .1s, box-shadow .1s;
+  box-shadow: 0 3px 12px rgba(192,57,43,0.3);
+}
+.btn-emergencia:active { transform: scale(0.97); }
+.btn-emerg-icon { font-size: 28px; }
+.btn-emerg-info { flex: 1; }
+.btn-emerg-nome { font-size: 15px; font-weight: 700; }
+.btn-emerg-fone { font-size: 12px; opacity: .85; margin-top: 2px; }
+.btn-emerg-ligar {
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── ALERTA DE MEDICAMENTO (toast fixo) ──────────────────── */
+.med-alert-toast {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 2px solid #7A9B57;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  z-index: 9999;
+  min-width: 290px;
+  max-width: 92vw;
+  animation: slideDown .3s ease;
+}
+@keyframes slideDown {
+  from { opacity:0; transform: translateX(-50%) translateY(-20px); }
+  to   { opacity:1; transform: translateX(-50%) translateY(0); }
+}
+.med-alert-ico { font-size: 26px; }
+.med-alert-txt { flex: 1; font-size: 13px; line-height: 1.4; color: var(--text); }
+.med-alert-btn {
+  background: #7A9B57;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.med-alert-btn:active { opacity: .8; }
