@@ -2481,12 +2481,22 @@ body.has-install-banner #app { padding-top: 52px; }
   background: linear-gradient(135deg, #7B5EA7, #9b7ec8);
   color: #fff;
   text-align: center;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 10px;
+}
+.ftb-frase {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.ftb-sub {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+  text-align: center;
 }
 
 /* ── BOTÃO DE PÂNICO ─────────────────────────────────────── */
