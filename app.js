@@ -3605,18 +3605,24 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/fibrovida/sw.js')
       .then(reg => {
-        console.log('✅ SW registrado:', reg.scope);
-        // Verifica atualizações a cada visita
+        // Força verificação de atualização a cada carregamento
+        reg.update();
         reg.addEventListener('updatefound', () => {
           const newSW = reg.installing;
           newSW?.addEventListener('statechange', () => {
             if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-              toast('🔄 Nova versão do FibroVida disponível! Recarregue para atualizar.', 'i');
+              // Recarrega automaticamente para aplicar nova versão
+              window.location.reload();
             }
           });
         });
       })
       .catch(err => console.warn('SW não registrado:', err));
+
+    // Recarrega a página quando o SW assume o controle
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
   });
 }
 
