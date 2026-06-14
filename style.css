@@ -2476,6 +2476,19 @@ body.has-install-banner #app { padding-top: 52px; }
 }
 .notepad-textarea:focus { outline: none; border-color: var(--green); background: var(--card); }
 
+/* ── FRASE TOPO DASHBOARD ────────────────────────────────── */
+.fibro-topic-banner {
+  background: linear-gradient(135deg, #7B5EA7, #9b7ec8);
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
 /* ── BOTÃO DE PÂNICO ─────────────────────────────────────── */
 .panico-section {
   margin: 18px 0 8px;
