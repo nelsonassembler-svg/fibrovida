@@ -467,6 +467,14 @@
         <div class="panico-sub">Pressione em caso de crise grave</div>
       </div>
 
+      <!-- Card artigo destaque -->
+      <div class="artigo-card" onclick="document.getElementById('modal-artigo').classList.add('open')">
+        <div class="artigo-card-tag">✍️ Artigo em Destaque</div>
+        <div class="artigo-card-titulo">💜 Fibromialgia: A dor que você não vê, mas que é real.</div>
+        <div class="artigo-card-preview">Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro...</div>
+        <div class="artigo-card-autor">— Nelson Tomaz Catunda Magalhães &nbsp;›</div>
+      </div>
+
       <!-- Conquistas mini (home) -->
       <div id="achiev-mini-section" style="display:none;text-align:center;margin:12px 0 4px">
         <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">🏆 Suas conquistas</div>
@@ -2094,6 +2102,70 @@
       <div id="panico-contatos"></div>
       <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
         <button class="btn btn-secondary" style="width:100%;font-size:12px" onclick="closeModal('modal-panico')">Cancelar — Estou bem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL DO ARTIGO — FIBROMIALGIA
+     ================================================================ -->
+<div class="modal-overlay" id="modal-artigo" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-box artigo-modal-box">
+    <div class="artigo-modal-header">
+      <button class="modal-close" onclick="document.getElementById('modal-artigo').classList.remove('open')">✕</button>
+    </div>
+    <div class="artigo-modal-body">
+      <div class="artigo-modal-tag">✍️ Artigo em Destaque</div>
+      <h2 class="artigo-modal-titulo">💜 Fibromialgia: A dor que você não vê, mas que é real.</h2>
+
+      <p class="artigo-modal-intro">Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro. A fibromialgia é uma condição complexa que vai muito além de uma "dorzinha física". Ela mexe com a rotina, com o sono, com a mente e com a alma.</p>
+
+      <p class="artigo-modal-texto">Se você convive com a fibromialgia, ou conhece alguém que tem, sabe que os desafios diários envolvem:</p>
+
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">❤️‍🩹</div>
+        <div>
+          <strong>Dor generalizada</strong><br>
+          <span>Aquela sensação de que o corpo todo dói, sem um motivo aparente.</span>
+        </div>
+      </div>
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">⚡</div>
+        <div>
+          <strong>Fadiga extrema</strong><br>
+          <span>Um cansaço profundo que não passa nem depois de uma noite inteira de sono.</span>
+        </div>
+      </div>
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">🌫️</div>
+        <div>
+          <strong>"Fibro Fog"</strong><br>
+          <span>Lapsos de memória, dificuldade de concentração e aquela sensação de mente enevoada.</span>
+        </div>
+      </div>
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">🌙</div>
+        <div>
+          <strong>Alterações de humor e sono</strong><br>
+          <span>Noites mal dormidas que alimentam um ciclo de mais dor e desgaste emocional.</span>
+        </div>
+      </div>
+
+      <div class="artigo-destaque">
+        <strong>O maior desafio? A invisibilidade.</strong><br>
+        Por não aparecer em exames de sangue ou de imagem, muitas pessoas ainda enfrentam a falta de empatia e o julgamento alheio.
+      </div>
+
+      <p class="artigo-modal-texto">Se você tem fibromialgia, lembre-se: <strong>sua dor não é frescura, não é psicológica e você não está sozinho(a).</strong> Validar o que você sente é o primeiro passo para encontrar caminhos de cuidado e bem-estar.</p>
+
+      <p class="artigo-modal-texto">E se você conhece alguém nessa jornada, o melhor remédio que você pode oferecer hoje é a <strong>escuta e o respeito</strong>.</p>
+
+      <div class="artigo-cta">💬 Vamos quebrar o silêncio?</div>
+
+      <div class="artigo-assinatura">
+        <div class="artigo-assinatura-nome">Nelson Tomaz Catunda Magalhães</div>
+        <div class="artigo-assinatura-sub">Desenvolvedor — FibroVida</div>
       </div>
     </div>
   </div>

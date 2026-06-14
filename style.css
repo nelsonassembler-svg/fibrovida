@@ -2499,6 +2499,136 @@ body.has-install-banner #app { padding-top: 52px; }
   text-align: center;
 }
 
+/* ── CARD ARTIGO DESTAQUE (dashboard) ───────────────────── */
+.artigo-card {
+  background: linear-gradient(135deg, #4a2d6e, #7B5EA7);
+  border-radius: 16px;
+  padding: 18px;
+  margin: 14px 0 10px;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 16px rgba(123,94,167,0.35);
+}
+.artigo-card:active { transform: scale(0.98); }
+.artigo-card-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: rgba(255,255,255,0.65);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.artigo-card-titulo {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+.artigo-card-preview {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.artigo-card-autor {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  font-style: italic;
+  text-align: right;
+}
+
+/* ── MODAL DO ARTIGO ─────────────────────────────────────── */
+.artigo-modal-box {
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 20px 20px 0 0;
+}
+.artigo-modal-header {
+  background: linear-gradient(135deg, #4a2d6e, #7B5EA7);
+  padding: 14px 16px 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+.artigo-modal-header .modal-close { color: #fff; }
+.artigo-modal-body { padding: 0 20px 28px; }
+.artigo-modal-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #7B5EA7;
+  text-transform: uppercase;
+  margin: 18px 0 8px;
+}
+.artigo-modal-titulo {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.35;
+  margin-bottom: 16px;
+}
+.artigo-modal-intro {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+  font-style: italic;
+  border-left: 3px solid #7B5EA7;
+  padding-left: 12px;
+  margin-bottom: 16px;
+}
+.artigo-modal-texto {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+.artigo-sintoma {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.artigo-sintoma-icon { font-size: 22px; flex-shrink: 0; }
+.artigo-destaque {
+  background: linear-gradient(135deg, #4a2d6e18, #7B5EA720);
+  border-left: 4px solid #7B5EA7;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 16px 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.artigo-cta {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #7B5EA7;
+  margin: 20px 0 18px;
+}
+.artigo-assinatura {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  text-align: right;
+}
+.artigo-assinatura-nome {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.artigo-assinatura-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 /* ── BOTÃO DE PÂNICO ─────────────────────────────────────── */
 .panico-section {
   margin: 18px 0 8px;
