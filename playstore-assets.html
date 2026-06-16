@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play Store Assets — FibroVida</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0edf5; padding: 24px; }
+    h1 { font-size: 20px; color: #4a2d6e; margin-bottom: 4px; }
+    .sub { font-size: 13px; color: #888; margin-bottom: 32px; }
+    .section { margin-bottom: 48px; }
+    .section-label { font-size: 11px; font-weight: 700; color: #9b6ddf; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+    .btn-baixar {
+      display: block; width: 100%; margin-top: 16px;
+      background: #7B5EA7; color: #fff; border: none; border-radius: 12px;
+      padding: 13px 20px; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .btn-baixar:hover { background: #5c3a8a; }
+
+    /* ── FEATURE GRAPHIC 1024×500 ── */
+    #feature-graphic {
+      width: 1024px; height: 500px;
+      background: linear-gradient(135deg, #1e0f35 0%, #2d1b4e 60%, #1a0d2e 100%);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 80px;
+      position: relative; overflow: hidden;
+      transform-origin: top left;
+      transform: scale(0.6);
+      margin-bottom: -200px;
+    }
+    .fg-circle1 { position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; border-radius: 50%; background: #4a2d6e; opacity: 0.5; }
+    .fg-circle2 { position: absolute; bottom: -60px; left: 200px; width: 260px; height: 260px; border-radius: 50%; background: #7B5EA7; opacity: 0.2; }
+    .fg-left { position: relative; z-index: 1; max-width: 520px; }
+    .fg-logo { font-size: 18px; font-weight: 700; color: #b89be0; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; }
+    .fg-titulo { font-size: 46px; font-weight: 900; color: #fff; line-height: 1.2; margin-bottom: 18px; }
+    .fg-titulo span { color: #c9aaff; }
+    .fg-sub { font-size: 20px; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 28px; }
+    .fg-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(155,109,223,0.2); border: 1.5px solid rgba(155,109,223,0.5); border-radius: 40px; padding: 10px 22px; font-size: 16px; font-weight: 700; color: #c9aaff; }
+    .fg-right { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; }
+    .fg-pill { background: rgba(255,255,255,0.07); border-radius: 16px; padding: 16px 22px; display: flex; align-items: center; gap: 14px; min-width: 260px; }
+    .fg-pill-ico { font-size: 28px; }
+    .fg-pill-txt { font-size: 17px; font-weight: 700; color: #fff; }
+    .fg-pill-sub { font-size: 14px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+    /* ── PHONE SCREENSHOT MOCKUP ── */
+    .phone-wrap {
+      width: 390px; height: 844px;
+      transform-origin: top left;
+      transform: scale(0.38);
+      margin-bottom: -524px;
+      position: relative;
+    }
+    .phone-frame {
+      width: 390px; height: 844px;
+      background: #1e0f35;
+      border-radius: 50px;
+      border: 10px solid #333;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 0 3px #222;
+    }
+    .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 34px; background: #111; border-radius: 0 0 20px 20px; z-index: 10; }
+    .phone-screen { width: 100%; height: 100%; background: #1e0f35; padding: 50px 20px 20px; }
+    .ph-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .ph-hello { font-size: 22px; font-weight: 800; color: #fff; }
+    .ph-date { font-size: 13px; color: rgba(255,255,255,0.45); }
+    .ph-banner { background: linear-gradient(90deg, #4a2d6e, #7B5EA7); border-radius: 16px; padding: 16px 18px; margin-bottom: 16px; }
+    .ph-banner-frase { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.4; margin-bottom: 4px; }
+    .ph-banner-sub { font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px; }
+    .ph-pain { background: rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+    .ph-pain-label { font-size: 11px; color: #9b6ddf; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+    .ph-pain-row { display: flex; gap: 8px; }
+    .ph-pain-dot { width: 32px; height: 32px; border-radius: 50%; background: rgba(155,109,223,0.3); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #c9aaff; }
+    .ph-pain-dot.active { background: #7B5EA7; color: #fff; }
+    .ph-acoes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+    .ph-acao { background: rgba(255,255,255,0.06); border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .ph-acao-ico { font-size: 22px; }
+    .ph-acao-txt { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 600; }
+    .ph-card { background: rgba(155,109,223,0.12); border-left: 4px solid #9b6ddf; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+    .ph-card-tag { font-size: 10px; color: #9b6ddf; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
+    .ph-card-titulo { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.3; }
+    .ph-panico { background: rgba(220,38,38,0.15); border: 1.5px solid rgba(220,38,38,0.4); border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .ph-panico-txt { font-size: 13px; font-weight: 800; color: #ff8080; }
+
+    /* Texto da listagem */
+    .listing-box { background: #fff; border-radius: 16px; padding: 28px 24px; margin-top: 16px; box-shadow: 0 2px 12px rgba(74,45,110,0.08); }
+    .listing-box h3 { font-size: 14px; font-weight: 700; color: #4a2d6e; margin-bottom: 8px; margin-top: 16px; }
+    .listing-box h3:first-child { margin-top: 0; }
+    .listing-box p, .listing-box pre { font-size: 13px; color: #555; line-height: 1.7; white-space: pre-wrap; word-break: break-word; font-family: inherit; }
+    .copy-btn { margin-top: 8px; background: #7B5EA7; color: #fff; border: none; border-radius: 8px; padding: 6px 16px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .copy-btn:hover { background: #5c3a8a; }
+    .tag { display: inline-block; background: #ede9f8; color: #4a2d6e; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 8px; margin: 2px; }
+  </style>
+</head>
+<body>
+  <h1>🎮 Play Store Assets — FibroVida</h1>
+  <p class="sub">Baixe os assets prontos para o Google Play Console.</p>
+
+  <!-- ═══════════ FEATURE GRAPHIC ═══════════ -->
+  <div class="section">
+    <div class="section-label">Feature Graphic — 1024×500 px (obrigatório)</div>
+
+    <div id="feature-graphic">
+      <div class="fg-circle1"></div>
+      <div class="fg-circle2"></div>
+      <div class="fg-left">
+        <div class="fg-logo">FibroVida</div>
+        <div class="fg-titulo">💜 Diário da Dor<br><span>e Bem-Estar</span></div>
+        <div class="fg-sub">Controle sua fibromialgia com registros de dor, medicamentos, humor e relatórios para o médico.</div>
+        <div class="fg-badge">🏥 Saúde &amp; Bem-Estar</div>
+      </div>
+      <div class="fg-right">
+        <div class="fg-pill"><div class="fg-pill-ico">📊</div><div><div class="fg-pill-txt">Registro de Dor</div><div class="fg-pill-sub">Escala 0–10 por região</div></div></div>
+        <div class="fg-pill"><div class="fg-pill-ico">💊</div><div><div class="fg-pill-txt">Medicamentos</div><div class="fg-pill-sub">Alertas no horário certo</div></div></div>
+        <div class="fg-pill"><div class="fg-pill-ico">🆘</div><div><div class="fg-pill-txt">Botão de Pânico</div><div class="fg-pill-sub">Contato de emergência</div></div></div>
+        <div class="fg-pill"><div class="fg-pill-ico">📋</div><div><div class="fg-pill-txt">Relatório PDF</div><div class="fg-pill-sub">Compartilhe com seu médico</div></div></div>
+      </div>
+    </div>
+    <button class="btn-baixar" onclick="baixar('feature-graphic','FibroVida-Feature-Graphic-1024x500',1024,500)">⬇ Baixar Feature Graphic (PNG)</button>
+  </div>
+
+  <!-- ═══════════ SCREENSHOT MOCKUP 1 — DASHBOARD ═══════════ -->
+  <div class="section">
+    <div class="section-label">Screenshot #1 — Dashboard (390×844 px / mockup de celular)</div>
+
+    <div class="phone-wrap">
+      <div class="phone-frame" id="screenshot-dashboard">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="ph-header">
+            <div>
+              <div class="ph-hello">Olá, Nelson 👋</div>
+              <div class="ph-date">Segunda, 15 de junho · 08:32</div>
+            </div>
+            <div style="font-size:22px">🔔</div>
+          </div>
+          <div class="ph-banner">
+            <div class="ph-banner-frase">💜 Fibromialgia: A dor que você não vê, mas que é real.</div>
+            <div class="ph-banner-sub">Como Lidar</div>
+          </div>
+          <div class="ph-pain">
+            <div class="ph-pain-label">INTENSIDADE DA DOR HOJE</div>
+            <div class="ph-pain-row">
+              <div class="ph-pain-dot">0</div>
+              <div class="ph-pain-dot">1</div>
+              <div class="ph-pain-dot">2</div>
+              <div class="ph-pain-dot">3</div>
+              <div class="ph-pain-dot active">4</div>
+              <div class="ph-pain-dot">5</div>
+              <div class="ph-pain-dot">6</div>
+              <div class="ph-pain-dot">7</div>
+              <div class="ph-pain-dot">8</div>
+              <div class="ph-pain-dot">9</div>
+              <div class="ph-pain-dot">10</div>
+            </div>
+          </div>
+          <div class="ph-acoes">
+            <div class="ph-acao"><div class="ph-acao-ico">💊</div><div class="ph-acao-txt">Medicamentos</div></div>
+            <div class="ph-acao"><div class="ph-acao-ico">🧘</div><div class="ph-acao-txt">Bem-Estar</div></div>
+            <div class="ph-acao"><div class="ph-acao-ico">📏</div><div class="ph-acao-txt">Medições</div></div>
+            <div class="ph-acao"><div class="ph-acao-ico">🍽️</div><div class="ph-acao-txt">Receitas</div></div>
+            <div class="ph-acao"><div class="ph-acao-ico">📋</div><div class="ph-acao-txt">Relatórios</div></div>
+            <div class="ph-acao"><div class="ph-acao-ico">📖</div><div class="ph-acao-txt">Tutorial</div></div>
+          </div>
+          <div class="ph-card">
+            <div class="ph-card-tag">✍️ ARTIGO EM DESTAQUE</div>
+            <div class="ph-card-titulo">💜 Fibromialgia: A dor que você não vê, mas que é real.</div>
+          </div>
+          <div class="ph-panico">
+            <div class="ph-panico-txt">🆘 BOTÃO DE PÂNICO</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-baixar" onclick="baixar('screenshot-dashboard','FibroVida-Screenshot-Dashboard',390,844)">⬇ Baixar Screenshot Dashboard (PNG)</button>
+  </div>
+
+  <!-- ═══════════ TEXTO DA LISTAGEM ═══════════ -->
+  <div class="section">
+    <div class="section-label">Textos para o Play Console (copie e cole)</div>
+    <div class="listing-box">
+
+      <h3>Nome do App (máx. 30 caracteres)</h3>
+      <p id="txt-nome">FibroVida – Diário da Dor</p>
+      <button class="copy-btn" onclick="copiar('txt-nome')">Copiar</button>
+
+      <h3>Descrição Curta (máx. 80 caracteres)</h3>
+      <p id="txt-curta">Diário de dor, medicamentos e bem-estar para quem vive com fibromialgia.</p>
+      <button class="copy-btn" onclick="copiar('txt-curta')">Copiar</button>
+
+      <h3>Descrição Completa (máx. 4000 caracteres)</h3>
+      <pre id="txt-completa">
+💜 FibroVida — Diário da Dor e Bem-Estar
+
+O FibroVida é um aplicativo desenvolvido para pessoas que vivem com fibromialgia e outras condições de dor crônica. Com ele, você registra, monitora e compreende melhor sua saúde — e tem tudo organizado para compartilhar com seu médico.
+
+─────────────────────────────
+📊 REGISTRO DE DOR DIÁRIO
+─────────────────────────────
+• Escala de 0 a 10 por região do corpo
+• Histórico e gráficos de evolução
+• Diário de sintomas: humor, sono e energia
+
+─────────────────────────────
+💊 CONTROLE DE MEDICAMENTOS
+─────────────────────────────
+• Cadastre seus remédios com nome, dosagem e horário
+• Alertas automáticos na hora certa
+• Botão "Tomei ✓" para confirmar e descontar do estoque
+• Aviso quando o estoque estiver acabando
+
+─────────────────────────────
+📏 MEDIÇÕES DE SAÚDE
+─────────────────────────────
+• Pressão arterial (SIS / DIA / Pulso)
+• Glicemia, peso e circunferência abdominal
+• Histórico completo com data e hora
+
+─────────────────────────────
+🆘 BOTÃO DE PÂNICO
+─────────────────────────────
+• Cadastre até 2 contatos de emergência
+• Em caso de crise, toque para ligar em 1 clique
+• Funciona offline, armazenado no seu dispositivo
+
+─────────────────────────────
+🍽️ BANCO DE RECEITAS
+─────────────────────────────
+• Receitas anti-inflamatórias indicadas para fibromialgia
+• Filtro por café da manhã, almoço, jantar e lanches
+• Descrição de benefícios e ingredientes
+
+─────────────────────────────
+🧘 BEM-ESTAR E SONO
+─────────────────────────────
+• Registre qualidade do sono, humor e nível de estresse
+• Dicas de técnicas de respiração e relaxamento
+
+─────────────────────────────
+📋 RELATÓRIO PDF
+─────────────────────────────
+• Gere um relatório completo do seu histórico de saúde
+• Pronto para mostrar ao médico ou especialista
+• Resumo de dor, medicamentos, sono e medições
+
+─────────────────────────────
+✍️ ARTIGO EM DESTAQUE
+─────────────────────────────
+• Conteúdo educativo sobre fibromialgia
+• Escrito pelo desenvolvedor, pessoa que vive próxima da condição
+
+─────────────────────────────
+🔒 PRIVACIDADE
+─────────────────────────────
+• Seus dados de saúde pertencem apenas a você
+• Armazenamento seguro com criptografia
+• Contatos de emergência ficam somente no seu dispositivo
+
+Desenvolvido por Nelson Tomaz Catunda Magalhães com carinho para todos que convivem com a fibromialgia.
+
+💜 Porque sua dor não é frescura — e você merece apoio.
+      </pre>
+      <button class="copy-btn" onclick="copiar('txt-completa')">Copiar</button>
+
+      <h3>Categoria</h3>
+      <p>Saúde e Fitness</p>
+
+      <h3>Classificação de Conteúdo</h3>
+      <p>Livre (para todos os públicos — sem violência, linguagem adulta ou conteúdo sensível)</p>
+
+      <h3>URL da Política de Privacidade</h3>
+      <p id="txt-privacy">https://nelsonassembler-svg.github.io/fibrovida/politica-privacidade.html</p>
+      <button class="copy-btn" onclick="copiar('txt-privacy')">Copiar</button>
+
+      <h3>Tags / Palavras-chave</h3>
+      <div>
+        <span class="tag">fibromialgia</span>
+        <span class="tag">dor crônica</span>
+        <span class="tag">diário de dor</span>
+        <span class="tag">medicamentos</span>
+        <span class="tag">saúde</span>
+        <span class="tag">bem-estar</span>
+        <span class="tag">pressão arterial</span>
+        <span class="tag">glicemia</span>
+        <span class="tag">sono</span>
+        <span class="tag">humor</span>
+      </div>
+
+      <h3>E-mail do desenvolvedor (exibido no Play Store)</h3>
+      <p id="txt-email">nelsontcmagalhaes@gmail.com</p>
+      <button class="copy-btn" onclick="copiar('txt-email')">Copiar</button>
+    </div>
+  </div>
+
+  <script>
+    async function baixar(id, nome, largura, altura) {
+      const el = document.getElementById(id);
+      const savedTransform = el.style.transform;
+      const savedMargin = el.style.marginBottom;
+      el.style.transform = 'scale(1)';
+      el.style.marginBottom = '0';
+      try {
+        const canvas = await html2canvas(el, {
+          scale: 1, width: largura, height: altura,
+          useCORS: true, backgroundColor: null, logging: false
+        });
+        const link = document.createElement('a');
+        link.download = nome + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } finally {
+        el.style.transform = savedTransform;
+        el.style.marginBottom = savedMargin;
+      }
+    }
+
+    function copiar(id) {
+      const el = document.getElementById(id);
+      navigator.clipboard.writeText(el.innerText.trim()).then(() => {
+        const btn = el.nextElementSibling;
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copiado!';
+        setTimeout(() => btn.textContent = orig, 1500);
+      });
+    }
+  </script>
+</body>
+</html>
