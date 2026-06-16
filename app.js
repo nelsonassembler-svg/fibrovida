@@ -1456,21 +1456,19 @@ function checkMedSchedule() {
   const agora = new Date();
   const hhmm  = `${String(agora.getHours()).padStart(2,"0")}:${String(agora.getMinutes()).padStart(2,"0")}`;
 
-  db.from("medications").select("id,name,dosage,schedule_time")
+  db.from("medications").select("id,name,dosage,schedule_time,stock")
     .eq("user_id", currentUser.id)
     .then(({ data }) => {
       (data || []).forEach(m => {
         if (!m.schedule_time) return;
-        // Verifica todos os horários (suporta "08:00, 20:00")
-        const horarios = m.schedule_time.split(/[,;/]/).map(h => h.trim());
-        horarios.forEach(h => {
-          const chave = `${m.id}-${h}`;
-          if (h === hhmm && !_medAlertados.has(chave)) {
+        // Normaliza "21:30:00" → "21:30" (Supabase retorna com segundos)
+        const horarios = m.schedule_time.split(/[,;/]/).map(h => h.trim().substring(0, 5));
+        horarios.forEach(hNorm => {
+          const chave = `${m.id}-${hNorm}`;
+          if (hNorm === hhmm && !_medAlertados.has(chave)) {
             _medAlertados.add(chave);
             playMedAlert();
-            // Toast com botão "Tomei"
             showMedAlert(m, chave);
-            // Notificação do sistema (se permitida)
             if (Notification.permission === "granted") {
               new Notification("💊 FibroVida — Medicamento", {
                 body: `Hora de tomar: ${m.name}${m.dosage ? " — " + m.dosage : ""}`,
@@ -1482,6 +1480,19 @@ function checkMedSchedule() {
         });
       });
     }).catch(() => {});
+}
+
+function testarAlertaMedicamento() {
+  if (!currentUser) { toast("Faça login primeiro.", "e"); return; }
+  db.from("medications").select("id,name,dosage,stock")
+    .eq("user_id", currentUser.id).limit(1)
+    .then(({ data }) => {
+      if (!data?.length) { toast("Nenhum medicamento cadastrado.", "w"); return; }
+      const m = data[0];
+      playMedAlert();
+      showMedAlert(m, `teste-${m.id}-${Date.now()}`);
+      toast("✅ Alerta de teste disparado!", "s");
+    });
 }
 
 function startMedScheduler() {
