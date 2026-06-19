@@ -1089,6 +1089,11 @@
         <button class="btn-fab" onclick="openMedModal()" title="Novo medicamento">+</button>
       </div>
 
+      <!-- Botão de teste de alerta — sempre visível no topo -->
+      <button onclick="testarAlertaMedicamento()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:12px;background:rgba(155,109,223,0.12);border:1.5px dashed #9b6ddf;color:#7B5EA7;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;">
+        🔔 Testar Alerta de Medicamento
+      </button>
+
       <!-- Filtro + Relatório -->
       <div class="med-filter-row">
         <div class="med-filter-tabs">
@@ -1100,13 +1105,6 @@
       </div>
 
       <div id="medications-list"></div>
-
-      <!-- Botão de teste de alerta -->
-      <div style="margin:16px 0 8px;padding:0 4px">
-        <button onclick="testarAlertaMedicamento()" style="width:100%;background:rgba(155,109,223,0.12);border:1.5px dashed #9b6ddf;color:#7B5EA7;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;">
-          🔔 Testar Alerta de Medicamento
-        </button>
-      </div>
 
       <div class="page-footer">
         <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
