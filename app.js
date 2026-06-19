@@ -1415,18 +1415,37 @@ async function deleteProf(id) {
 function playMedAlert() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notas = [523, 659, 784]; // Dó Mi Sol — chime suave
-    notas.forEach((freq, i) => {
+
+    // ♪ Assinatura sonora FibroVida — arpejo Fá maior ascendente + sino final
+    // Fá4 → Lá4 → Dó5 → Fá5 → Dó5 → Lá4 → (gong Fá5 longo)
+    const melodia = [
+      { freq: 349.23, t: 0.00, amp: 0.18, dur: 0.22, type: "sine"     }, // Fá4
+      { freq: 440.00, t: 0.18, amp: 0.22, dur: 0.22, type: "sine"     }, // Lá4
+      { freq: 523.25, t: 0.36, amp: 0.26, dur: 0.22, type: "sine"     }, // Dó5
+      { freq: 698.46, t: 0.56, amp: 0.32, dur: 0.30, type: "sine"     }, // Fá5 ↑ pico
+      { freq: 523.25, t: 0.82, amp: 0.22, dur: 0.20, type: "sine"     }, // Dó5 ↓
+      { freq: 440.00, t: 1.00, amp: 0.18, dur: 0.20, type: "sine"     }, // Lá4 ↓
+      { freq: 698.46, t: 1.24, amp: 0.38, dur: 1.20, type: "triangle" }, // Fá5 sino final
+    ];
+
+    melodia.forEach(({ freq, t, amp, dur, type }) => {
       const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = freq;
-      const t = ctx.currentTime + i * 0.22;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.4, t + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-      osc.start(t); osc.stop(t + 0.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.value = freq;
+      const s = ctx.currentTime + t;
+      gain.gain.setValueAtTime(0, s);
+      gain.gain.linearRampToValueAtTime(amp, s + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, s + dur);
+      osc.start(s);
+      osc.stop(s + dur + 0.05);
     });
+
+    // Vibração exclusiva: dois pulsos curtos + um longo (padrão FibroVida)
+    if (navigator.vibrate) navigator.vibrate([150, 80, 150, 80, 600]);
+
   } catch(e) { console.warn("Áudio não disponível:", e); }
 }
 
