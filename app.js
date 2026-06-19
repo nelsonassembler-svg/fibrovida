@@ -28,7 +28,7 @@ let allTasks         = [];
 let allRecipes       = [];
 let currentRecipeCat = "all";
 
-const TRIAL_DAYS     = 7;   // dias de trial gratuito
+const TRIAL_DAYS     = 3;   // dias de trial gratuito
 
 // ── FRASES MOTIVACIONAIS ─────────────────────────────────────
 const motivations = [
