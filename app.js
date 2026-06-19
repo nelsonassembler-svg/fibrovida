@@ -1448,38 +1448,68 @@ function playStockAlert() {
   } catch(e) { console.warn("Áudio não disponível:", e); }
 }
 
-// ── VERIFICADOR DE HORÁRIO DE MEDICAMENTOS ────────────────────
-let _medAlertados = new Set(); // evita repetir no mesmo minuto
+// ── SCHEDULER DE MEDICAMENTOS (setTimeout exato) ──────────────
+const _medTimers = {}; // guarda timers por chave para evitar duplicatas
 
-function checkMedSchedule() {
+function startMedScheduler() {
+  if (Notification.permission === "default") Notification.requestPermission();
+  agendarTodosMedicamentos();
+}
+
+async function agendarTodosMedicamentos() {
   if (!currentUser) return;
-  const agora = new Date();
-  const hhmm  = `${String(agora.getHours()).padStart(2,"0")}:${String(agora.getMinutes()).padStart(2,"0")}`;
+  try {
+    const { data, error } = await db.from("medications")
+      .select("id,name,dosage,schedule_time,stock")
+      .eq("user_id", currentUser.id);
+    if (error || !data?.length) return;
+    data.forEach(m => {
+      if (!m.schedule_time) return;
+      // Supabase pode retornar "21:30:00" ou "21:30" — normaliza para HH:MM
+      const horarios = m.schedule_time.split(/[,;/]/).map(h => h.trim().substring(0, 5));
+      horarios.forEach(hNorm => agendarUmMedicamento(m, hNorm));
+    });
+  } catch(e) {
+    console.error("Erro ao agendar medicamentos:", e);
+    setTimeout(agendarTodosMedicamentos, 60_000);
+  }
+}
 
-  db.from("medications").select("id,name,dosage,schedule_time,stock")
-    .eq("user_id", currentUser.id)
-    .then(({ data }) => {
-      (data || []).forEach(m => {
-        if (!m.schedule_time) return;
-        // Normaliza "21:30:00" → "21:30" (Supabase retorna com segundos)
-        const horarios = m.schedule_time.split(/[,;/]/).map(h => h.trim().substring(0, 5));
-        horarios.forEach(hNorm => {
-          const chave = `${m.id}-${hNorm}`;
-          if (hNorm === hhmm && !_medAlertados.has(chave)) {
-            _medAlertados.add(chave);
-            playMedAlert();
-            showMedAlert(m, chave);
-            if (Notification.permission === "granted") {
-              new Notification("💊 FibroVida — Medicamento", {
-                body: `Hora de tomar: ${m.name}${m.dosage ? " — " + m.dosage : ""}`,
-                icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>"
-              });
-            }
-            setTimeout(() => _medAlertados.delete(chave), 120_000);
-          }
-        });
-      });
-    }).catch(() => {});
+function agendarUmMedicamento(m, hNorm) {
+  const partes = hNorm.split(":");
+  const hh = parseInt(partes[0]);
+  const mm = parseInt(partes[1] || "0");
+  if (isNaN(hh) || isNaN(mm)) return;
+
+  const chave = `${m.id}-${hNorm}`;
+  if (_medTimers[chave]) return; // já agendado
+
+  const agora = new Date();
+  const alvo  = new Date();
+  alvo.setHours(hh, mm, 0, 0);
+
+  // Se o horário já passou hoje, agenda para amanhã
+  if (alvo <= agora) alvo.setDate(alvo.getDate() + 1);
+
+  const delay = alvo - agora;
+
+  _medTimers[chave] = setTimeout(() => {
+    delete _medTimers[chave];
+    dispararAlerta(m, hNorm);
+    // Reagenda para amanhã
+    setTimeout(() => agendarUmMedicamento(m, hNorm), 60_000);
+  }, delay);
+}
+
+function dispararAlerta(m, hNorm) {
+  playMedAlert();
+  showMedAlert(m, `${m.id}-${hNorm}-${Date.now()}`);
+  if (Notification.permission === "granted") {
+    new Notification("💊 FibroVida — Medicamento", {
+      body: `Hora de tomar: ${m.name}${m.dosage ? " — " + m.dosage : ""}`,
+      icon: "/icons/icon-192.png"
+    });
+  }
 }
 
 function testarAlertaMedicamento() {
@@ -1493,15 +1523,6 @@ function testarAlertaMedicamento() {
       showMedAlert(m, `teste-${m.id}-${Date.now()}`);
       toast("✅ Alerta de teste disparado!", "s");
     });
-}
-
-function startMedScheduler() {
-  // Pede permissão de notificação
-  if (Notification.permission === "default") {
-    Notification.requestPermission();
-  }
-  checkMedSchedule();
-  setInterval(checkMedSchedule, 60_000); // verifica a cada minuto
 }
 
 function showMedAlert(m, chave) {
