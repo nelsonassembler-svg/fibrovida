@@ -1076,6 +1076,110 @@
 
 
     <!-- ============================================================
+         CONSULTAS MÉDICAS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-consultas">
+
+      <div class="page-title-bar">
+        <div class="pt-icon" style="background:linear-gradient(135deg,#7B5EA7,#4a2d6e)">🩺</div>
+        <div class="pt-body">
+          <div class="pt-title">Consultas Médicas</div>
+          <div class="pt-sub">Histórico e agendamentos</div>
+        </div>
+        <button class="btn-fab" onclick="openConsultaModal()" title="Nova consulta">+</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="filt-btn ativo" id="cfilt-proximas" onclick="setConsultaFiltro('proximas',this)">📅 Próximas</button>
+        <button class="filt-btn" id="cfilt-historico" onclick="setConsultaFiltro('historico',this)">📋 Histórico</button>
+      </div>
+
+      <div id="consultas-list">
+        <div class="empty-state">
+          <div class="ei">🩺</div>
+          <p>Nenhuma consulta agendada.<br>Toque em + para registrar.</p>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+    <!-- MODAL — NOVA / EDITAR CONSULTA -->
+    <div class="modal-overlay" id="modal-consulta">
+      <div class="modal-box" style="max-height:92vh;overflow-y:auto">
+        <div class="modal-header">
+          <h3>🩺 Consulta Médica</h3>
+          <button class="modal-close" onclick="closeModal('modal-consulta')">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="cons-id">
+
+          <div class="fg"><label>Médico / Especialista *</label>
+            <input type="text" id="cons-doctor" placeholder="Dr. Nome Sobrenome"></div>
+
+          <div class="fg"><label>Especialidade</label>
+            <input type="text" id="cons-specialty" placeholder="Reumatologista, Clínico Geral..."></div>
+
+          <div class="fg"><label>Local / Clínica</label>
+            <input type="text" id="cons-location" placeholder="Nome da clínica ou hospital"></div>
+
+          <div style="display:flex;gap:10px">
+            <div class="fg" style="flex:1"><label>Data da Consulta *</label>
+              <input type="date" id="cons-date"></div>
+            <div class="fg" style="flex:1"><label>Horário</label>
+              <input type="time" id="cons-time"></div>
+          </div>
+
+          <div class="fg"><label>📝 Anotações — o que foi discutido</label>
+            <textarea id="cons-notes" rows="4" placeholder="Sintomas relatados, avaliação do médico, orientações recebidas..."></textarea></div>
+
+          <div class="fg"><label>🔬 Exames Solicitados</label>
+            <textarea id="cons-exams" rows="2" placeholder="Hemograma, VHS, PCR, Vitamina D, Ressonância..."></textarea></div>
+
+          <div class="fg"><label>💊 Medicamentos Prescritos</label>
+            <textarea id="cons-prescriptions" rows="2" placeholder="Nome, dosagem e frequência de uso..."></textarea></div>
+
+          <div class="fg"><label>📅 Data da Próxima Consulta</label>
+            <input type="date" id="cons-next-date"></div>
+
+          <div class="fg" style="flex-direction:row;align-items:center;gap:10px;background:var(--bg-card);padding:10px;border-radius:10px">
+            <input type="checkbox" id="cons-next-alert" style="width:auto;margin:0">
+            <label for="cons-next-alert" style="margin:0;font-weight:500;cursor:pointer">🔔 Alertar-me no dia da próxima consulta</label>
+          </div>
+
+          <div class="fg">
+            <label>📎 Anexos (PDF ou imagem · máx 10 MB cada)</label>
+            <div id="cons-attachments-list" style="margin-bottom:8px"></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('solicitacao')">📋 Solicitação</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('receita')">💊 Receita</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('resultado')">🔬 Resultado</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('outro')">📎 Outro</button>
+            </div>
+            <input type="file" id="cons-file-input" accept=".pdf,image/*" style="display:none" onchange="handleConsultaUpload(this)">
+            <input type="hidden" id="cons-upload-type">
+          </div>
+
+          <button class="btn btn-primary btn-full" onclick="saveConsulta()">💾 Salvar Consulta</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL — DETALHE DA CONSULTA -->
+    <div class="modal-overlay" id="modal-consulta-detail">
+      <div class="modal-box" style="max-height:92vh;overflow-y:auto">
+        <div class="modal-header">
+          <h3>🩺 Detalhe da Consulta</h3>
+          <button class="modal-close" onclick="closeModal('modal-consulta-detail')">✕</button>
+        </div>
+        <div class="modal-body" id="consulta-detail-body"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================
          MEDICAMENTOS
          ============================================================ -->
     <div class="tab-pane" id="tab-medicamentos">
@@ -1539,6 +1643,9 @@
     </button>
     <button class="nav-item" data-tab="profissionais" onclick="showTab('profissionais',this)">
       <span class="ni">👨‍⚕️</span><span class="nl">Profissionais</span>
+    </button>
+    <button class="nav-item" data-tab="consultas" onclick="showTab('consultas',this)">
+      <span class="ni">🩺</span><span class="nl">Consultas</span>
     </button>
     <button class="nav-item" data-tab="medicamentos" onclick="showTab('medicamentos',this)">
       <span class="ni">💊</span><span class="nl">Medicamentos</span>

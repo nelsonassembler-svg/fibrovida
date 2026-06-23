@@ -158,6 +158,7 @@ function showTab(name, navEl) {
     receitas:      loadRecipes,
     relatorios:    loadReports,
     assistente:    loadAssistente,
+    consultas:     loadConsultas,
     config:        () => { renderConfig(); loadAchievements(); loadEmergencyContacts(); },
   };
   loaders[name]?.();
@@ -500,6 +501,7 @@ async function afterLogin(user) {
     showScreen("main-screen");
     showTab("inicio");
     checkLowStock();
+    scheduleAllConsultaAlerts();
     updateLastSeen();
     setInterval(updateLastSeen, 5 * 60 * 1000);
     startMedScheduler();
@@ -531,6 +533,7 @@ async function afterLogin(user) {
   showScreen("main-screen");
   showTab("inicio");
   checkLowStock();
+  scheduleAllConsultaAlerts();
 
   // Atualiza last_seen imediatamente e depois a cada 5 minutos
   updateLastSeen();
@@ -3836,5 +3839,376 @@ function openPanicoModal() {
   }
   el.innerHTML = html;
   openModal("modal-panico");
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CONSULTAS MÉDICAS
+// ══════════════════════════════════════════════════════════════
+
+let _consultaFiltro = "proximas";
+let _consultaAnexosPendentes = []; // [{type, file, name}]
+let _consultaEditAnexos      = []; // anexos já salvos ao editar
+let _currentUploadType       = "";
+const _consultaTimers        = {};
+
+const CONSULTA_TYPE_LABELS = {
+  solicitacao: "📋 Solicitação de Exame",
+  receita:     "💊 Receita Médica",
+  resultado:   "🔬 Resultado de Exame",
+  outro:       "📎 Outro",
+};
+
+// ── Filtro ────────────────────────────────────────────────────
+function setConsultaFiltro(f, btn) {
+  _consultaFiltro = f;
+  document.querySelectorAll("#tab-consultas .filt-btn").forEach(b => b.classList.remove("ativo"));
+  btn.classList.add("ativo");
+  loadConsultas();
+}
+
+// ── Carregar lista ────────────────────────────────────────────
+async function loadConsultas() {
+  const el = document.getElementById("consultas-list");
+  if (!el || !currentUser) return;
+  showLoad();
+  try {
+    const today = todayISO();
+    let q = db.from("consultations")
+      .select("*, consultation_attachments(*)")
+      .eq("user_id", currentUser.id);
+
+    if (_consultaFiltro === "proximas") {
+      q = q.gte("date", today).order("date", { ascending: true });
+    } else {
+      q = q.lt("date", today).order("date", { ascending: false });
+    }
+
+    const { data, error } = await q;
+    if (error) throw error;
+    renderConsultas(data || []);
+  } catch(e) { console.error(e); } finally { hideLoad(); }
+}
+
+// ── Renderizar cards ──────────────────────────────────────────
+function renderConsultas(list) {
+  const el = document.getElementById("consultas-list");
+  if (!el) return;
+
+  if (!list.length) {
+    const msg = _consultaFiltro === "proximas"
+      ? "Nenhuma consulta agendada.<br>Toque em + para agendar."
+      : "Nenhuma consulta no histórico.";
+    el.innerHTML = `<div class="empty-state"><div class="ei">🩺</div><p>${msg}</p></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(c => {
+    const dtFmt  = fmtDate(c.date);
+    const hora   = c.time ? c.time.substring(0, 5) : "";
+    const nAnexos = (c.consultation_attachments || []).length;
+    const nextBadge = (c.next_date && c.next_date >= todayISO())
+      ? `<span style="display:inline-block;background:#7B5EA720;color:#7B5EA7;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px">📅 Próx: ${fmtDate(c.next_date)}</span>` : "";
+
+    return `
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:15px;color:var(--primary)">🩺 ${c.doctor_name}</div>
+            ${c.specialty ? `<div style="font-size:12px;color:var(--text-muted)">${c.specialty}</div>` : ""}
+            ${c.location  ? `<div style="font-size:12px;color:var(--text-muted)">📍 ${c.location}</div>` : ""}
+            <div style="font-size:13px;font-weight:600;margin-top:5px">📅 ${dtFmt}${hora ? " às " + hora : ""}</div>
+            ${nextBadge}
+            ${nAnexos ? `<div style="font-size:11px;color:var(--primary);margin-top:3px">📎 ${nAnexos} anexo(s)</div>` : ""}
+          </div>
+          <div style="display:flex;gap:5px;flex-shrink:0">
+            <button class="btn btn-secondary btn-sm" onclick="openConsultaDetail('${c.id}')">👁️</button>
+            <button class="btn btn-secondary btn-sm" onclick="openConsultaModal('${c.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm"    onclick="deleteConsulta('${c.id}')">🗑️</button>
+          </div>
+        </div>
+        ${c.notes ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);background:var(--bg-card);padding:8px;border-radius:8px;border-left:3px solid #7B5EA7;white-space:pre-wrap">${c.notes.substring(0, 150)}${c.notes.length > 150 ? "…" : ""}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── Abrir modal (novo ou editar) ──────────────────────────────
+function openConsultaModal(id = null) {
+  _consultaAnexosPendentes = [];
+  _consultaEditAnexos = [];
+
+  ["cons-id","cons-doctor","cons-specialty","cons-location","cons-time","cons-notes",
+   "cons-exams","cons-prescriptions","cons-next-date"].forEach(fid => {
+    const el = document.getElementById(fid);
+    if (el) el.value = "";
+  });
+  document.getElementById("cons-date").value = todayISO();
+  const chk = document.getElementById("cons-next-alert");
+  if (chk) chk.checked = false;
+  document.getElementById("cons-attachments-list").innerHTML = "";
+
+  if (id) loadConsultaParaEditar(id);
+  openModal("modal-consulta");
+}
+
+async function loadConsultaParaEditar(id) {
+  showLoad();
+  try {
+    const { data, error } = await db.from("consultations")
+      .select("*, consultation_attachments(*)")
+      .eq("id", id).single();
+    if (error) throw error;
+
+    document.getElementById("cons-id").value            = data.id;
+    document.getElementById("cons-doctor").value        = data.doctor_name || "";
+    document.getElementById("cons-specialty").value     = data.specialty || "";
+    document.getElementById("cons-location").value      = data.location || "";
+    document.getElementById("cons-date").value          = data.date || "";
+    document.getElementById("cons-time").value          = data.time ? data.time.substring(0, 5) : "";
+    document.getElementById("cons-notes").value         = data.notes || "";
+    document.getElementById("cons-exams").value         = data.exams_requested || "";
+    document.getElementById("cons-prescriptions").value = data.prescriptions || "";
+    document.getElementById("cons-next-date").value     = data.next_date || "";
+    document.getElementById("cons-next-alert").checked  = data.next_alert || false;
+
+    _consultaEditAnexos = data.consultation_attachments || [];
+    renderConsultaAnexosList(data.id);
+  } catch(e) { toast("Erro ao carregar consulta.", "e"); } finally { hideLoad(); }
+}
+
+// ── Renderizar lista de anexos no modal ───────────────────────
+function renderConsultaAnexosList(consultaId) {
+  const el = document.getElementById("cons-attachments-list");
+  if (!el) return;
+  let html = "";
+
+  _consultaEditAnexos.forEach(a => {
+    html += `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg-card);border-radius:8px;margin-bottom:4px;font-size:12px">
+        <span>${CONSULTA_TYPE_LABELS[a.type] || "📎"}</span>
+        <a href="${a.url}" target="_blank" style="flex:1;color:var(--primary);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.filename}</a>
+        <button type="button" onclick="deleteConsultaAnexo('${a.id}','${a.storage_path}','${consultaId}')"
+          style="border:none;background:#ff444420;color:#c0392b;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px">✕</button>
+      </div>`;
+  });
+
+  _consultaAnexosPendentes.forEach((p, i) => {
+    html += `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#f0ebff;border-radius:8px;margin-bottom:4px;font-size:12px;border:1px dashed #7B5EA7">
+        <span>${CONSULTA_TYPE_LABELS[p.type] || "📎"}</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>
+        <span style="color:#7B5EA7;font-size:10px;font-weight:600">pendente</span>
+        <button type="button" onclick="_consultaAnexosPendentes.splice(${i},1);renderConsultaAnexosList(null)"
+          style="border:none;background:#ff444420;color:#c0392b;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px">✕</button>
+      </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ── Upload de anexo ───────────────────────────────────────────
+function triggerConsultaUpload(type) {
+  _currentUploadType = type;
+  const inp = document.getElementById("cons-file-input");
+  inp.value = "";
+  inp.click();
+}
+
+function handleConsultaUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { toast("Arquivo muito grande. Máximo 10 MB.", "e"); return; }
+  _consultaAnexosPendentes.push({ type: _currentUploadType, file, name: file.name });
+  const consultaId = document.getElementById("cons-id").value || null;
+  renderConsultaAnexosList(consultaId);
+}
+
+// ── Salvar consulta ───────────────────────────────────────────
+async function saveConsulta() {
+  const doctor = document.getElementById("cons-doctor").value.trim();
+  const date   = document.getElementById("cons-date").value;
+  if (!doctor) { toast("Digite o nome do médico.", "e"); return; }
+  if (!date)   { toast("Selecione a data da consulta.", "e"); return; }
+
+  showLoad();
+  try {
+    const id = document.getElementById("cons-id").value;
+    const nextDate = document.getElementById("cons-next-date").value || null;
+    const payload = {
+      user_id:         currentUser.id,
+      doctor_name:     doctor,
+      specialty:       document.getElementById("cons-specialty").value.trim() || null,
+      location:        document.getElementById("cons-location").value.trim() || null,
+      date,
+      time:            document.getElementById("cons-time").value || null,
+      notes:           document.getElementById("cons-notes").value.trim() || null,
+      exams_requested: document.getElementById("cons-exams").value.trim() || null,
+      prescriptions:   document.getElementById("cons-prescriptions").value.trim() || null,
+      next_date:       nextDate,
+      next_alert:      document.getElementById("cons-next-alert").checked,
+    };
+
+    let consultaId = id;
+    if (id) {
+      const { error } = await db.from("consultations").update(payload).eq("id", id);
+      if (error) throw error;
+      toast("Consulta atualizada! ✅", "s");
+    } else {
+      const { data, error } = await db.from("consultations").insert(payload).select().single();
+      if (error) throw error;
+      consultaId = data.id;
+      toast("Consulta registrada! 🩺", "s");
+    }
+
+    // Upload de anexos pendentes
+    for (const p of _consultaAnexosPendentes) {
+      const ext  = p.file.name.split(".").pop().toLowerCase();
+      const path = `${currentUser.id}/consultas/${consultaId}/${Date.now()}.${ext}`;
+      const { error: upErr } = await db.storage.from("health-docs").upload(path, p.file);
+      if (upErr) throw upErr;
+      const { data: urlData } = db.storage.from("health-docs").getPublicUrl(path);
+      await db.from("consultation_attachments").insert({
+        consultation_id: consultaId,
+        user_id:         currentUser.id,
+        type:            p.type,
+        filename:        p.name,
+        storage_path:    path,
+        url:             urlData.publicUrl,
+      });
+    }
+
+    // Agendar alerta se próxima consulta definida
+    if (nextDate && payload.next_alert) {
+      scheduleConsultaAlert(nextDate, doctor, consultaId);
+    }
+
+    closeModal("modal-consulta");
+    loadConsultas();
+  } catch(e) { toast("Erro ao salvar: " + (e.message || ""), "e"); console.error(e); } finally { hideLoad(); }
+}
+
+// ── Excluir anexo salvo ───────────────────────────────────────
+async function deleteConsultaAnexo(anexoId, storagePath, consultaId) {
+  if (!confirm("Remover este anexo?")) return;
+  showLoad();
+  try {
+    if (storagePath) await db.storage.from("health-docs").remove([storagePath]);
+    await db.from("consultation_attachments").delete().eq("id", anexoId);
+    toast("Anexo removido.", "s");
+    _consultaEditAnexos = _consultaEditAnexos.filter(a => a.id !== anexoId);
+    renderConsultaAnexosList(consultaId);
+  } catch(e) { toast("Erro ao remover anexo.", "e"); } finally { hideLoad(); }
+}
+
+// ── Excluir consulta ──────────────────────────────────────────
+async function deleteConsulta(id) {
+  if (!confirm("Excluir esta consulta e todos os anexos?")) return;
+  showLoad();
+  try {
+    const { data: anexos } = await db.from("consultation_attachments")
+      .select("storage_path").eq("consultation_id", id);
+    const paths = (anexos || []).map(a => a.storage_path).filter(Boolean);
+    if (paths.length) await db.storage.from("health-docs").remove(paths);
+    await db.from("consultations").delete().eq("id", id);
+    toast("Consulta excluída.", "s");
+    loadConsultas();
+  } catch(e) { toast("Erro ao excluir.", "e"); console.error(e); } finally { hideLoad(); }
+}
+
+// ── Ver detalhe completo ──────────────────────────────────────
+async function openConsultaDetail(id) {
+  showLoad();
+  try {
+    const { data, error } = await db.from("consultations")
+      .select("*, consultation_attachments(*)")
+      .eq("id", id).single();
+    if (error) throw error;
+
+    const dtFmt  = fmtDate(data.date);
+    const hora   = data.time ? data.time.substring(0, 5) : "";
+    const anexos = (data.consultation_attachments || []);
+
+    const anexosHtml = anexos.map(a => `
+      <a href="${a.url}" target="_blank"
+        style="display:flex;align-items:center;gap:8px;padding:9px;background:var(--bg-card);border-radius:8px;text-decoration:none;color:var(--text);margin-bottom:6px;font-size:13px;border:1px solid var(--border)">
+        <span>${CONSULTA_TYPE_LABELS[a.type] || "📎"}</span>
+        <span style="flex:1;color:var(--primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.filename}</span>
+        <span style="font-size:11px;opacity:.6">Abrir ↗️</span>
+      </a>`).join("");
+
+    document.getElementById("consulta-detail-body").innerHTML = `
+      <h3 style="color:var(--primary);margin-bottom:4px">🩺 ${data.doctor_name}</h3>
+      ${data.specialty ? `<div style="font-size:13px;color:var(--text-muted);margin-bottom:2px">${data.specialty}</div>` : ""}
+      ${data.location  ? `<div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">📍 ${data.location}</div>` : ""}
+      <div style="font-weight:600;margin-bottom:4px">📅 ${dtFmt}${hora ? " às " + hora : ""}</div>
+      ${data.next_date ? `<div style="font-size:13px;color:#7B5EA7;font-weight:600;margin-bottom:10px">🔔 Próxima: ${fmtDate(data.next_date)}</div>` : ""}
+
+      ${data.notes ? `
+        <div style="margin-bottom:12px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">📝 Anotações</div>
+          <div style="font-size:13px;color:var(--text-muted);white-space:pre-wrap;background:var(--bg-card);padding:10px;border-radius:8px;border-left:3px solid #7B5EA7">${data.notes}</div>
+        </div>` : ""}
+
+      ${data.exams_requested ? `
+        <div style="margin-bottom:12px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">🔬 Exames Solicitados</div>
+          <div style="font-size:13px;color:var(--text-muted);background:var(--bg-card);padding:10px;border-radius:8px">${data.exams_requested}</div>
+        </div>` : ""}
+
+      ${data.prescriptions ? `
+        <div style="margin-bottom:12px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">💊 Medicamentos Prescritos</div>
+          <div style="font-size:13px;color:var(--text-muted);background:var(--bg-card);padding:10px;border-radius:8px">${data.prescriptions}</div>
+        </div>` : ""}
+
+      ${anexosHtml ? `
+        <div style="margin-bottom:12px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:8px">📎 Anexos</div>
+          ${anexosHtml}
+        </div>` : ""}
+
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1"
+          onclick="closeModal('modal-consulta-detail');openConsultaModal('${id}')">✏️ Editar</button>
+        <button class="btn btn-secondary" style="flex:1"
+          onclick="closeModal('modal-consulta-detail')">Fechar</button>
+      </div>`;
+
+    openModal("modal-consulta-detail");
+  } catch(e) { toast("Erro ao carregar detalhe.", "e"); console.error(e); } finally { hideLoad(); }
+}
+
+// ── Alertas de consulta via setTimeout ───────────────────────
+function scheduleConsultaAlert(dateStr, doctorName, id) {
+  if (_consultaTimers[id]) { clearTimeout(_consultaTimers[id]); delete _consultaTimers[id]; }
+  const agora = new Date();
+  const alvo  = new Date(dateStr + "T08:00:00");
+  if (alvo <= agora) return;
+  const delay = alvo - agora;
+  _consultaTimers[id] = setTimeout(() => {
+    delete _consultaTimers[id];
+    if (Notification.permission === "granted") {
+      new Notification("🩺 FibroVida — Consulta Hoje!", {
+        body: `Você tem consulta com ${doctorName} agendada para hoje.`,
+        icon: "/icons/icon-192.png"
+      });
+    }
+    toast(`🩺 Lembrete: Consulta com ${doctorName} é hoje!`, "s");
+  }, delay);
+}
+
+async function scheduleAllConsultaAlerts() {
+  if (!currentUser) return;
+  try {
+    const { data } = await db.from("consultations")
+      .select("id,doctor_name,next_date,next_alert")
+      .eq("user_id", currentUser.id)
+      .eq("next_alert", true)
+      .gte("next_date", todayISO());
+    (data || []).forEach(c => {
+      if (c.next_date) scheduleConsultaAlert(c.next_date, c.doctor_name, c.id);
+    });
+  } catch(e) { console.error(e); }
 }
 
