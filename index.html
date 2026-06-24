@@ -1194,8 +1194,12 @@
       </div>
 
       <!-- Botão de teste de alerta — sempre visível no topo -->
-      <button onclick="testarAlertaMedicamento()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:12px;background:rgba(155,109,223,0.12);border:1.5px dashed #9b6ddf;color:#7B5EA7;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;">
+      <button onclick="testarAlertaMedicamento()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:8px;background:rgba(155,109,223,0.12);border:1.5px dashed #9b6ddf;color:#7B5EA7;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;">
         🔔 Testar Alerta de Medicamento
+      </button>
+      <!-- Botão ativar push notifications -->
+      <button onclick="ativarLembretesMedicamentos()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:12px;background:rgba(57,136,192,0.10);border:1.5px dashed #3988c0;color:#2471a3;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;">
+        📱 Ativar lembretes automáticos (notificações)
       </button>
 
       <!-- Filtro + Relatório -->
@@ -1274,7 +1278,10 @@
           <div class="pt-title">Relatórios</div>
           <div class="pt-sub">Resumo semanal da sua saúde</div>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="window.print()" title="Imprimir">🖨️</button>
+          <button class="btn btn-secondary btn-sm" onclick="compartilharRelatorio()" title="Compartilhar com médico">📤</button>
+        </div>
       </div>
 
       <div class="card">
@@ -1663,6 +1670,11 @@
       <span class="ni">⚙️</span><span class="nl">Config</span>
     </button>
   </nav>
+
+  <!-- 🚨 FAB FIXO DE CRISE — sempre visível -->
+  <button class="crisis-fab-fixed" id="crisis-fab-fixed" onclick="openCriseModal()" title="Registrar Crise">
+    🚨
+  </button>
 
 </div><!-- /main-screen -->
 </div><!-- /app -->
@@ -2198,6 +2210,38 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- ================================================================
+     MODAL — COMPARTILHAR RELATÓRIO COM MÉDICO
+     ================================================================ -->
+<div class="modal-overlay" id="modal-compartilhar" onclick="if(event.target===this)closeModal('modal-compartilhar')">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header">
+      <h3>📤 Compartilhar com Médico</h3>
+      <button class="modal-close" onclick="closeModal('modal-compartilhar')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+        Escolha como enviar seu resumo de saúde para o(a) seu(sua) médico(a):
+      </p>
+      <div id="compartilhar-resumo" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px;white-space:pre-wrap;max-height:180px;overflow-y:auto"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" onclick="enviarWhatsApp()">
+          💬 Enviar via WhatsApp
+        </button>
+        <button class="btn btn-secondary" onclick="enviarEmail()">
+          ✉️ Enviar por E-mail
+        </button>
+        <button class="btn btn-secondary" onclick="copiarResumo()">
+          📋 Copiar texto
+        </button>
+      </div>
+      <p style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:12px">
+        💜 Para relatório completo em PDF, use o botão de impressão.
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- ================================================================
      MODAL DE PÂNICO
      ================================================================ -->

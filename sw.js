@@ -3,7 +3,7 @@
    Cache-first para assets estáticos | Network-first para API
    ============================================================ */
 
-const CACHE_NAME  = 'fibrovida-v3.7';
+const CACHE_NAME  = 'fibrovida-v4.0';
 const STATIC_URLS = [
   './',
   './index.html',
@@ -59,7 +59,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Cache-first: assets estáticos da app shell
-  if (event.request.method === 'GET') {
+  if (event.request.method === 'GET' && !url.pathname.includes('/functions/')) {
     event.respondWith(
       caches.match(event.request).then(cached => {
         if (cached) return cached;
@@ -80,4 +80,50 @@ self.addEventListener('fetch', event => {
       })
     );
   }
+});
+
+// ── PUSH NOTIFICATIONS ────────────────────────────────────────
+self.addEventListener('push', event => {
+  let data = { title: 'FibroVida', body: 'Lembrete do seu app de saúde 💊', icon: './icons/icon-192.png' };
+  try { if (event.data) data = { ...data, ...event.data.json() }; } catch(e) {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    data.icon || './icons/icon-192.png',
+      badge:   './icons/icon-72.png',
+      tag:     data.tag || 'fibrovida-reminder',
+      data:    { url: data.url || './' },
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || './';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => c.url.includes(self.location.origin));
+      if (existing) return existing.focus();
+      return clients.openWindow(url);
+    })
+  );
+});
+
+// ── NOTIFICAÇÕES LOCAIS AGENDADAS (via postMessage) ──────────
+// O app envia { type:'SCHEDULE_MED_ALERT', med, delayMs } ao SW
+self.addEventListener('message', event => {
+  if (!event.data || event.data.type !== 'SCHEDULE_MED_ALERT') return;
+  const { med, delayMs } = event.data;
+  setTimeout(() => {
+    self.registration.showNotification('💊 FibroVida — Medicamento', {
+      body:    `Hora de tomar: ${med.name}${med.dosage ? ' — ' + med.dosage : ''}`,
+      icon:    './icons/icon-192.png',
+      badge:   './icons/icon-72.png',
+      tag:     `med-${med.id}`,
+      vibrate: [150, 80, 150, 80, 150],
+      data:    { url: './#medicamentos' },
+    });
+  }, delayMs);
 });

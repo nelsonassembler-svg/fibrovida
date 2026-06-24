@@ -848,8 +848,7 @@ async function saveHealthInline() {
 
   showLoad();
   try {
-    const { error } = await db.from("health_records").insert({
-      user_id:        currentUser.id,
+    const payload = {
       record_date:    todayISO(),
       pain_level:     pain,
       sleep_quality:  sleep,
@@ -859,8 +858,8 @@ async function saveHealthInline() {
       fatigue_level:  fatigue,
       energy_level:   energy,
       triggers:       triggers.length ? triggers : [],
-    });
-    if (error) throw error;
+    };
+    await saveWithOfflineFallback("health_records", payload);
 
     // Reset sliders principais
     ["pain-slider","sleep-slider"].forEach(id => {
@@ -889,9 +888,11 @@ async function saveHealthInline() {
     document.getElementById("health-notes").value = "";
     clearBodyLocations();
 
-    toast("Registro salvo! 🌿", "s");
-    loadHealthRecords();
-    loadHome(); // atualiza resumo no início
+    if (navigator.onLine) {
+      toast("Registro salvo! 🌿", "s");
+      loadHealthRecords();
+      loadHome();
+    }
   } catch(e) {
     toast("Erro ao salvar registro.", "e");
   } finally { hideLoad(); }
@@ -2407,10 +2408,16 @@ async function loadReports() {
     const end   = todayISO();
     document.getElementById("report-range").textContent = `${fmtDate(start)} — ${fmtDate(end)}`;
 
-    const { data: hd } = await db.from("health_records").select("*")
-      .eq("user_id", currentUser.id)
-      .gte("record_date", start).lte("record_date", end)
-      .order("record_date", { ascending: true });
+    const [{ data: hd }, { data: crises }] = await Promise.all([
+      db.from("health_records").select("*")
+        .eq("user_id", currentUser.id)
+        .gte("record_date", start).lte("record_date", end)
+        .order("record_date", { ascending: true }),
+      db.from("crisis_events").select("crisis_date")
+        .eq("user_id", currentUser.id)
+        .gte("crisis_date", start).lte("crisis_date", end)
+        .catch(() => ({ data: [] })),  // tabela pode não existir em instâncias antigas
+    ]);
 
     if (hd?.length) {
       const avgPain  = (hd.reduce((s,r)=>s+(r.pain_level||0),0)/hd.length).toFixed(1);
@@ -2465,8 +2472,9 @@ async function loadReports() {
         }
       }
 
-      // Gráfico SVG de evolução da dor
-      renderSVGPainChart(hd, repPeriodDias);
+      // Gráfico SVG de evolução da dor (com marcadores de crise)
+      const criseDates = (crises || []).map(c => c.crisis_date);
+      renderSVGPainChart(hd, repPeriodDias, criseDates);
 
       renderBarChart("rep-pain-chart",  hd.map(r=>({ label: fmtDate(r.record_date).slice(0,5), value: r.pain_level||0, max:10 })));
       renderBarChart("rep-sleep-chart", hd.map(r=>({ label: fmtDate(r.record_date).slice(0,5), value: r.sleep_quality||0, max:5 })));
@@ -2813,36 +2821,225 @@ async function deleteDoc(id, fileUrl) {
   } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
 }
 
-// ── DIÁRIO DA DOR — LOCAIS DE DOR ────────────────────────────
-const LOCAIS_DOR = [
-  "Cabeça","Pescoço","Ombros","Braços",
-  "Mãos","Costas","Lombar","Quadril",
-  "Pernas","Joelhos","Pés","Corpo todo"
+// ── DIÁRIO DA DOR — MAPA CORPORAL SVG ────────────────────────
+
+// Regiões do corpo com coordenadas no SVG (viewBox 0 0 220 400)
+const BODY_REGIONS = [
+  // Frente
+  { id: "cabeca",          label: "Cabeça",       side: "frente", d: "M110,15 a28,32 0 1,0 0.1,0 Z" },
+  { id: "pescoco",         label: "Pescoço",       side: "frente", d: "M100,60 h20 v18 h-20 Z" },
+  { id: "ombro_esq",      label: "Ombro Esq.",    side: "frente", d: "M68,72 a14,14 0 1,0 0.1,0 Z" },
+  { id: "ombro_dir",      label: "Ombro Dir.",    side: "frente", d: "M152,72 a14,14 0 1,0 0.1,0 Z" },
+  { id: "torax",          label: "Tórax",          side: "frente", d: "M83,78 h54 v50 h-54 Z" },
+  { id: "abdomen",        label: "Abdômen",        side: "frente", d: "M83,128 h54 v38 h-54 Z" },
+  { id: "braco_esq",      label: "Braço Esq.",    side: "frente", d: "M54,78 h22 v55 h-22 Z" },
+  { id: "braco_dir",      label: "Braço Dir.",    side: "frente", d: "M144,78 h22 v55 h-22 Z" },
+  { id: "antebraco_esq", label: "Antebraço E.",  side: "frente", d: "M55,133 h20 v50 h-20 Z" },
+  { id: "antebraco_dir", label: "Antebraço D.",  side: "frente", d: "M145,133 h20 v50 h-20 Z" },
+  { id: "mao_esq",        label: "Mão Esq.",      side: "frente", d: "M53,183 a12,16 0 1,0 0.1,0 Z" },
+  { id: "mao_dir",        label: "Mão Dir.",      side: "frente", d: "M155,183 a12,16 0 1,0 0.1,0 Z" },
+  { id: "quadril",        label: "Quadril",        side: "frente", d: "M80,166 h60 v26 h-60 Z" },
+  { id: "coxa_esq",      label: "Coxa Esq.",     side: "frente", d: "M80,192 h26 v60 h-26 Z" },
+  { id: "coxa_dir",      label: "Coxa Dir.",     side: "frente", d: "M114,192 h26 v60 h-26 Z" },
+  { id: "joelho_esq",    label: "Joelho Esq.",   side: "frente", d: "M80,252 h26 v22 h-26 Z" },
+  { id: "joelho_dir",    label: "Joelho Dir.",   side: "frente", d: "M114,252 h26 v22 h-26 Z" },
+  { id: "perna_esq",     label: "Perna Esq.",    side: "frente", d: "M82,274 h22 v65 h-22 Z" },
+  { id: "perna_dir",     label: "Perna Dir.",    side: "frente", d: "M116,274 h22 v65 h-22 Z" },
+  { id: "pe_esq",        label: "Pé Esq.",       side: "frente", d: "M76,339 h32 v18 h-32 Z" },
+  { id: "pe_dir",        label: "Pé Dir.",       side: "frente", d: "M112,339 h32 v18 h-32 Z" },
+  // Costas
+  { id: "cabeca_c",       label: "Cabeça",        side: "costas", d: "M110,15 a28,32 0 1,0 0.1,0 Z" },
+  { id: "pescoco_c",      label: "Pescoço",        side: "costas", d: "M100,60 h20 v18 h-20 Z" },
+  { id: "ombro_esq_c",   label: "Ombro Esq.",    side: "costas", d: "M68,72 a14,14 0 1,0 0.1,0 Z" },
+  { id: "ombro_dir_c",   label: "Ombro Dir.",    side: "costas", d: "M152,72 a14,14 0 1,0 0.1,0 Z" },
+  { id: "costas_sup",    label: "Costas Sup.",   side: "costas", d: "M83,78 h54 v50 h-54 Z" },
+  { id: "lombar",         label: "Lombar",         side: "costas", d: "M83,128 h54 v38 h-54 Z" },
+  { id: "braco_esq_c",   label: "Braço Esq.",    side: "costas", d: "M54,78 h22 v55 h-22 Z" },
+  { id: "braco_dir_c",   label: "Braço Dir.",    side: "costas", d: "M144,78 h22 v55 h-22 Z" },
+  { id: "gluteo",         label: "Glúteo",         side: "costas", d: "M80,166 h60 v26 h-60 Z" },
+  { id: "coxa_esq_c",   label: "Coxa Esq.",     side: "costas", d: "M80,192 h26 v60 h-26 Z" },
+  { id: "coxa_dir_c",   label: "Coxa Dir.",     side: "costas", d: "M114,192 h26 v60 h-26 Z" },
+  { id: "panturrilha_e", label: "Panturrilha E.", side: "costas", d: "M82,274 h22 v65 h-22 Z" },
+  { id: "panturrilha_d", label: "Panturrilha D.", side: "costas", d: "M116,274 h22 v65 h-22 Z" },
 ];
 
+let _bodyView = "frente"; // "frente" ou "costas"
+
 function initBodyLocations() {
-  const grade = document.getElementById("inline-locais-grid");
-  if (!grade) return;
-  grade.innerHTML = "";
-  LOCAIS_DOR.forEach(local => {
-    const b = document.createElement("button");
-    b.className = "botao-local";
-    b.textContent = local;
-    b.dataset.local = local;
-    b.type = "button";
-    b.addEventListener("click", function() { this.classList.toggle("ativo"); });
-    grade.appendChild(b);
+  const container = document.getElementById("inline-locais-grid");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="body-map-wrap">
+      <div class="body-map-tabs">
+        <button class="bmt-btn active" id="bmt-frente" onclick="switchBodyView('frente')" type="button">🫁 Frente</button>
+        <button class="bmt-btn" id="bmt-costas" onclick="switchBodyView('costas')" type="button">🫀 Costas</button>
+      </div>
+      <div class="body-map-hint">Toque nas regiões com dor para marcá-las</div>
+      <div class="body-map-svg-wrap">
+        <svg id="body-svg" viewBox="0 0 220 370" xmlns="http://www.w3.org/2000/svg">
+          <!-- Silhueta de fundo -->
+          <g id="body-silhouette" fill="#e8e8e8" stroke="#ccc" stroke-width="1">
+            <!-- Cabeça -->
+            <ellipse cx="110" cy="28" rx="28" ry="32"/>
+            <!-- Pescoço -->
+            <rect x="100" y="57" width="20" height="18" rx="4"/>
+            <!-- Torso -->
+            <rect x="75" y="73" width="70" height="95" rx="8"/>
+            <!-- Ombros -->
+            <ellipse cx="68" cy="80" rx="16" ry="14"/>
+            <ellipse cx="152" cy="80" rx="16" ry="14"/>
+            <!-- Braços -->
+            <rect x="53" y="82" width="20" height="55" rx="6"/>
+            <rect x="147" y="82" width="20" height="55" rx="6"/>
+            <!-- Antebraços -->
+            <rect x="54" y="137" width="18" height="50" rx="5"/>
+            <rect x="148" y="137" width="18" height="50" rx="5"/>
+            <!-- Mãos -->
+            <ellipse cx="63" cy="198" rx="13" ry="16"/>
+            <ellipse cx="157" cy="198" rx="13" ry="16"/>
+            <!-- Quadril/Pelve -->
+            <rect x="78" y="168" width="64" height="28" rx="8"/>
+            <!-- Coxas -->
+            <rect x="79" y="193" width="27" height="62" rx="6"/>
+            <rect x="114" y="193" width="27" height="62" rx="6"/>
+            <!-- Joelhos -->
+            <rect x="80" y="253" width="25" height="22" rx="6"/>
+            <rect x="115" y="253" width="25" height="22" rx="6"/>
+            <!-- Pernas -->
+            <rect x="82" y="272" width="21" height="66" rx="5"/>
+            <rect x="117" y="272" width="21" height="66" rx="5"/>
+            <!-- Pés -->
+            <rect x="75" y="335" width="32" height="18" rx="5"/>
+            <rect x="113" y="335" width="32" height="18" rx="5"/>
+          </g>
+          <!-- Regiões clicáveis (invisíveis, em cima da silhueta) -->
+          <g id="body-regions" fill="rgba(192,57,43,0)" stroke="none">
+            <!-- Cabeça -->
+            <ellipse data-region="cabeca" data-label="Cabeça" class="body-region frente" cx="110" cy="28" rx="28" ry="32"/>
+            <!-- Pescoço -->
+            <rect data-region="pescoco" data-label="Pescoço" class="body-region frente" x="100" y="57" width="20" height="18" rx="4"/>
+            <!-- Tórax -->
+            <rect data-region="torax" data-label="Tórax" class="body-region frente" x="83" y="73" width="54" height="50" rx="4"/>
+            <!-- Abdômen -->
+            <rect data-region="abdomen" data-label="Abdômen" class="body-region frente" x="83" y="123" width="54" height="45" rx="4"/>
+            <!-- Ombro esq -->
+            <ellipse data-region="ombro_esq" data-label="Ombro Esq." class="body-region frente" cx="68" cy="80" rx="16" ry="14"/>
+            <!-- Ombro dir -->
+            <ellipse data-region="ombro_dir" data-label="Ombro Dir." class="body-region frente" cx="152" cy="80" rx="16" ry="14"/>
+            <!-- Braço esq -->
+            <rect data-region="braco_esq" data-label="Braço Esq." class="body-region frente" x="53" y="82" width="20" height="55" rx="6"/>
+            <!-- Braço dir -->
+            <rect data-region="braco_dir" data-label="Braço Dir." class="body-region frente" x="147" y="82" width="20" height="55" rx="6"/>
+            <!-- Antebraço esq -->
+            <rect data-region="antebraco_esq" data-label="Antebraço E." class="body-region frente" x="54" y="137" width="18" height="50" rx="5"/>
+            <!-- Antebraço dir -->
+            <rect data-region="antebraco_dir" data-label="Antebraço D." class="body-region frente" x="148" y="137" width="18" height="50" rx="5"/>
+            <!-- Mão esq -->
+            <ellipse data-region="mao_esq" data-label="Mão Esq." class="body-region frente" cx="63" cy="198" rx="13" ry="16"/>
+            <!-- Mão dir -->
+            <ellipse data-region="mao_dir" data-label="Mão Dir." class="body-region frente" cx="157" cy="198" rx="13" ry="16"/>
+            <!-- Quadril -->
+            <rect data-region="quadril" data-label="Quadril" class="body-region frente" x="78" y="168" width="64" height="28" rx="8"/>
+            <!-- Coxa esq -->
+            <rect data-region="coxa_esq" data-label="Coxa Esq." class="body-region frente" x="79" y="193" width="27" height="62" rx="6"/>
+            <!-- Coxa dir -->
+            <rect data-region="coxa_dir" data-label="Coxa Dir." class="body-region frente" x="114" y="193" width="27" height="62" rx="6"/>
+            <!-- Joelho esq -->
+            <rect data-region="joelho_esq" data-label="Joelho Esq." class="body-region frente" x="80" y="253" width="25" height="22" rx="6"/>
+            <!-- Joelho dir -->
+            <rect data-region="joelho_dir" data-label="Joelho Dir." class="body-region frente" x="115" y="253" width="25" height="22" rx="6"/>
+            <!-- Perna esq -->
+            <rect data-region="perna_esq" data-label="Perna Esq." class="body-region frente" x="82" y="272" width="21" height="66" rx="5"/>
+            <!-- Perna dir -->
+            <rect data-region="perna_dir" data-label="Perna Dir." class="body-region frente" x="117" y="272" width="21" height="66" rx="5"/>
+            <!-- Pé esq -->
+            <rect data-region="pe_esq" data-label="Pé Esq." class="body-region frente" x="75" y="335" width="32" height="18" rx="5"/>
+            <!-- Pé dir -->
+            <rect data-region="pe_dir" data-label="Pé Dir." class="body-region frente" x="113" y="335" width="32" height="18" rx="5"/>
+            <!-- === COSTAS === -->
+            <ellipse data-region="cabeca_c" data-label="Cabeça" class="body-region costas" cx="110" cy="28" rx="28" ry="32" style="display:none"/>
+            <rect data-region="pescoco_c" data-label="Pescoço" class="body-region costas" x="100" y="57" width="20" height="18" rx="4" style="display:none"/>
+            <ellipse data-region="ombro_esq_c" data-label="Ombro Esq." class="body-region costas" cx="68" cy="80" rx="16" ry="14" style="display:none"/>
+            <ellipse data-region="ombro_dir_c" data-label="Ombro Dir." class="body-region costas" cx="152" cy="80" rx="16" ry="14" style="display:none"/>
+            <rect data-region="costas_sup" data-label="Costas Sup." class="body-region costas" x="83" y="73" width="54" height="50" rx="4" style="display:none"/>
+            <rect data-region="lombar" data-label="Lombar" class="body-region costas" x="83" y="123" width="54" height="45" rx="4" style="display:none"/>
+            <rect data-region="braco_esq_c" data-label="Braço Esq." class="body-region costas" x="53" y="82" width="20" height="55" rx="6" style="display:none"/>
+            <rect data-region="braco_dir_c" data-label="Braço Dir." class="body-region costas" x="147" y="82" width="20" height="55" rx="6" style="display:none"/>
+            <rect data-region="gluteo" data-label="Glúteo" class="body-region costas" x="78" y="168" width="64" height="28" rx="8" style="display:none"/>
+            <rect data-region="coxa_esq_c" data-label="Coxa Esq." class="body-region costas" x="79" y="193" width="27" height="62" rx="6" style="display:none"/>
+            <rect data-region="coxa_dir_c" data-label="Coxa Dir." class="body-region costas" x="114" y="193" width="27" height="62" rx="6" style="display:none"/>
+            <rect data-region="panturrilha_e" data-label="Panturrilha E." class="body-region costas" x="82" y="272" width="21" height="66" rx="5" style="display:none"/>
+            <rect data-region="panturrilha_d" data-label="Panturrilha D." class="body-region costas" x="117" y="272" width="21" height="66" rx="5" style="display:none"/>
+            <rect data-region="pe_esq_c" data-label="Pé Esq." class="body-region costas" x="75" y="335" width="32" height="18" rx="5" style="display:none"/>
+            <rect data-region="pe_dir_c" data-label="Pé Dir." class="body-region costas" x="113" y="335" width="32" height="18" rx="5" style="display:none"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body-map-selected" id="body-selected-list">Nenhuma região selecionada</div>
+    </div>
+  `;
+
+  // Adiciona eventos de clique nas regiões
+  document.querySelectorAll(".body-region").forEach(el => {
+    el.style.cursor = "pointer";
+    el.style.transition = "fill 0.2s";
+    el.addEventListener("click", function() {
+      const isActive = this.classList.toggle("ativo");
+      this.style.fill = isActive ? "rgba(192,57,43,0.55)" : "rgba(192,57,43,0)";
+      this.style.stroke = isActive ? "#c0392b" : "none";
+      this.style.strokeWidth = isActive ? "2" : "0";
+      updateBodySelectedList();
+    });
+    el.addEventListener("mouseenter", function() {
+      if (!this.classList.contains("ativo"))
+        this.style.fill = "rgba(192,57,43,0.18)";
+    });
+    el.addEventListener("mouseleave", function() {
+      if (!this.classList.contains("ativo"))
+        this.style.fill = "rgba(192,57,43,0)";
+    });
   });
+
+  switchBodyView("frente");
+}
+
+function switchBodyView(view) {
+  _bodyView = view;
+  document.querySelectorAll(".body-region.frente").forEach(el => {
+    el.style.display = view === "frente" ? "" : "none";
+  });
+  document.querySelectorAll(".body-region.costas").forEach(el => {
+    el.style.display = view === "costas" ? "" : "none";
+  });
+  document.querySelectorAll(".bmt-btn").forEach(b => b.classList.remove("active"));
+  const activeBtn = document.getElementById("bmt-" + view);
+  if (activeBtn) activeBtn.classList.add("active");
+}
+
+function updateBodySelectedList() {
+  const active = [];
+  document.querySelectorAll(".body-region.ativo").forEach(el => {
+    active.push(el.dataset.label);
+  });
+  const el = document.getElementById("body-selected-list");
+  if (el) el.textContent = active.length ? "📍 " + active.join(" · ") : "Nenhuma região selecionada";
 }
 
 function getSelectedLocais() {
   const locais = [];
-  document.querySelectorAll("#inline-locais-grid .botao-local.ativo").forEach(b => locais.push(b.dataset.local));
+  document.querySelectorAll(".body-region.ativo").forEach(el => locais.push(el.dataset.label));
   return locais;
 }
 
 function clearBodyLocations() {
-  document.querySelectorAll("#inline-locais-grid .botao-local.ativo").forEach(b => b.classList.remove("ativo"));
+  document.querySelectorAll(".body-region.ativo").forEach(el => {
+    el.classList.remove("ativo");
+    el.style.fill = "rgba(192,57,43,0)";
+    el.style.stroke = "none";
+  });
+  const el = document.getElementById("body-selected-list");
+  if (el) el.textContent = "Nenhuma região selecionada";
 }
 
 function corPorNivel(n) {
@@ -2853,7 +3050,7 @@ function corPorNivel(n) {
 }
 
 // ── SVG CHART — EVOLUÇÃO DA DOR ──────────────────────────────
-function renderSVGPainChart(records, dias) {
+function renderSVGPainChart(records, dias, criseDates = []) {
   const container = document.getElementById("rep-svg-chart");
   if (!container) return;
 
@@ -2893,9 +3090,11 @@ function renderSVGPainChart(records, dias) {
     svg += `<text x="${W-2}" y="${(y-2).toFixed(1)}" font-size="8" fill="#9a9a80" text-anchor="end" font-family="sans-serif">${n}</text>`;
   });
 
-  // Barras
+  // Barras + marcadores de crise
   diasArr.forEach((d, i) => {
     const x = i * bW + (bW - bFill) / 2;
+    const isCrise = criseDates.includes(d.date);
+
     if (d.val !== null) {
       const h = Math.max((d.val / 10) * aUtil, 2);
       const y = mT + aUtil - h;
@@ -2904,6 +3103,14 @@ function renderSVGPainChart(records, dias) {
         svg += `<text x="${(x+bFill/2).toFixed(1)}" y="${(y-2).toFixed(1)}" font-size="8" fill="#5a5a40" text-anchor="middle" font-family="sans-serif">${Math.round(d.val)}</text>`;
       }
     }
+
+    // Marcador de crise: triângulo vermelho no topo
+    if (isCrise) {
+      const cx = x + bFill / 2;
+      svg += `<polygon points="${cx},${mT+2} ${cx-5},${mT+11} ${cx+5},${mT+11}" fill="#c0392b" opacity="0.85"/>`;
+      svg += `<text x="${cx.toFixed(1)}" y="${(mT+9).toFixed(1)}" font-size="7" fill="#fff" text-anchor="middle" font-family="sans-serif" font-weight="bold">!</text>`;
+    }
+
     // Rótulo de data (a cada 2 dias ou último)
     if (i % 2 === 0 || i === diasArr.length - 1) {
       const labelX = x + bFill / 2;
@@ -2911,6 +3118,12 @@ function renderSVGPainChart(records, dias) {
       svg += `<text x="${labelX.toFixed(1)}" y="${H - 6}" font-size="9" fill="#757050" text-anchor="middle" font-family="sans-serif">${dd}/${mm}</text>`;
     }
   });
+
+  // Legenda de crise no rodapé
+  if (criseDates.length) {
+    svg += `<polygon points="8,${H-18} 3,${H-8} 13,${H-8}" fill="#c0392b" opacity="0.85"/>`;
+    svg += `<text x="17" y="${H-9}" font-size="8" fill="#c0392b" font-family="sans-serif">= dia de crise</text>`;
+  }
 
   svg += "</svg>";
   container.innerHTML = svg;
@@ -4210,5 +4423,219 @@ async function scheduleAllConsultaAlerts() {
       if (c.next_date) scheduleConsultaAlert(c.next_date, c.doctor_name, c.id);
     });
   } catch(e) { console.error(e); }
+}
+
+// ============================================================
+// MÓDULO COMPARTILHAR RELATÓRIO COM MÉDICO
+// ============================================================
+
+let _resumoCompartilhado = "";
+
+async function compartilharRelatorio() {
+  if (!currentUser) return;
+  showLoad();
+  try {
+    const now  = new Date();
+    const prev = new Date(now); prev.setDate(prev.getDate() - (repPeriodDias - 1));
+    const start = prev.toISOString().split("T")[0];
+    const end   = todayISO();
+
+    const [{ data: hd }, { data: crises }, { data: meds }] = await Promise.all([
+      db.from("health_records").select("*")
+        .eq("user_id", currentUser.id)
+        .gte("record_date", start).lte("record_date", end)
+        .order("record_date", { ascending: true }),
+      db.from("crisis_events").select("crisis_date").eq("user_id", currentUser.id)
+        .gte("crisis_date", start).lte("crisis_date", end)
+        .catch(() => ({ data: [] })),
+      db.from("medications").select("name,dosage,active").eq("user_id", currentUser.id).eq("active", true),
+    ]);
+
+    const nome = currentProfile?.name || "Paciente";
+    const avgPain  = hd?.length ? (hd.reduce((s,r)=>s+(r.pain_level||0),0)/hd.length).toFixed(1) : "—";
+    const avgSleep = hd?.length ? (hd.reduce((s,r)=>s+(r.sleep_quality||0),0)/hd.length).toFixed(1) : "—";
+    const avgFat   = hd?.filter(r=>r.fatigue_level!=null).length
+                   ? (hd.filter(r=>r.fatigue_level!=null).reduce((s,r)=>s+r.fatigue_level,0)/hd.filter(r=>r.fatigue_level!=null).length).toFixed(1)
+                   : "—";
+    const nCrises  = crises?.length || 0;
+    const medsList = (meds || []).map(m => `• ${m.name}${m.dosage ? ' — '+m.dosage : ''}`).join("\n") || "Nenhum";
+
+    const trigCount = {};
+    (hd || []).forEach(r => { (r.triggers||[]).forEach(t => { trigCount[t]=(trigCount[t]||0)+1; }); });
+    const topTrigs = Object.keys(trigCount).sort((a,b)=>trigCount[b]-trigCount[a]).slice(0,4).join(", ") || "Nenhum";
+
+    const resumo =
+`🌿 RELATÓRIO FIBROVIDA
+Paciente: ${nome}
+Período: ${fmtDate(start)} a ${fmtDate(end)} (${repPeriodDias} dias)
+Emitido em: ${fmtDate(todayISO())}
+
+📊 RESUMO DE SAÚDE
+• Dor média: ${avgPain}/10
+• Qualidade do sono: ${avgSleep}/5
+• Fadiga média: ${avgFat}/10
+• Crises no período: ${nCrises}
+• Principais gatilhos: ${topTrigs}
+
+💊 MEDICAMENTOS EM USO
+${medsList}
+
+───────────────────
+Gerado pelo app FibroVida`;
+
+    _resumoCompartilhado = resumo;
+    const el = document.getElementById("compartilhar-resumo");
+    if (el) el.textContent = resumo;
+    document.getElementById("modal-compartilhar").classList.add("open");
+  } catch(e) {
+    toast("Erro ao gerar resumo.", "e");
+  } finally { hideLoad(); }
+}
+
+function enviarWhatsApp() {
+  const texto = encodeURIComponent(_resumoCompartilhado);
+  window.open(`https://wa.me/?text=${texto}`, "_blank");
+}
+
+function enviarEmail() {
+  const assunto = encodeURIComponent("Relatório FibroVida — Resumo de Saúde");
+  const corpo   = encodeURIComponent(_resumoCompartilhado);
+  window.open(`mailto:?subject=${assunto}&body=${corpo}`, "_blank");
+}
+
+async function copiarResumo() {
+  try {
+    await navigator.clipboard.writeText(_resumoCompartilhado);
+    toast("📋 Texto copiado!", "s");
+  } catch(e) {
+    toast("Não foi possível copiar automaticamente.", "w");
+  }
+}
+
+// ============================================================
+// MÓDULO PUSH NOTIFICATIONS — Lembretes de medicamentos
+// ============================================================
+
+async function requestNotificationPermission() {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  const result = await Notification.requestPermission();
+  return result === "granted";
+}
+
+// Agenda notificações locais para medicamentos com horário definido
+async function scheduleMedNotifications() {
+  if (!currentUser || !navigator.serviceWorker?.controller) return;
+  const granted = await requestNotificationPermission();
+  if (!granted) return;
+
+  try {
+    const { data: meds } = await db.from("medications")
+      .select("id,name,dosage,schedule_time,active")
+      .eq("user_id", currentUser.id)
+      .eq("active", true);
+
+    if (!meds?.length) return;
+
+    const now = new Date();
+    meds.forEach(med => {
+      if (!med.schedule_time) return;
+      const [h, m] = med.schedule_time.split(":").map(Number);
+      const target = new Date(now);
+      target.setHours(h, m, 0, 0);
+      // Se o horário já passou hoje, agendamos para amanhã
+      if (target <= now) target.setDate(target.getDate() + 1);
+      const delayMs = target - now;
+      navigator.serviceWorker.controller.postMessage({
+        type: "SCHEDULE_MED_ALERT",
+        med: { id: med.id, name: med.name, dosage: med.dosage },
+        delayMs,
+      });
+    });
+  } catch(e) { console.error("[push] scheduleMedNotifications:", e); }
+}
+
+// Botão "Ativar lembretes de medicamentos" — chamado do painel de medicamentos
+async function ativarLembretesMedicamentos() {
+  const granted = await requestNotificationPermission();
+  if (!granted) {
+    toast("⚠️ Permissão de notificação negada. Habilite nas configurações do navegador.", "w");
+    return;
+  }
+  await scheduleMedNotifications();
+  toast("🔔 Lembretes de medicamentos ativados!", "s");
+}
+
+// ============================================================
+// MÓDULO OFFLINE — Fila de sincronização com localStorage
+// ============================================================
+
+const OFFLINE_QUEUE_KEY = "fibrovida_offline_queue";
+
+function offlineEnqueue(table, payload) {
+  const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]");
+  queue.push({ table, payload, ts: Date.now() });
+  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+  console.info(`[offline] item enfileirado para "${table}"`);
+}
+
+async function offlineSync() {
+  if (!currentUser) return;
+  const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+  if (!raw) return;
+  const queue = JSON.parse(raw);
+  if (!queue.length) return;
+
+  const failed = [];
+  for (const item of queue) {
+    try {
+      const { error } = await db.from(item.table).insert({
+        ...item.payload,
+        user_id: currentUser.id,
+      });
+      if (error) throw error;
+    } catch(e) {
+      failed.push(item);
+    }
+  }
+
+  if (failed.length) {
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(failed));
+    toast(`⚠️ ${failed.length} registro(s) pendentes ainda não sincronizados.`, "w");
+  } else {
+    localStorage.removeItem(OFFLINE_QUEUE_KEY);
+    const synced = queue.length;
+    if (synced > 0) {
+      toast(`✅ ${synced} registro(s) offline sincronizados!`, "s");
+      loadHealthRecords();
+      loadHome();
+    }
+  }
+}
+
+// Escuta reconexão e tenta sincronizar automaticamente
+window.addEventListener("online", () => {
+  toast("🌐 Conexão restaurada. Sincronizando...", "s");
+  setTimeout(() => offlineSync(), 1500);
+});
+
+// Wrapper para salvar com fallback offline
+async function saveWithOfflineFallback(table, payload) {
+  if (!navigator.onLine) {
+    offlineEnqueue(table, payload);
+    toast("📴 Sem internet — salvo localmente. Será sincronizado quando voltar.", "w");
+    return true; // indica que foi salvo (offline)
+  }
+  try {
+    const { error } = await db.from(table).insert({ ...payload, user_id: currentUser.id });
+    if (error) throw error;
+    return true;
+  } catch(e) {
+    // Se falhar mesmo online, tenta offline queue como fallback
+    offlineEnqueue(table, payload);
+    toast("⚠️ Erro de conexão — salvo localmente para sincronização posterior.", "w");
+    return false;
+  }
 }
 
