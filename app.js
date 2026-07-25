@@ -4620,6 +4620,377 @@ window.addEventListener("online", () => {
   setTimeout(() => offlineSync(), 1500);
 });
 
+// ══════════════════════════════════════════════════════════════
+//  DIVÃ DIGITAL — Gravação de Voz
+// ══════════════════════════════════════════════════════════════
+let _divaMediaRecorder = null;
+let _divaChunks        = [];
+let _divaBlob          = null;
+let _divaMood          = 0;
+let _divaTimerInterval = null;
+let _divaSeconds       = 0;
+
+function selectDivaMood(v, btn) {
+  _divaMood = v;
+  document.querySelectorAll('.diva-mood-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+}
+
+function formatDivaTime(s) {
+  const m = String(Math.floor(s/60)).padStart(2,'0');
+  const ss = String(s%60).padStart(2,'0');
+  return `${m}:${ss}`;
+}
+
+async function toggleDivaRec() {
+  if (_divaMediaRecorder && _divaMediaRecorder.state === 'recording') return;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _divaChunks = [];
+    _divaMediaRecorder = new MediaRecorder(stream);
+
+    _divaMediaRecorder.ondataavailable = e => { if (e.data.size > 0) _divaChunks.push(e.data); };
+    _divaMediaRecorder.onstop = () => {
+      _divaBlob = new Blob(_divaChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(_divaBlob);
+      const audio = document.getElementById('diva-audio-preview');
+      audio.src = url;
+      document.getElementById('diva-preview').style.display = 'block';
+      stream.getTracks().forEach(t => t.stop());
+    };
+
+    _divaMediaRecorder.start();
+    _divaSeconds = 0;
+    document.getElementById('diva-timer').textContent = '00:00';
+    _divaTimerInterval = setInterval(() => {
+      _divaSeconds++;
+      document.getElementById('diva-timer').textContent = formatDivaTime(_divaSeconds);
+    }, 1000);
+
+    const btn = document.getElementById('diva-btn-rec');
+    btn.textContent = '🔴 Gravando...';
+    btn.classList.add('gravando');
+    document.getElementById('diva-btn-stop').style.display = 'flex';
+    document.getElementById('diva-wave').classList.add('gravando');
+    document.getElementById('diva-preview').style.display = 'none';
+    toast('🎙️ Gravação iniciada — fale livremente!', 's');
+  } catch(e) {
+    toast('❌ Sem permissão para o microfone. Permita nas configurações do navegador.', 'e');
+  }
+}
+
+function stopDivaRec() {
+  if (_divaMediaRecorder && _divaMediaRecorder.state === 'recording') {
+    _divaMediaRecorder.stop();
+    clearInterval(_divaTimerInterval);
+    const btn = document.getElementById('diva-btn-rec');
+    btn.textContent = '🎙️ Gravar';
+    btn.classList.remove('gravando');
+    document.getElementById('diva-btn-stop').style.display = 'none';
+    document.getElementById('diva-wave').classList.remove('gravando');
+    toast('⏹️ Gravação encerrada. Ouça e salve!', 'i');
+  }
+}
+
+async function saveDivaRec() {
+  if (!_divaBlob) return toast('Nenhuma gravação para salvar.', 'e');
+  if (!currentUser) return;
+  showLoad();
+  try {
+    const ts   = Date.now();
+    const path = `${currentUser.id}/diva/${ts}.webm`;
+    const { error: upErr } = await db.storage.from('health-docs').upload(path, _divaBlob, { contentType: 'audio/webm' });
+    if (upErr) throw upErr;
+    const { data: urlData } = db.storage.from('health-docs').getPublicUrl(path);
+    const titulo = document.getElementById('diva-title').value.trim() || 'Gravação sem título';
+    const { error } = await db.from('diva_recordings').insert({
+      user_id: currentUser.id,
+      title: titulo,
+      mood: _divaMood,
+      duration: _divaSeconds,
+      storage_path: path,
+      url: urlData.publicUrl
+    });
+    if (error) throw error;
+    toast('💾 Gravação salva com sucesso!', 's');
+    document.getElementById('diva-title').value = '';
+    document.getElementById('diva-preview').style.display = 'none';
+    document.getElementById('diva-timer').textContent = '00:00';
+    _divaBlob = null; _divaMood = 0; _divaSeconds = 0;
+    document.querySelectorAll('.diva-mood-btn').forEach(b => b.classList.remove('ativo'));
+    loadDivaList();
+  } catch(e) {
+    toast('Erro ao salvar gravação: ' + e.message, 'e');
+  } finally { hideLoad(); }
+}
+
+async function loadDivaList() {
+  if (!currentUser) return;
+  const { data, error } = await db.from('diva_recordings')
+    .select('*').eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+  const el = document.getElementById('diva-list');
+  if (error || !data || !data.length) {
+    el.innerHTML = '<div class="empty-state"><div class="ei">🛋️</div><p>Suas gravações aparecerão aqui</p></div>';
+    return;
+  }
+  const moods = ['','😊','😐','😔','😣','😭'];
+  el.innerHTML = data.map(r => `
+    <div class="diva-item">
+      <div class="diva-item-header">
+        <div>
+          <div class="diva-item-title">${r.title || 'Sem título'}</div>
+          <div class="diva-item-date">${new Date(r.created_at).toLocaleString('pt-BR')}</div>
+        </div>
+        <div class="diva-item-mood">${moods[r.mood] || ''}</div>
+      </div>
+      <audio controls src="${r.url}" style="width:100%;border-radius:8px"></audio>
+      <div class="diva-item-actions">
+        <button onclick="deleteDivaRec('${r.id}','${r.storage_path}')">🗑️ Excluir</button>
+        <button onclick="compartilharDiva('${r.url}','${r.title}')">📤 Compartilhar</button>
+      </div>
+    </div>`).join('');
+}
+
+async function deleteDivaRec(id, path) {
+  if (!confirm('Excluir esta gravação?')) return;
+  await db.storage.from('health-docs').remove([path]);
+  await db.from('diva_recordings').delete().eq('id', id);
+  toast('Gravação excluída.', 's');
+  loadDivaList();
+}
+
+function compartilharDiva(url, titulo) {
+  if (navigator.share) {
+    navigator.share({ title: `FibroVida — ${titulo}`, url });
+  } else {
+    navigator.clipboard.writeText(url);
+    toast('Link copiado para compartilhar com seu médico!', 's');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXERCÍCIO & ACADEMIA
+// ══════════════════════════════════════════════════════════════
+let _exercicioFiltro = 'semana';
+
+function setExercicioFiltro(f, btn) {
+  _exercicioFiltro = f;
+  document.querySelectorAll('#tab-exercicio .filt-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  loadExercicios();
+}
+
+function openExercicioModal(id) {
+  document.getElementById('exercicio-id').value = id || '';
+  if (!id) {
+    document.getElementById('exercicio-tipo').value = '';
+    document.getElementById('exercicio-data').value = new Date().toISOString().split('T')[0];
+    document.getElementById('exercicio-duracao').value = '';
+    document.getElementById('exercicio-intensidade').value = 'moderada';
+    document.getElementById('exercicio-dor').value = 0;
+    document.getElementById('exercicio-dor-val').textContent = '0';
+    document.querySelector('#exercicio-dor').style.setProperty('--pct','0%');
+    document.getElementById('exercicio-obs').value = '';
+  }
+  openModal('modal-exercicio');
+}
+
+async function saveExercicio() {
+  const tipo = document.getElementById('exercicio-tipo').value;
+  const data = document.getElementById('exercicio-data').value;
+  if (!tipo || !data) return toast('Preencha o tipo e a data!', 'e');
+  showLoad();
+  try {
+    const payload = {
+      user_id: currentUser.id,
+      tipo,
+      data,
+      duracao: parseInt(document.getElementById('exercicio-duracao').value) || null,
+      intensidade: document.getElementById('exercicio-intensidade').value,
+      dor_nivel: parseInt(document.getElementById('exercicio-dor').value),
+      obs: document.getElementById('exercicio-obs').value.trim()
+    };
+    const id = document.getElementById('exercicio-id').value;
+    if (id) {
+      await db.from('exercicios').update(payload).eq('id', id);
+    } else {
+      await db.from('exercicios').insert(payload);
+    }
+    toast('🏋️ Treino salvo!', 's');
+    closeModal('modal-exercicio');
+    loadExercicios();
+  } catch(e) { toast('Erro: ' + e.message, 'e'); }
+  finally { hideLoad(); }
+}
+
+async function loadExercicios() {
+  if (!currentUser) return;
+  let query = db.from('exercicios').select('*').eq('user_id', currentUser.id).order('data', { ascending: false });
+  if (_exercicioFiltro === 'semana') {
+    const d = new Date(); d.setDate(d.getDate() - 7);
+    query = query.gte('data', d.toISOString().split('T')[0]);
+  } else if (_exercicioFiltro === 'mes') {
+    const d = new Date(); d.setDate(d.getDate() - 30);
+    query = query.gte('data', d.toISOString().split('T')[0]);
+  }
+  const { data } = await query;
+  const el = document.getElementById('exercicio-list');
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="empty-state"><div class="ei">🏋️</div><p>Nenhum treino registrado ainda.<br>Toque em + para adicionar!</p></div>';
+    atualizarCorrelacao([]);
+    return;
+  }
+  const tipos = { caminhada:'🚶', musculacao:'🏋️', natacao:'🏊', yoga:'🧘', taichi:'☯️', bicicleta:'🚴', dança:'💃', alongamento:'🤸', outro:'🏃' };
+  const intens = { leve:'🟢 Leve', moderada:'🟡 Moderada', intensa:'🔴 Intensa' };
+  const dorCor = v => v <= 3 ? '#27ae60' : v <= 6 ? '#e67e22' : '#c0392b';
+  el.innerHTML = data.map(e => `
+    <div class="exercicio-item">
+      <div class="exercicio-item-header">
+        <div class="exercicio-item-tipo">${tipos[e.tipo]||'🏃'} ${e.tipo.charAt(0).toUpperCase()+e.tipo.slice(1)}</div>
+        <div class="exercicio-item-data">${new Date(e.data+'T12:00:00').toLocaleDateString('pt-BR')}</div>
+      </div>
+      ${e.obs ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${e.obs}</div>` : ''}
+      <div class="exercicio-item-tags">
+        ${e.duracao ? `<span class="exercicio-tag">⏱️ ${e.duracao} min</span>` : ''}
+        <span class="exercicio-tag">${intens[e.intensidade]||e.intensidade}</span>
+        <span class="exercicio-dor-tag" style="background:${dorCor(e.dor_nivel)}22;color:${dorCor(e.dor_nivel)}">
+          Dor: ${e.dor_nivel}/10
+        </span>
+        <button style="margin-left:auto;font-size:11px;background:none;border:none;color:var(--text-muted);cursor:pointer" onclick="deleteExercicio('${e.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+  atualizarCorrelacao(data);
+}
+
+function atualizarCorrelacao(data) {
+  const el = document.getElementById('exercicio-correlacao');
+  if (!data.length) {
+    el.innerHTML = '<p style="font-size:12px;color:#2e7d32">Registre seus treinos para ver como o exercício afeta sua dor 📊</p>';
+    return;
+  }
+  const media = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : '—';
+  const mediaDor = media(data.map(e => e.dor_nivel));
+  const totalTreinos = data.length;
+  const totalMin = data.reduce((a,e) => a + (e.duracao||0), 0);
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+      <div><div style="font-size:22px;font-weight:800;color:#1a6e3c">${totalTreinos}</div><div style="font-size:11px;color:#2e7d32">Treinos</div></div>
+      <div><div style="font-size:22px;font-weight:800;color:#1a6e3c">${totalMin}m</div><div style="font-size:11px;color:#2e7d32">Minutos</div></div>
+      <div><div style="font-size:22px;font-weight:800;color:#e67e22">${mediaDor}</div><div style="font-size:11px;color:#2e7d32">Dor média</div></div>
+    </div>
+    <p style="font-size:11px;color:#2e7d32;margin-top:8px;text-align:center">
+      ${parseFloat(mediaDor) <= 4 ? '✅ Parabéns! Exercitar está ajudando a controlar sua dor!' : '💪 Continue! O exercício regular reduz a dor com o tempo.'}
+    </p>`;
+}
+
+async function deleteExercicio(id) {
+  if (!confirm('Excluir este treino?')) return;
+  await db.from('exercicios').delete().eq('id', id);
+  toast('Treino excluído.', 's');
+  loadExercicios();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RELATÓRIO SUS / INSS
+// ══════════════════════════════════════════════════════════════
+async function gerarRelatorioSUS() {
+  if (!currentUser) return;
+  showLoad();
+  try {
+    const [saude, meds, crises, consultas] = await Promise.all([
+      db.from('health_records').select('*').eq('user_id', currentUser.id).order('date', { ascending: false }).limit(60),
+      db.from('medications').select('*').eq('user_id', currentUser.id),
+      db.from('crises').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(20),
+      db.from('consultations').select('*').eq('user_id', currentUser.id).order('date', { ascending: false }).limit(10)
+    ]);
+    const nome = currentProfile?.name || 'Paciente';
+    const email = currentUser.email;
+    const medico = document.getElementById('sus-medico').value.trim();
+    const finalidade = document.getElementById('sus-finalidade');
+    const finalidadeTexto = finalidade.options[finalidade.selectedIndex].text;
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const registros = saude.data || [];
+    const medicamentos = meds.data || [];
+    const crisesData = crises.data || [];
+    const consultasData = consultas.data || [];
+    const mediaDor = registros.length
+      ? (registros.reduce((a,r) => a+(r.pain_level||0), 0)/registros.length).toFixed(1) : '—';
+    const maxDor = registros.length
+      ? Math.max(...registros.map(r => r.pain_level||0)) : '—';
+
+    const conteudo = `
+RELATÓRIO MÉDICO-SOCIAL — FIBROMIALGIA
+Baseado na Lei nº 15.176/2025 (Programa Nacional de Proteção dos Direitos das Pessoas com Fibromialgia)
+Finalidade: ${finalidadeTexto}
+Data: ${hoje}
+${medico ? `Destinatário: ${medico}` : ''}
+
+═══════════════════════════════════════
+DADOS DO PACIENTE
+═══════════════════════════════════════
+Nome: ${nome}
+E-mail: ${email}
+Diagnóstico: Fibromialgia (CID-10: M79.7)
+
+═══════════════════════════════════════
+RESUMO DO MONITORAMENTO (últimos 60 dias)
+═══════════════════════════════════════
+Total de registros de saúde: ${registros.length}
+Média de dor: ${mediaDor}/10
+Pico máximo de dor: ${maxDor}/10
+Crises registradas: ${crisesData.length}
+Medicamentos em uso: ${medicamentos.length}
+Consultas médicas registradas: ${consultasData.length}
+
+═══════════════════════════════════════
+MEDICAMENTOS EM USO
+═══════════════════════════════════════
+${medicamentos.length
+  ? medicamentos.map(m => `• ${m.name} — ${m.dosage||''} — ${m.frequency||''}`).join('\n')
+  : 'Nenhum medicamento cadastrado'}
+
+═══════════════════════════════════════
+ÚLTIMAS CONSULTAS
+═══════════════════════════════════════
+${consultasData.length
+  ? consultasData.map(c => `• ${new Date(c.date+'T12:00:00').toLocaleDateString('pt-BR')} — ${c.doctor_name} (${c.specialty||''})`).join('\n')
+  : 'Nenhuma consulta registrada'}
+
+═══════════════════════════════════════
+HISTÓRICO DE CRISES (últimas ${crisesData.length})
+═══════════════════════════════════════
+${crisesData.length
+  ? crisesData.map(c => `• ${new Date(c.created_at).toLocaleDateString('pt-BR')} — Dor: ${c.pain_level||'—'}/10`).join('\n')
+  : 'Nenhuma crise registrada'}
+
+═══════════════════════════════════════
+FUNDAMENTAÇÃO LEGAL
+═══════════════════════════════════════
+Este documento foi gerado com base na Lei nº 15.176/2025, que:
+• Reconhece a fibromialgia como deficiência no Brasil
+• Garante atendimento integral pelo SUS
+• Assegura tratamento multidisciplinar
+• Prevê programa nacional de proteção e pesquisa
+
+Gerado pelo aplicativo FibroVida em ${hoje}
+Desenvolvido por Nelson Tomaz Catunda Magalhães
+nelsontcmagalhaes@gmail.com
+    `.trim();
+
+    const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Relatorio-SUS-FibroVida-${hoje.replace(/\//g,'-')}.txt`;
+    a.click();
+    toast('📄 Relatório gerado e baixado!', 's');
+  } catch(e) {
+    toast('Erro ao gerar relatório: ' + e.message, 'e');
+  } finally { hideLoad(); }
+}
+
 // Wrapper para salvar com fallback offline
 async function saveWithOfflineFallback(table, payload) {
   if (!navigator.onLine) {

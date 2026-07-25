@@ -1629,6 +1629,298 @@
       </div>
     </div>
 
+    <!-- ============================================================
+         DIVÃ DIGITAL — Gravação de Voz
+         ============================================================ -->
+    <div class="tab-pane" id="tab-diva">
+      <div class="page-title-bar">
+        <div class="pt-icon" style="background:linear-gradient(135deg,#8e44ad,#5b2c6f)">🛋️</div>
+        <div class="pt-body">
+          <div class="pt-title">Divã Digital</div>
+          <div class="pt-sub">Grave suas angústias e sentimentos</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:14px">
+            💜 Este é o seu espaço seguro. Grave como está se sentindo — sua dor, angústia, conquistas.
+            As gravações ficam salvas e podem ser compartilhadas com seu médico ou psicólogo.
+          </p>
+
+          <!-- Intensidade emocional -->
+          <div class="saude-section">
+            <div class="saude-section-label">Como você está agora?</div>
+            <div class="diva-mood-row">
+              <button class="diva-mood-btn" data-v="1" onclick="selectDivaMood(1,this)">😊<span>Bem</span></button>
+              <button class="diva-mood-btn" data-v="2" onclick="selectDivaMood(2,this)">😐<span>Regular</span></button>
+              <button class="diva-mood-btn" data-v="3" onclick="selectDivaMood(3,this)">😔<span>Triste</span></button>
+              <button class="diva-mood-btn" data-v="4" onclick="selectDivaMood(4,this)">😣<span>Com dor</span></button>
+              <button class="diva-mood-btn" data-v="5" onclick="selectDivaMood(5,this)">😭<span>Em crise</span></button>
+            </div>
+          </div>
+
+          <!-- Título opcional -->
+          <div class="fg" style="margin-bottom:12px">
+            <label>Título (opcional)</label>
+            <input type="text" id="diva-title" placeholder="Ex: Dia difícil, Crise de dor, Conquista..." />
+          </div>
+
+          <!-- Gravador -->
+          <div class="diva-recorder">
+            <div class="diva-timer" id="diva-timer">00:00</div>
+            <div class="diva-wave" id="diva-wave">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="diva-controls">
+              <button class="diva-btn-rec" id="diva-btn-rec" onclick="toggleDivaRec()">🎙️ Gravar</button>
+              <button class="diva-btn-stop" id="diva-btn-stop" onclick="stopDivaRec()" style="display:none">⏹️ Parar</button>
+            </div>
+          </div>
+
+          <!-- Player do último áudio gravado -->
+          <div id="diva-preview" style="display:none;margin-top:12px">
+            <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">🎧 Prévia:</div>
+            <audio id="diva-audio-preview" controls style="width:100%;border-radius:8px"></audio>
+            <button class="btn btn-primary mt-8" style="width:100%" onclick="saveDivaRec()">💾 Salvar Gravação</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de gravações -->
+      <div class="section-title-bar">
+        <span>🎙️ Minhas Gravações</span>
+      </div>
+      <div id="diva-list">
+        <div class="empty-state"><div class="ei">🛋️</div><p>Suas gravações aparecerão aqui</p></div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         EXERCÍCIO & ACADEMIA
+         ============================================================ -->
+    <div class="tab-pane" id="tab-exercicio">
+      <div class="page-title-bar">
+        <div class="pt-icon" style="background:linear-gradient(135deg,#27ae60,#1a6e3c)">🏋️</div>
+        <div class="pt-body">
+          <div class="pt-title">Exercício & Academia</div>
+          <div class="pt-sub">Mexa-se e monitore sua evolução</div>
+        </div>
+        <button class="btn-fab" onclick="openExercicioModal()" title="Novo treino">+</button>
+      </div>
+
+      <!-- Correlação Exercício × Dor -->
+      <div class="card" style="background:linear-gradient(135deg,#eafaf1,#d5f5e3);border:none">
+        <div class="card-body">
+          <div class="card-title" style="color:#1a6e3c">💡 Sua Correlação Pessoal</div>
+          <div id="exercicio-correlacao">
+            <p style="font-size:12px;color:#2e7d32">Registre seus treinos para ver como o exercício afeta sua dor 📊</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="filt-btn ativo" onclick="setExercicioFiltro('semana',this)">📅 Esta semana</button>
+        <button class="filt-btn" onclick="setExercicioFiltro('mes',this)">📆 Este mês</button>
+        <button class="filt-btn" onclick="setExercicioFiltro('todos',this)">📋 Todos</button>
+      </div>
+
+      <div id="exercicio-list">
+        <div class="empty-state"><div class="ei">🏋️</div><p>Nenhum treino registrado ainda.<br>Toque em + para adicionar!</p></div>
+      </div>
+
+      <!-- Guia de exercícios para fibromialgia -->
+      <div class="section-title-bar mt-12">
+        <span>📚 Exercícios Recomendados</span>
+      </div>
+
+      <div class="exercicio-guide-card">
+        <div class="egc-icon">🚶</div>
+        <div class="egc-body">
+          <div class="egc-title">Caminhada</div>
+          <div class="egc-sub">20-30 min · ritmo confortável · ideal para começar</div>
+        </div>
+      </div>
+      <div class="exercicio-guide-card">
+        <div class="egc-icon">🏊</div>
+        <div class="egc-body">
+          <div class="egc-title">Hidroterapia / Natação</div>
+          <div class="egc-sub">A água reduz impacto nas articulações · excelente para dor</div>
+        </div>
+      </div>
+      <div class="exercicio-guide-card">
+        <div class="egc-icon">🧘</div>
+        <div class="egc-body">
+          <div class="egc-title">Yoga / Pilates</div>
+          <div class="egc-sub">Flexibilidade e relaxamento muscular · reduz fibro fog</div>
+        </div>
+      </div>
+      <div class="exercicio-guide-card">
+        <div class="egc-icon">☯️</div>
+        <div class="egc-body">
+          <div class="egc-title">Tai Chi / Qigong</div>
+          <div class="egc-sub">Aprovado pelas novas diretrizes SBR 2026 · melhora sono e humor</div>
+        </div>
+      </div>
+      <div class="exercicio-guide-card">
+        <div class="egc-icon">🏋️</div>
+        <div class="egc-body">
+          <div class="egc-title">Musculação leve</div>
+          <div class="egc-sub">Fortalece músculos e reduz dor crônica · você já está fazendo! ✅</div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+    <!-- MODAL — NOVO TREINO -->
+    <div class="modal-overlay" id="modal-exercicio">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>🏋️ Registrar Treino</h3>
+          <button class="modal-close" onclick="closeModal('modal-exercicio')">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="exercicio-id">
+          <div class="fg"><label>Tipo de Exercício *</label>
+            <select id="exercicio-tipo">
+              <option value="">Selecione...</option>
+              <option value="caminhada">🚶 Caminhada</option>
+              <option value="musculacao">🏋️ Musculação</option>
+              <option value="natacao">🏊 Natação / Hidroterapia</option>
+              <option value="yoga">🧘 Yoga / Pilates</option>
+              <option value="taichi">☯️ Tai Chi / Qigong</option>
+              <option value="bicicleta">🚴 Bicicleta</option>
+              <option value="dança">💃 Dança</option>
+              <option value="alongamento">🤸 Alongamento</option>
+              <option value="outro">🏃 Outro</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div class="fg" style="flex:1"><label>Data *</label>
+              <input type="date" id="exercicio-data"></div>
+            <div class="fg" style="flex:1"><label>Duração (min)</label>
+              <input type="number" id="exercicio-duracao" min="1" max="300" placeholder="30"></div>
+          </div>
+          <div class="fg"><label>Intensidade</label>
+            <select id="exercicio-intensidade">
+              <option value="leve">🟢 Leve — sem esforço</option>
+              <option value="moderada" selected>🟡 Moderada — confortável</option>
+              <option value="intensa">🔴 Intensa — me esforcei bastante</option>
+            </select>
+          </div>
+          <div class="fg"><label>Dor durante/após o exercício (0-10)</label>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="exercicio-dor" min="0" max="10" value="0"
+                  oninput="updateRange(this,'exercicio-dor-val',10)" style="--pct:0%">
+                <div class="slider-hints"><span>Sem dor</span><span>Dor intensa</span></div>
+              </div>
+              <div class="slider-val"><span id="exercicio-dor-val">0</span>/10</div>
+            </div>
+          </div>
+          <div class="fg"><label>Observações</label>
+            <textarea id="exercicio-obs" rows="2" placeholder="Como se sentiu, o que fez, resultados..."></textarea></div>
+          <button class="btn btn-primary btn-full" onclick="saveExercicio()">💾 Salvar Treino</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         RELATÓRIO SUS / INSS  (Lei 15.176/2025)
+         ============================================================ -->
+    <div class="tab-pane" id="tab-sus">
+      <div class="page-title-bar">
+        <div class="pt-icon" style="background:linear-gradient(135deg,#2471a3,#1a5276)">🏥</div>
+        <div class="pt-body">
+          <div class="pt-title">Relatório SUS / INSS</div>
+          <div class="pt-sub">Lei nº 15.176/2025 — Seus direitos</div>
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#eaf4fb,#d6eaf8);border:none">
+        <div class="card-body">
+          <div class="card-title" style="color:#1a5276">⚖️ Você tem direitos garantidos por lei!</div>
+          <p style="font-size:12px;color:#1a5276;line-height:1.6">
+            A <strong>Lei nº 15.176/2025</strong> reconhece a fibromialgia como deficiência no Brasil
+            desde janeiro de 2026. Você tem direito a atendimento integral pelo SUS, benefícios do INSS
+            e programa nacional de proteção.
+          </p>
+        </div>
+      </div>
+
+      <!-- Seus direitos -->
+      <div class="section-title-bar"><span>📋 Seus Direitos</span></div>
+      <div class="sus-direito-card">
+        <div class="sdc-icon">🏥</div>
+        <div class="sdc-body">
+          <div class="sdc-title">Atendimento Integral pelo SUS</div>
+          <div class="sdc-sub">Consultas, exames, medicamentos e terapias integrativas</div>
+        </div>
+      </div>
+      <div class="sus-direito-card">
+        <div class="sdc-icon">💰</div>
+        <div class="sdc-body">
+          <div class="sdc-title">Benefício INSS (BPC/LOAS)</div>
+          <div class="sdc-sub">Se incapaz para o trabalho, pode solicitar benefício por incapacidade</div>
+        </div>
+      </div>
+      <div class="sus-direito-card">
+        <div class="sdc-icon">🚗</div>
+        <div class="sdc-body">
+          <div class="sdc-title">Isenção de IPI / IPVA</div>
+          <div class="sdc-sub">Pessoa com deficiência pode ter isenção na compra de veículo</div>
+        </div>
+      </div>
+      <div class="sus-direito-card">
+        <div class="sdc-icon">🧘</div>
+        <div class="sdc-body">
+          <div class="sdc-title">Terapias Integrativas pelo SUS</div>
+          <div class="sdc-sub">Acupuntura, yoga e neuromodulação nas novas diretrizes SBR 2026</div>
+        </div>
+      </div>
+
+      <!-- Gerar relatório -->
+      <div class="section-title-bar mt-8"><span>📄 Gerar Documento Oficial</span></div>
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">
+            Gere um relatório completo com seu histórico de dor, medicamentos, crises e tratamentos —
+            baseado na Lei 15.176/2025 — para apresentar ao INSS, médico perito ou SUS.
+          </p>
+          <div class="fg"><label>Nome do médico / perito (opcional)</label>
+            <input type="text" id="sus-medico" placeholder="Dr(a). Nome..." /></div>
+          <div class="fg"><label>Finalidade do documento</label>
+            <select id="sus-finalidade">
+              <option value="inss">INSS — Benefício por incapacidade</option>
+              <option value="sus">SUS — Solicitação de tratamento</option>
+              <option value="pericia">Perícia médica</option>
+              <option value="juridico">Processo jurídico</option>
+              <option value="medico">Uso médico geral</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="gerarRelatorioSUS()">📄 Gerar Relatório PDF</button>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
   </main>
 
   <!-- NAVEGAÇÃO INFERIOR — 8 itens scrolláveis -->
@@ -1665,6 +1957,15 @@
     </button>
     <button class="nav-item" data-tab="relatorios" onclick="showTab('relatorios',this)">
       <span class="ni">📊</span><span class="nl">Relatórios</span>
+    </button>
+    <button class="nav-item" data-tab="diva" onclick="showTab('diva',this)">
+      <span class="ni">🛋️</span><span class="nl">Divã</span>
+    </button>
+    <button class="nav-item" data-tab="exercicio" onclick="showTab('exercicio',this)">
+      <span class="ni">🏋️</span><span class="nl">Exercício</span>
+    </button>
+    <button class="nav-item" data-tab="sus" onclick="showTab('sus',this)">
+      <span class="ni">🏥</span><span class="nl">SUS/INSS</span>
     </button>
     <button class="nav-item" data-tab="config" onclick="showTab('config',this)">
       <span class="ni">⚙️</span><span class="nl">Config</span>
