@@ -637,6 +637,28 @@ body { transition: background .25s, color .25s; }
   font-size: 26px; color: var(--green);
 }
 
+/* Botões novos — destaque com badge "Novo" */
+.acao-btn--novo {
+  position: relative;
+  border-color: var(--green);
+  background: var(--green-ultra);
+}
+.acao-btn--novo::after {
+  content: 'Novo';
+  position: absolute;
+  top: -7px; right: -7px;
+  background: var(--green);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  padding: 2px 5px;
+  border-radius: 20px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.acao-btn--novo:hover { box-shadow: 0 4px 16px rgba(90,122,48,0.25); }
+
 /* ── Summary row (3 cols) ── */
 .summary-strip {
   display: grid; grid-template-columns: repeat(3,1fr);
