@@ -55,6 +55,137 @@ const motivations = [
 ];
 let _motivIdx = Math.floor(Math.random() * motivations.length);
 
+// ── BIBLIOTECA DE ARTIGOS ────────────────────────────────────
+// Cada item vira um card na Início + um modal completo.
+// Para adicionar um novo artigo: copie um objeto abaixo, preencha
+// os campos e defina publicado:true quando tiver autorização do autor.
+//
+// campos:
+//   id            identificador único (string, sem espaço)
+//   publicado     true = aparece no app | false = fica pronto mas oculto
+//   autorTipo     "interno" (equipe FibroVida) | "convidado" (profissional externo)
+//   tag           texto pequeno no topo do card/modal
+//   titulo        título do artigo
+//   preview       resumo curto exibido no card da Início
+//   intro         parágrafo de abertura em destaque no modal
+//   corpo         array de blocos: {tipo:"texto"|"sintoma"|"destaque", ...}
+//   cta           frase de chamada no fim do artigo (opcional)
+//   autorNome     nome exibido na assinatura
+//   autorSub      cargo/credencial exibida na assinatura (ex: CRM, especialidade)
+//   fonteUrl      link para a publicação original (obrigatório se autorTipo="convidado")
+//   fonteLabel    texto do botão de link (opcional, tem um padrão)
+//   categorias    tags livres para futura filtragem (ex: ["homens","dor-cronica"])
+const ARTIGOS_BIBLIOTECA = [
+  {
+    id: "dor-invisivel",
+    publicado: true,
+    autorTipo: "interno",
+    tag: "Artigo em Destaque",
+    titulo: "💜 Fibromialgia: A dor que você não vê, mas que é real.",
+    preview: "Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro...",
+    intro: "Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro. A fibromialgia é uma condição complexa que vai muito além de uma \"dorzinha física\". Ela mexe com a rotina, com o sono, com a mente e com a alma.",
+    corpo: [
+      { tipo: "texto", texto: "Se você convive com a fibromialgia, ou conhece alguém que tem, sabe que os desafios diários envolvem:" },
+      { tipo: "sintoma", icon: "❤️‍🩹", titulo: "Dor generalizada", texto: "Aquela sensação de que o corpo todo dói, sem um motivo aparente." },
+      { tipo: "sintoma", icon: "⚡", titulo: "Fadiga extrema", texto: "Um cansaço profundo que não passa nem depois de uma noite inteira de sono." },
+      { tipo: "sintoma", icon: "🌫️", titulo: "\"Fibro Fog\"", texto: "Lapsos de memória, dificuldade de concentração e aquela sensação de mente enevoada." },
+      { tipo: "sintoma", icon: "🌙", titulo: "Alterações de humor e sono", texto: "Noites mal dormidas que alimentam um ciclo de mais dor e desgaste emocional." },
+      { tipo: "destaque", texto: "<strong>O maior desafio? A invisibilidade.</strong><br>Por não aparecer em exames de sangue ou de imagem, muitas pessoas ainda enfrentam a falta de empatia e o julgamento alheio." },
+      { tipo: "texto", texto: "Se você tem fibromialgia, lembre-se: <strong>sua dor não é frescura, não é psicológica e você não está sozinho(a).</strong> Validar o que você sente é o primeiro passo para encontrar caminhos de cuidado e bem-estar." },
+      { tipo: "texto", texto: "E se você conhece alguém nessa jornada, o melhor remédio que você pode oferecer hoje é a <strong>escuta e o respeito</strong>." },
+    ],
+    cta: "💬 Vamos quebrar o silêncio?",
+    autorNome: "Nelson Tomaz Catunda Magalhães",
+    autorSub: "Desenvolvedor — FibroVida",
+    fonteUrl: null,
+    categorias: ["invisibilidade", "acolhimento"],
+  },
+  {
+    id: "fibromialgia-em-homens",
+    publicado: true,
+    autorTipo: "editorial",
+    tag: "Saúde Masculina • Novo consenso 2026",
+    titulo: "🩺 Fibromialgia também é coisa de homem",
+    preview: "Pesquisas mostram que 20x mais homens têm sintomas de fibromialgia do que recebem diagnóstico. O silêncio cultural está custando caro.",
+    intro: "A fibromialgia costuma ser associada às mulheres. Mas ela também acontece em homens — e nesse caso pode passar despercebida por muito mais tempo, com consequências sérias para a saúde e a qualidade de vida.",
+    corpo: [
+      { tipo: "destaque", texto: "\"A fibromialgia não tem gênero. Homens também sentem dor crônica, acordam sem se sentir descansados e precisam ser ouvidos e tratados com seriedade.\"" },
+      { tipo: "texto", texto: "Dor generalizada, fadiga intensa e sono que não restaura: os sintomas são os mesmos em homens e mulheres. O que muda é a forma como eles são percebidos — pelo próprio paciente, pela família e, muitas vezes, pelos profissionais de saúde." },
+      { tipo: "sintoma", icon: "📊", titulo: "O subdiagnóstico é alarmante", texto: "Uma pesquisa publicada no Arthritis Care & Research revelou que 20 vezes mais homens relatam sintomas compatíveis com fibromialgia do que chegam a receber o diagnóstico — comparado a 3 vezes nas mulheres. Isso significa que a doença está muito mais presente na população masculina do que se imaginava." },
+      { tipo: "sintoma", icon: "🧠", titulo: "Por que demora tanto?", texto: "A cultura de \"aguentar a dor\" faz muitos homens minimizarem seus sintomas — inclusive para si mesmos. Ao procurar ajuda, há maior dificuldade em descrever fadiga, sono ruim e impacto emocional. Isso leva médicos a buscarem outras causas, atrasando o diagnóstico por anos." },
+      { tipo: "sintoma", icon: "💔", titulo: "Impacto além da dor física", texto: "Pesquisas mostram que quase todos os homens com fibromialgia relatam depressão como consequência. Mais da metade enfrenta dificuldades nos relacionamentos. O isolamento e a sensação de não ser compreendido agravam ainda mais o quadro." },
+      { tipo: "destaque", texto: "Novo consenso do New England Journal of Medicine (julho/2026): a fibromialgia afeta 4 a 6% da população mundial e envolve alterações no processamento da dor no sistema nervoso central — não é \"coisa da cabeça\", é uma condição neurológica real." },
+      { tipo: "texto", texto: "O diagnóstico hoje é clínico e direto: não precisa excluir todas as outras doenças antes. A fibromialgia pode coexistir com artrite, lúpus e outras condições. O tratamento mais eficaz combina exercício físico regular, melhora do sono e terapia cognitivo-comportamental." },
+      { tipo: "sintoma", icon: "✅", titulo: "O que realmente ajuda", texto: "Caminhada, natação e musculação leve têm as melhores evidências científicas. Anti-inflamatórios e opioides não funcionam para fibromialgia — e podem causar dependência sem benefício real. Procure um reumatologista ou especialista em dor crônica." },
+      { tipo: "texto", texto: "Se você é homem e reconhece esses sintomas — ou conhece alguém assim — leve a sério. Buscar ajuda não é fraqueza. É o passo mais corajoso que existe." },
+    ],
+    cta: "💬 Você conhece algum homem que convive com fibromialgia? Compartilhe este conteúdo.",
+    autorNome: "Equipe FibroVida",
+    autorSub: "Baseado em: Arthritis Care & Research • New England Journal of Medicine jul/2026 • SBR 2025 • Dra. Mônica Duarte Costa (Reumatologista, HC-FMUSP)",
+    fonteUrl: "https://www.dorcronica.blog.br/fibromialgia-em-homens/",
+    fonteLabel: "🔗 Saiba mais: Fibromialgia em Homens",
+    categorias: ["homens", "diagnostico", "invisibilidade", "novidades"],
+  },
+];
+
+function renderArtigosBiblioteca() {
+  const secao = document.getElementById("artigos-section");
+  const lista = document.getElementById("artigos-lista");
+  if (!lista || !secao) return;
+  const publicados = ARTIGOS_BIBLIOTECA.filter(a => a.publicado);
+  if (!publicados.length) { secao.style.display = "none"; lista.innerHTML = ""; return; }
+  secao.style.display = "";
+  lista.innerHTML = publicados.map(a => `
+    <div class="artigo-card" onclick="openArtigo('${a.id}')">
+      <div class="artigo-card-tag">${a.autorTipo === "convidado" ? "👩‍⚕️ " : "✍️ "}${esc(a.tag)}</div>
+      <div class="artigo-card-titulo">${a.titulo}</div>
+      <div class="artigo-card-preview">${esc(a.preview)}</div>
+      <div class="artigo-card-autor">— ${esc(a.autorNome)} &nbsp;›</div>
+    </div>
+  `).join("");
+}
+
+function openArtigo(id) {
+  const a = ARTIGOS_BIBLIOTECA.find(x => x.id === id);
+  if (!a) return;
+
+  document.getElementById("artigo-modal-tag").textContent =
+    (a.autorTipo === "convidado" ? "👩‍⚕️ " : "✍️ ") + a.tag;
+  document.getElementById("artigo-modal-titulo").textContent = a.titulo;
+  document.getElementById("artigo-modal-intro").textContent = a.intro;
+
+  const corpoEl = document.getElementById("artigo-modal-corpo");
+  corpoEl.innerHTML = (a.corpo || []).map(bloco => {
+    if (bloco.tipo === "sintoma") {
+      return `<div class="artigo-sintoma"><div class="artigo-sintoma-icon">${bloco.icon}</div>
+        <div><strong>${esc(bloco.titulo)}</strong><br><span>${esc(bloco.texto)}</span></div></div>`;
+    }
+    if (bloco.tipo === "destaque") {
+      return `<div class="artigo-destaque">${bloco.texto}</div>`;
+    }
+    return `<p class="artigo-modal-texto">${bloco.texto}</p>`;
+  }).join("");
+
+  const ctaEl = document.getElementById("artigo-modal-cta");
+  ctaEl.textContent = a.cta || "";
+  ctaEl.style.display = a.cta ? "" : "none";
+
+  const fonteEl = document.getElementById("artigo-modal-fonte");
+  if (a.fonteUrl) {
+    fonteEl.style.display = "";
+    fonteEl.href = a.fonteUrl;
+    fonteEl.textContent = "🔗 " + (a.fonteLabel || "Ver publicação original");
+  } else {
+    fonteEl.style.display = "none";
+    fonteEl.removeAttribute("href");
+  }
+
+  document.getElementById("artigo-modal-autor-nome").textContent = a.autorNome;
+  document.getElementById("artigo-modal-autor-sub").textContent = a.autorSub;
+
+  document.getElementById("modal-artigo").classList.add("open");
+}
+
 // ── MODO ESCURO ──────────────────────────────────────────────
 function toggleDarkMode() {
   const isDark = document.body.classList.toggle("dark");
@@ -179,6 +310,7 @@ document.addEventListener("click", e => {
 function showPanel(id) {
   document.querySelectorAll(".auth-panel").forEach(p => p.classList.remove("active"));
   document.getElementById(id)?.classList.add("active");
+  if (id === "panel-register") updateRegisterButtonState();
 }
 
 function togglePass(inputId, btn) {
@@ -190,6 +322,26 @@ function togglePass(inputId, btn) {
 function showLGPD() { openModal("modal-lgpd"); }
 function openAdminModal() { openModal("modal-admin"); }
 
+// ── VALIDAÇÃO DE E-MAIL ─────────────────────────────────────
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function setFieldError(inputId, hasError) {
+  const el = document.getElementById(inputId);
+  if (el) el.classList.toggle("field-error", !!hasError);
+}
+
+// Dá uma dica visual (borda vermelha) se o e-mail digitado estiver com
+// formato inválido. NÃO desabilita o botão — a validação completa (e as
+// mensagens de erro) acontece em doRegister() ao clicar em "Criar conta".
+// Importante: o botão precisa continuar sempre clicável, mesmo que algo
+// dê errado no carregamento da página, para nunca travar o cadastro.
+function updateRegisterButtonState() {
+  const email = document.getElementById("reg-email")?.value.trim() || "";
+  setFieldError("reg-email", email.length > 0 && !isValidEmail(email));
+}
+
 // ── SLIDER ───────────────────────────────────────────────────
 function updateRange(input, valId, max) {
   document.getElementById(valId).textContent = input.value;
@@ -198,9 +350,10 @@ function updateRange(input, valId, max) {
 
 // ── LOGIN ────────────────────────────────────────────────────
 async function doLogin() {
-  const email    = document.getElementById("login-email").value.trim();
+  const email    = document.getElementById("login-email").value.trim().toLowerCase();
   const password = document.getElementById("login-password").value;
-  if (!email || !password) { toast("Preencha e-mail e senha.", "e"); return; }
+  if (!email || !password)   { toast("Preencha e-mail e senha.", "e"); return; }
+  if (!isValidEmail(email))  { toast("Digite um e-mail válido.", "e"); return; }
   showLoad();
   try {
     const { data, error } = await db.auth.signInWithPassword({ email, password });
@@ -214,13 +367,14 @@ async function doLogin() {
 // ── CADASTRO ─────────────────────────────────────────────────
 async function doRegister() {
   const name     = document.getElementById("reg-name").value.trim();
-  const email    = document.getElementById("reg-email").value.trim();
+  const email    = document.getElementById("reg-email").value.trim().toLowerCase();
   const password = document.getElementById("reg-password").value;
   const lgpd     = document.getElementById("lgpd-check").checked;
 
   if (!name || !email || !password) { toast("Preencha todos os campos.", "e"); return; }
+  if (!isValidEmail(email))         { setFieldError("reg-email", true); toast("Digite um e-mail válido (ex: nome@exemplo.com).", "e"); return; }
   if (password.length < 6)          { toast("Senha: mínimo 6 caracteres.", "e"); return; }
-  if (!lgpd)                        { toast("Aceite a Política de Privacidade (LGPD).", "w"); return; }
+  if (!lgpd)                        { toast("Para criar sua conta, você precisa aceitar a Política de Privacidade (LGPD).", "w"); return; }
 
   showLoad();
   try {
@@ -246,8 +400,9 @@ async function doRegister() {
 
 // ── RECUPERAÇÃO ──────────────────────────────────────────────
 async function doRecovery() {
-  const email = document.getElementById("recovery-email").value.trim();
-  if (!email) { toast("Digite seu e-mail.", "e"); return; }
+  const email = document.getElementById("recovery-email").value.trim().toLowerCase();
+  if (!email)               { toast("Digite seu e-mail.", "e"); return; }
+  if (!isValidEmail(email)) { toast("Digite um e-mail válido.", "e"); return; }
   showLoad();
   try {
     const { error } = await db.auth.resetPasswordForEmail(email);
@@ -295,8 +450,28 @@ function translateErr(msg) {
   if (msg.includes("rate limit"))              return "Muitas tentativas. Aguarde alguns minutos.";
   if (msg.includes("Unable to validate"))      return "E-mail inválido.";
   if (msg.includes("signup is disabled"))      return "Cadastro desativado. Contate o administrador.";
+  // Falha de rede/CORS — típico de abrir o app com duplo-clique (file://)
+  // em vez de por um servidor local, ou de falta de internet.
+  if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("fetch"))
+    return "Não foi possível conectar ao servidor. Verifique sua internet — e se você abriu o app com duplo-clique no arquivo, use o Live Server (ou http://localhost) em vez disso.";
+  // A biblioteca do Supabase não carregou (CDN bloqueado/sem internet no 1º load)
+  if (msg.includes("supabase is not defined") || msg.includes("Cannot access 'db'") || msg.includes("db is not defined"))
+    return "O app não conseguiu carregar os componentes de conexão. Recarregue a página (Ctrl+Shift+R) com internet ativa.";
   return msg;
 }
+
+// Rede de segurança: se algo quebrar fora dos try/catch normais, avisa
+// visivelmente em vez de falhar em silêncio (o que parecia "botão sem
+// reação" antes desta correção).
+window.addEventListener("error", (ev) => {
+  console.error("Erro não tratado:", ev.error || ev.message);
+  if (typeof toast === "function") {
+    toast("Ocorreu um erro inesperado. Recarregue a página (Ctrl+Shift+R).", "e");
+  }
+});
+window.addEventListener("unhandledrejection", (ev) => {
+  console.error("Promise rejeitada sem tratamento:", ev.reason);
+});
 
 // ── ESTATÍSTICAS ADMIN ───────────────────────────────────────
 let _statsInterval = null;
@@ -3946,8 +4121,28 @@ function dismissInstallBanner() {
   hideInstallBanner();
 }
 
+// ── AVISO: ABERTO COMO ARQUIVO LOCAL (file://) ────────────────
+// O Supabase (login, cadastro, banco de dados) não funciona quando o
+// index.html é aberto com duplo-clique — precisa ser servido por um
+// endereço http(s)://. Avisamos isso de forma bem visível em vez de
+// deixar login/cadastro falharem em silêncio.
+function checkFileProtocolWarning() {
+  if (window.location.protocol !== "file:") return;
+  const bar = document.createElement("div");
+  bar.id = "file-protocol-warning";
+  bar.innerHTML =
+    "⚠️ Este app foi aberto como arquivo local — o login e o cadastro <strong>não vão funcionar</strong> assim. " +
+    "Use o Live Server do VS Code ou rode <code>python -m http.server</code> na pasta e acesse por http://localhost.";
+  bar.style.cssText =
+    "position:fixed;top:0;left:0;right:0;z-index:99999;background:#c0392b;color:#fff;" +
+    "font-size:12px;font-weight:700;line-height:1.5;text-align:center;padding:10px 14px;" +
+    "box-shadow:0 2px 10px rgba(0,0,0,.3);";
+  document.body.prepend(bar);
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
+  checkFileProtocolWarning();
   checkPaymentSuccess(); // verifica retorno do Stripe
   applyDarkMode();
   showLoad();
@@ -3955,6 +4150,8 @@ async function init() {
     document.getElementById("task-date").value = todayISO();
     document.getElementById("health-edit-date").value = todayISO();
     initBodyLocations();
+    renderArtigosBiblioteca();
+    updateRegisterButtonState();
 
     const { data: { session } } = await db.auth.getSession();
     if (session?.user) {
