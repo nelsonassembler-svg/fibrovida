@@ -410,7 +410,9 @@ async function doRecovery() {
   if (!isValidEmail(email)) { toast("Digite um e-mail válido.", "e"); return; }
   showLoad();
   try {
-    const { error } = await db.auth.resetPasswordForEmail(email);
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://nelsonassembler-svg.github.io/fibrovida/"
+    });
     if (error) throw error;
     toast("Link enviado! Verifique sua caixa de entrada.", "s");
     showPanel("panel-login");
