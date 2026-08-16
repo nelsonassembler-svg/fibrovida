@@ -1,21 +1,21 @@
 /* ============================================================
-   FibroVida — Estilos visuais conforme design de referência
-   Fundo: verde oliva muito claro | Cards: branco | Green: oliva
+   FibroVida — Estilos visuais | Paleta Lilás (cor da fibromialgia)
+   Fundo: lilás muito claro | Cards: branco | Primária: #9B59B6
    ============================================================ */
 
 :root {
-  --bg:           #f8f8f4;
-  --bg2:          #eeeee6;
+  --bg:           #faf8fc;
+  --bg2:          #ede8f5;
   --card:         #ffffff;
-  --border:       #deded0;
-  --border-light: #eaeade;
+  --border:       #dad4e8;
+  --border-light: #e8e2f4;
 
-  --green:        #7A9B57;
-  --green-dark:   #5a7a30;
-  --green-light:  #9ab870;
-  --green-pale:   #edf2e5;
-  --green-ultra:  #f5f7f0;
-  --green-banner: #7A9B57;
+  --green:        #9B59B6;
+  --green-dark:   #7D3C98;
+  --green-light:  #C39BD3;
+  --green-pale:   #F5EEF8;
+  --green-ultra:  #FAF5FC;
+  --green-banner: #9B59B6;
 
   --secondary:    #5A7E9E;
   --secondary-bg: #eaf2f8;
@@ -51,29 +51,29 @@
 
 /* ── DARK MODE ─────────────────────────────────────────────── */
 body.dark {
-  --bg:           #1a1f14;
-  --bg2:          #242a1c;
-  --card:         #252e1e;
-  --border:       #3a4a2e;
-  --border-light: #2e3a24;
+  --bg:           #1a1422;
+  --bg2:          #1e1630;
+  --card:         #1e1a2e;
+  --border:       #38285a;
+  --border-light: #2a1e48;
 
-  --green:        #8ab860;
-  --green-dark:   #a8d070;
-  --green-light:  #6a9840;
-  --green-pale:   #1e2e16;
-  --green-ultra:  #1a2412;
-  --green-banner: #3a5a24;
+  --green:        #BB8FCC;
+  --green-dark:   #D7BDE2;
+  --green-light:  #9B59B6;
+  --green-pale:   #200E30;
+  --green-ultra:  #180C26;
+  --green-banner: #4A2460;
 
   --secondary:    #6a9ab8;
   --secondary-bg: #0e1e2e;
   --accent:       #d9a060;
   --accent-bg:    #2a1e0e;
-  --purple:       #b880d0;
-  --purple-bg:    #1e0e2a;
+  --purple:       #cc99e0;
+  --purple-bg:    #200e30;
 
-  --text:         #e8e8d8;
-  --text2:        #b8c4a0;
-  --text-muted:   #7a8a68;
+  --text:         #ede0f5;
+  --text2:        #c4aad8;
+  --text-muted:   #8a78a0;
 
   --danger:       #e05040;
   --danger-bg:    #2a1a18;
@@ -119,7 +119,7 @@ body { transition: background .25s, color .25s; }
 /* ── AUTH SCREEN — background image + glass card ── */
 #auth-screen {
   /* Fallback: gradiente verde se a foto não carregar */
-  background-color: #4a7020;
+  background-color: #6C3483;
   /* Foto de casal + overlay escuro */
   background-image:
     linear-gradient(to bottom,
@@ -444,7 +444,7 @@ body { transition: background .25s, color .25s; }
   -webkit-backdrop-filter: blur(4px);
 }
 .medical-disclaimer strong {
-  color: var(--primary, #7A9B57);
+  color: var(--primary, #9B59B6);
 }
 
 /* ============================================================
@@ -1492,62 +1492,64 @@ input[type=range].fv-range::-moz-range-thumb {
 }
 
 /* ── PLANOS (3 colunas) ── */
-.paywall-plans {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px; margin-bottom: 16px;
-}
-@media(max-width: 420px){
-  .paywall-plans { grid-template-columns: 1fr; }
-}
-.pw-plan {
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 8px 12px;
-  position: relative; cursor: pointer;
-  transition: border-color .2s, box-shadow .2s;
-  text-align: center;
-}
-.pw-plan:hover { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-pale); }
-.pw-plan-annual {
-  border-color: var(--green);
+/* ── PLANO PIX ── */
+.pw-pix-box {
   background: var(--green-pale);
+  border: 2px solid var(--green);
+  border-radius: var(--radius-sm);
+  padding: 16px 12px 12px;
+  text-align: center;
+  margin-bottom: 14px;
 }
-.pw-plan-lifetime {
-  border-color: #a060e0;
-  background: rgba(160,96,224,.07);
+.pw-pix-preco {
+  display: flex; align-items: baseline; justify-content: center; gap: 2px;
+  line-height: 1;
 }
-.pw-plan-badge {
-  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-  background: var(--green); color: #fff;
-  font-size: 9px; font-weight: 700;
-  padding: 2px 8px; border-radius: 20px;
-  white-space: nowrap; letter-spacing: 0.5px;
-}
-.pw-plan-badge-gold {
-  background: linear-gradient(90deg,#a060e0,#7040b0);
-}
-.pw-plan-name { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
-.pw-plan-price {
-  font-size: 24px; font-weight: 900; color: var(--green-dark); line-height: 1;
-}
-.pw-plan-lifetime .pw-plan-price { color: #7040b0; }
-.pw-cents { font-size: 14px; font-weight: 700; }
-.pw-plan-period { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
-.pw-plan-save { font-size: 10px; color: var(--green); font-weight: 700; margin-top: 3px; }
+.pw-pix-rs    { font-size: 16px; font-weight: 700; color: var(--green-dark); }
+.pw-pix-valor { font-size: 48px; font-weight: 900; color: var(--green-dark); }
+.pw-pix-cents { font-size: 18px; font-weight: 700; color: var(--green-dark); }
+.pw-pix-label { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
 
-/* ── BOTÃO STRIPE ── */
-.stripe-plan-btn {
+/* ── DADOS PIX ── */
+.pix-dados {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+.pix-dados-titulo { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 10px; }
+.pix-row { display: flex; justify-content: space-between; margin-bottom: 6px; gap: 8px; }
+.pix-row-chave { flex-direction: column; gap: 2px; }
+.pix-label { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.pix-val   { font-size: 12px; font-weight: 600; color: var(--text); text-align: right; }
+.pix-chave-num { font-size: 15px; font-weight: 700; color: var(--green-dark); letter-spacing: 1px; text-align: left; }
+.btn-copiar-pix {
+  display: block; width: 100%; margin-top: 10px;
+  background: var(--green-pale); border: 1.5px solid var(--green);
+  color: var(--green-dark); border-radius: var(--radius-sm);
+  padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.pix-instrucao {
+  font-size: 11px; color: var(--text-muted);
+  text-align: center; margin-bottom: 12px; line-height: 1.5;
+}
+.btn-whatsapp-pix {
   display: block; width: 100%;
-  background: linear-gradient(135deg, var(--green-dark), var(--green));
-  color: #fff; border: none; border-radius: var(--radius-sm);
-  padding: 12px; font-size: 14px; font-weight: 700;
-  cursor: pointer; margin-top: 4px; margin-bottom: 12px;
+  background: #25D366; color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  padding: 13px; font-size: 14px; font-weight: 700;
+  cursor: pointer; margin-bottom: 10px;
   transition: opacity .15s, transform .1s;
 }
-.stripe-plan-btn:hover { opacity: .9; transform: translateY(-1px); }
-.stripe-plan-btn:active { transform: translateY(0); }
+.btn-whatsapp-pix:hover { opacity: .9; transform: translateY(-1px); }
+.pix-contato-email {
+  font-size: 11px; color: var(--text-muted);
+  text-align: center; margin-bottom: 16px;
+}
 
-/* ── SEGURANÇA STRIPE ── */
+/* ── SEGURANÇA (legado, mantido para compatibilidade) ── */
 .stripe-secure {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   font-size: 11px; color: var(--text-muted);
@@ -1881,7 +1883,7 @@ input[type=range].fv-range::-moz-range-thumb {
   font-size: 11px;
   font-weight: 600;
 }
-.doc-receita    { background: #edf2e5; color: #5a7a30; }
+.doc-receita    { background: #F5EEF8; color: #7D3C98; }
 .doc-solicitacao { background: #eaf4fb; color: #2980b9; }
 .doc-resultado  { background: #fef9f0; color: #c07020; }
 
@@ -1906,7 +1908,7 @@ input[type=range].fv-range::-moz-range-thumb {
   font-size: 20px;
   flex-shrink: 0;
 }
-.doc-icon.receita    { background: #edf2e5; }
+.doc-icon.receita    { background: #F5EEF8; }
 .doc-icon.solicitacao { background: #eaf4fb; }
 .doc-icon.resultado  { background: #fef9f0; }
 .doc-body { flex: 1; min-width: 0; }
@@ -2407,7 +2409,7 @@ input[type=range].fv-range::-moz-range-thumb {
 #install-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
   display: flex; align-items: center; gap: 10px;
-  background: linear-gradient(135deg, #4a7020, #7A9B57);
+  background: linear-gradient(135deg, #6C3483, #9B59B6);
   color: #fff; padding: 10px 14px;
   box-shadow: 0 2px 12px rgba(0,0,0,.25);
   animation: slide-down .35s ease;
@@ -2421,7 +2423,7 @@ input[type=range].fv-range::-moz-range-thumb {
 .ib-text strong { display: block; font-size: 13px; }
 .ib-text span   { font-size: 11px; opacity: .85; }
 .ib-btn {
-  background: #fff; color: #4a7020; border: none;
+  background: #fff; color: #6C3483; border: none;
   padding: 6px 14px; border-radius: 20px; font-size: 12px;
   font-weight: 700; cursor: pointer; flex-shrink: 0;
   font-family: var(--font); transition: opacity .15s;
@@ -2898,7 +2900,7 @@ body.dark .artigo-disclaimer {
   align-items: center;
   gap: 10px;
   background: var(--card);
-  border: 2px solid #7A9B57;
+  border: 2px solid #9B59B6;
   border-radius: 14px;
   padding: 14px 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -2914,7 +2916,7 @@ body.dark .artigo-disclaimer {
 .med-alert-ico { font-size: 26px; }
 .med-alert-txt { flex: 1; font-size: 13px; line-height: 1.4; color: var(--text); }
 .med-alert-btn {
-  background: #7A9B57;
+  background: #9B59B6;
   color: #fff;
   border: none;
   border-radius: 10px;

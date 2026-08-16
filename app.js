@@ -8,12 +8,14 @@ const SUPABASE_URL      = "https://pmupshodvtddlzrohuvi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdXBzaG9kdnRkZGx6cm9odXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzUxNjYsImV4cCI6MjA5NDMxMTE2Nn0.2v3oQrkw9Lz5ZqjM2tftVBEZrbE7Gu86sUe9uzFrNm4";
 const ADMIN_EMAIL       = "nelsontcmagalhaes@gmail.com";
 
-// ── STRIPE (LIVE) ─────────────────────────────────────────────
-// Produtos e Payment Links criados via API em 25/mai/2026
-const STRIPE_LINKS = {
-  monthly:  "https://buy.stripe.com/3cI6oJ73t5joeDgdtXgIo00",  // R$9,90/mês
-  annual:   "https://buy.stripe.com/5kQ3cxbjJ3bg8eS75zgIo01",  // R$79,90/ano
-  lifetime: "https://buy.stripe.com/8x28wRcnN4fkdzc9dHgIo02",  // R$149,90 único
+// ── PAGAMENTO VIA PIX ─────────────────────────────────────────
+const PIX_INFO = {
+  chave:    "06127126304",
+  banco:    "Banco Inter",
+  titular:  "Nelson Tomaz Catunda Magalhães",
+  whatsapp: "+55 85 9 9825-1219",
+  email:    "nelsontcmagalhaes@gmail.com",
+  valor:    "R$ 50,00/ano",
 };
 
 const { createClient } = supabase;
@@ -28,7 +30,7 @@ let allTasks         = [];
 let allRecipes       = [];
 let currentRecipeCat = "all";
 
-const TRIAL_DAYS     = 3;   // dias de trial gratuito
+const TRIAL_DAYS     = 10;  // dias de trial gratuito
 
 // ── FRASES MOTIVACIONAIS ─────────────────────────────────────
 const motivations = [
@@ -586,7 +588,7 @@ function renderAdminUsers(users) {
     if (isMe)              badgeHtml = `<span class="auw-badge auw-badge-admin">👑 Admin</span>`;
     else if (plan === "premium" && courtesy) badgeHtml = `<span class="auw-badge auw-badge-courtesy">🎁 Cortesia</span>`;
     else if (plan === "premium")             badgeHtml = `<span class="auw-badge auw-badge-premium">⭐ Premium</span>`;
-    else if (diasTrial <= 7)                 badgeHtml = `<span class="auw-badge auw-badge-trial">🕐 Trial (${Math.max(0, 7 - diasTrial)}d)</span>`;
+    else if (diasTrial <= TRIAL_DAYS)        badgeHtml = `<span class="auw-badge auw-badge-trial">🕐 Trial (${Math.max(0, TRIAL_DAYS - diasTrial)}d)</span>`;
     else                                     badgeHtml = `<span class="auw-badge auw-badge-free">🔒 Free</span>`;
 
     const acoesBtns = isMe ? "" : `
@@ -699,8 +701,8 @@ async function afterLogin(user) {
     return;
   }
 
-  if (diasRestantes <= 2) {
-    toast(`⚠️ Seu período gratuito termina em ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""}! Assine o Premium para não perder o acesso.`, "w");
+  if (diasRestantes <= 3) {
+    toast(`⚠️ Seu período gratuito termina em ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""}! Pague via PIX para liberar o acesso completo.`, "w");
   } else {
     toast(`🌿 Trial gratuito: ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`, "i");
   }
@@ -729,31 +731,23 @@ function showPaywall() {
   showScreen("paywall-screen");
 }
 
-// ── STRIPE: REDIRECIONAR PARA CHECKOUT ───────────────────────
-function assinarPlano(tipo) {
-  const link = STRIPE_LINKS[tipo];
-  if (!link || link.includes("SUBSTITUA")) {
-    toast("Link de pagamento ainda não configurado. Contate o suporte.", "e");
-    return;
-  }
-  const email  = encodeURIComponent(currentUser?.email || "");
-  const userId = currentUser?.id || "";
-  const url    = `${link}?prefilled_email=${email}&client_reference_id=${userId}`;
-  window.open(url, "_blank");
+// ── PIX: ENVIAR COMPROVANTE VIA WHATSAPP ─────────────────────
+function abrirWhatsAppPix() {
+  const email = currentUser?.email || "(não identificado)";
+  const msg = encodeURIComponent(
+    `Olá! Acabei de realizar o pagamento do FibroVida Premium (R$ 50,00/ano).\n` +
+    `E-mail da conta: ${email}\n` +
+    `Por favor, ative meu acesso. Segue o comprovante PIX.`
+  );
+  window.open(`https://wa.me/5585998251219?text=${msg}`, "_blank");
 }
 
-// ── STRIPE: VERIFICAR RETORNO APÓS PAGAMENTO ─────────────────
-function checkPaymentSuccess() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("payment") === "success") {
-    const plano = params.get("plan") || "premium";
-    // Limpa os parâmetros da URL sem recarregar
-    window.history.replaceState({}, document.title, window.location.pathname);
-    // Aguarda o login e mostra mensagem
-    setTimeout(() => {
-      toast("✅ Pagamento confirmado! Fazendo login para ativar sua conta...", "s");
-    }, 800);
-  }
+function copiarChavePix() {
+  navigator.clipboard.writeText(PIX_INFO.chave).then(() => {
+    toast("✅ Chave PIX copiada!", "s");
+  }).catch(() => {
+    toast("Chave PIX: " + PIX_INFO.chave, "i");
+  });
 }
 
 // ── PERFIL ───────────────────────────────────────────────────
