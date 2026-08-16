@@ -7,6 +7,9 @@
 const SUPABASE_URL      = "https://pmupshodvtddlzrohuvi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdXBzaG9kdnRkZGx6cm9odXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzUxNjYsImV4cCI6MjA5NDMxMTE2Nn0.2v3oQrkw9Lz5ZqjM2tftVBEZrbE7Gu86sUe9uzFrNm4";
 const ADMIN_EMAIL       = "nelsontcmagalhaes@gmail.com";
+const COURTESY_EMAILS  = [
+  "nelsonassembler@gmail.com",   // convidado de testes
+];
 
 // ── PAGAMENTO VIA PIX ─────────────────────────────────────────
 const PIX_INFO = {
@@ -757,14 +760,14 @@ async function loadProfile() {
     if (data) {
       currentProfile = data;
       isAdmin   = data.is_admin || currentUser.email === ADMIN_EMAIL;
-      isPremium = data.plan === "premium" || isAdmin;
+      isPremium = data.plan === "premium" || isAdmin || COURTESY_EMAILS.includes(currentUser.email);
     } else {
       isAdmin   = currentUser.email === ADMIN_EMAIL;
-      isPremium = isAdmin;
+      isPremium = isAdmin || COURTESY_EMAILS.includes(currentUser.email);
     }
   } catch(e) {
     isAdmin   = currentUser.email === ADMIN_EMAIL;
-    isPremium = isAdmin;
+    isPremium = isAdmin || COURTESY_EMAILS.includes(currentUser.email);
   }
 }
 
