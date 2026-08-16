@@ -34,7 +34,7 @@ const TRIAL_DAYS     = 10;  // dias de trial gratuito
 
 // ── FRASES MOTIVACIONAIS ─────────────────────────────────────
 const motivations = [
-  '"Cada pequeno passo conta. Você está indo bem!" 🌿',
+  '"Cada pequeno passo conta. Você está indo bem!" 💜',
   '"Seu corpo merece cuidado e gentileza. Respeite seu ritmo." 💚',
   '"A força não está em nunca sentir dor, mas em continuar mesmo assim." 🌸',
   '"Hoje é um novo começo. Cuide-se com carinho." ✨',
@@ -388,7 +388,7 @@ async function doRegister() {
     // Se confirmação de e-mail está DESATIVADA no Supabase,
     // o usuário já fica confirmado e logado na hora.
     if (data.session) {
-      toast("Conta criada com sucesso! Bem-vindo(a)! 🌿", "s");
+      toast("Conta criada com sucesso! Bem-vindo(a)! 💜", "s");
       await afterLogin(data.user);
     } else {
       // Confirmação de e-mail ainda está ATIVADA
@@ -423,7 +423,7 @@ async function doLogout() {
   currentUser = null; currentProfile = null; isAdmin = false; isPremium = false;
   showScreen("auth-screen");
   showPanel("panel-login");
-  toast("Até logo! 🌿", "i");
+  toast("Até logo! 💜", "i");
 }
 
 // ── EXCLUIR CONTA ────────────────────────────────────────────
@@ -704,7 +704,7 @@ async function afterLogin(user) {
   if (diasRestantes <= 3) {
     toast(`⚠️ Seu período gratuito termina em ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""}! Pague via PIX para liberar o acesso completo.`, "w");
   } else {
-    toast(`🌿 Trial gratuito: ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`, "i");
+    toast(`💜 Trial gratuito: ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`, "i");
   }
 
   showScreen("main-screen");
@@ -1058,7 +1058,7 @@ async function saveHealthInline() {
     clearBodyLocations();
 
     if (navigator.onLine) {
-      toast("Registro salvo! 🌿", "s");
+      toast("Registro salvo! 💜", "s");
       loadHealthRecords();
       loadHome();
     }
@@ -1111,7 +1111,7 @@ async function saveHealthModal() {
     } else {
       const { error } = await db.from("health_records").insert(payload);
       if (error) throw error;
-      toast("Registro salvo! 🌿", "s");
+      toast("Registro salvo! 💜", "s");
     }
     closeModal("modal-health");
     loadHealthRecords();
@@ -2319,7 +2319,7 @@ function renderRecipes() {
         <div class="ei">🥗</div>
         <p>${isSearching ? "Nenhuma receita encontrada para este filtro." : "Nenhuma receita cadastrada ainda.<br>Adicione suas receitas saudáveis!"}</p>
         ${!isSearching ? `<button class="btn btn-secondary" style="margin-top:14px;font-size:13px" onclick="loadSampleRecipes()">
-          🌿 Carregar receitas de exemplo
+          💜 Carregar receitas de exemplo
         </button>` : ""}
       </div>`;
     return;
@@ -3910,7 +3910,7 @@ async function respondAssistente(intent, rawQuestion) {
       const frases = [
         `${name}, você já supera algo difícil todos os dias. Isso exige uma força que a maioria das pessoas não entende. 💜`,
         `Fibromialgia não define quem você é — você é muito mais do que sua dor. 🌟`,
-        `Cada registro que você faz é um ato de amor por você mesma. Você está no caminho certo. 🌿`,
+        `Cada registro que você faz é um ato de amor por você mesma. Você está no caminho certo. 💜`,
         `Nos dias difíceis, lembre: você já superou 100% dos seus dias ruins até hoje. 💪`,
         `Descansar não é desistir — é parte essencial do seu tratamento. Cuide-se sem culpa. 🛌`,
         `Pequenas vitórias contam: levantar da cama, tomar água, respirar fundo. Parabéns! 🌸`,
@@ -3938,7 +3938,7 @@ async function respondAssistente(intent, rawQuestion) {
 const ACHIEVEMENTS = [
   { id:"first_record",   icon:"🌱", name:"Primeiros Passos",    desc:"Salve seu 1º registro de saúde" },
   { id:"week_records",   icon:"📅", name:"Primeira Semana",     desc:"7 registros no total" },
-  { id:"streak7",        icon:"🌿", name:"7 Dias Seguidos",     desc:"7 dias consecutivos registrados" },
+  { id:"streak7",        icon:"💜", name:"7 Dias Seguidos",     desc:"7 dias consecutivos registrados" },
   { id:"med_added",      icon:"💊", name:"Meu Farmacêutico",    desc:"Cadastre seu 1º medicamento" },
   { id:"gratitude",      icon:"🙏", name:"Gratidão Viva",       desc:"Salve sua 1ª entrada de gratidão" },
   { id:"crisis_log",     icon:"🦁", name:"Guerreira da Dor",    desc:"Registre sua 1ª crise" },
@@ -4656,7 +4656,7 @@ async function compartilharRelatorio() {
     const topTrigs = Object.keys(trigCount).sort((a,b)=>trigCount[b]-trigCount[a]).slice(0,4).join(", ") || "Nenhum";
 
     const resumo =
-`🌿 RELATÓRIO FIBROVIDA
+`💜 RELATÓRIO FIBROVIDA
 Paciente: ${nome}
 Período: ${fmtDate(start)} a ${fmtDate(end)} (${repPeriodDias} dias)
 Emitido em: ${fmtDate(todayISO())}
