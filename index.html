@@ -223,6 +223,9 @@
 
   <!-- HEADER -->
   <header class="app-header">
+    <button class="menu-toggle-btn" onclick="openDrawer()" title="Menu" aria-label="Abrir menu">
+      <span></span><span></span><span></span>
+    </button>
     <span class="header-logo-icon">💜</span>
     <div class="header-brand">
       <div class="name">FibroVida</div>
@@ -234,6 +237,35 @@
       <button class="hbtn" onclick="doLogout()" title="Sair">↪</button>
     </div>
   </header>
+
+  <!-- BACKDROP DO DRAWER -->
+  <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+
+  <!-- MENU LATERAL (DRAWER) -->
+  <nav class="side-drawer" id="side-drawer" role="navigation" aria-label="Menu principal">
+    <div class="drawer-header">
+      <span>💜 FibroVida</span>
+      <button class="drawer-close" onclick="closeDrawer()" title="Fechar menu">✕</button>
+    </div>
+    <div class="drawer-items">
+      <button class="drawer-item active" data-tab="inicio"        onclick="showTab('inicio',this);closeDrawer()">        <span class="di">🏠</span><span>Início</span></button>
+      <button class="drawer-item"        data-tab="saude"         onclick="showTab('saude',this);closeDrawer()">         <span class="di">❤️</span><span>Saúde &amp; Sinais Vitais</span></button>
+      <button class="drawer-item"        data-tab="medicamentos"  onclick="showTab('medicamentos',this);closeDrawer()">  <span class="di">💊</span><span>Medicamentos</span></button>
+      <button class="drawer-item"        data-tab="tarefas"       onclick="showTab('tarefas',this);closeDrawer()">       <span class="di">✅</span><span>Tarefas</span></button>
+      <button class="drawer-item"        data-tab="bemestar"      onclick="showTab('bemestar',this);closeDrawer()">      <span class="di">🧘</span><span>Bem-Estar</span></button>
+      <button class="drawer-item"        data-tab="terapias"      onclick="showTab('terapias',this);closeDrawer()">      <span class="di">〰️</span><span>Terapias</span></button>
+      <button class="drawer-item"        data-tab="consultas"     onclick="showTab('consultas',this);closeDrawer()">     <span class="di">🩺</span><span>Consultas</span></button>
+      <button class="drawer-item"        data-tab="profissionais" onclick="showTab('profissionais',this);closeDrawer()"> <span class="di">👨‍⚕️</span><span>Profissionais</span></button>
+      <button class="drawer-item"        data-tab="receitas"      onclick="showTab('receitas',this);closeDrawer()">      <span class="di">🥗</span><span>Receitas</span></button>
+      <button class="drawer-item"        data-tab="exercicio"     onclick="showTab('exercicio',this);closeDrawer()">     <span class="di">🏋️</span><span>Exercício</span></button>
+      <button class="drawer-item"        data-tab="relatorios"    onclick="showTab('relatorios',this);closeDrawer()">    <span class="di">📊</span><span>Relatórios</span></button>
+      <button class="drawer-item"        data-tab="assistente"    onclick="showTab('assistente',this);closeDrawer()">    <span class="di">🤖</span><span>Assistente IA</span></button>
+      <button class="drawer-item"        data-tab="diva"          onclick="showTab('diva',this);closeDrawer()">          <span class="di">🛋️</span><span>Divã</span></button>
+      <button class="drawer-item"        data-tab="sus"           onclick="showTab('sus',this);closeDrawer()">           <span class="di">🏥</span><span>SUS / INSS</span></button>
+      <div class="drawer-divider"></div>
+      <button class="drawer-item"        data-tab="config"        onclick="showTab('config',this);closeDrawer()">        <span class="di">⚙️</span><span>Configurações</span></button>
+    </div>
+  </nav>
 
   <!-- CONTEÚDO -->
   <main class="main-content">
@@ -452,8 +484,8 @@
           <span class="acao-label">Relatórios</span>
         </button>
         <button class="acao-btn" onclick="openVitalsModal()">
-          <span class="acao-icon">📏</span>
-          <span class="acao-label">Medições</span>
+          <span class="acao-icon">🩺</span>
+          <span class="acao-label">Medir Pressão</span>
         </button>
         <button class="acao-btn acao-btn--novo" onclick="showTab('diva')">
           <span class="acao-icon">🛋️</span>
@@ -1956,8 +1988,8 @@
     ⚕️ Este conteúdo é informativo e <strong>não substitui consulta médica</strong>
   </div>
 
-  <!-- NAVEGAÇÃO INFERIOR — 8 itens scrolláveis -->
-  <nav class="bottom-nav" id="bottom-nav">
+  <!-- NAVEGAÇÃO INFERIOR — mantida oculta para compatibilidade interna de showTab() -->
+  <nav class="bottom-nav" id="bottom-nav" style="display:none" aria-hidden="true">
     <button class="nav-item active" data-tab="inicio" onclick="showTab('inicio',this)">
       <span class="ni">🏠</span><span class="nl">Início</span>
     </button>

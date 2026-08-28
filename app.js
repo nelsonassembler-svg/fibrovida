@@ -347,8 +347,13 @@ function showTab(name, navEl) {
   document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
   document.getElementById("tab-" + name)?.classList.add("active");
 
+  // Sincroniza item ativo no drawer lateral
+  document.querySelectorAll(".drawer-item").forEach(n => n.classList.remove("active"));
+  document.querySelector(`.drawer-item[data-tab="${name}"]`)?.classList.add("active");
+
+  // Mantém compatibilidade com bottom-nav (oculta mas ainda referenciada)
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-  if (navEl) {
+  if (navEl && navEl.classList.contains("nav-item")) {
     navEl.classList.add("active");
   } else {
     document.querySelector(`.nav-item[data-tab="${name}"]`)?.classList.add("active");
@@ -370,6 +375,20 @@ function showTab(name, navEl) {
   };
   loaders[name]?.();
 }
+
+// ── DRAWER LATERAL ───────────────────────────────────────────
+function openDrawer() {
+  document.getElementById("side-drawer")?.classList.add("open");
+  document.getElementById("drawer-backdrop")?.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeDrawer() {
+  document.getElementById("side-drawer")?.classList.remove("open");
+  document.getElementById("drawer-backdrop")?.classList.remove("open");
+  document.body.style.overflow = "";
+}
+// Fechar com tecla Escape
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 // ── MODAIS ───────────────────────────────────────────────────
 function openModal(id)  { document.getElementById(id)?.classList.add("open"); }
