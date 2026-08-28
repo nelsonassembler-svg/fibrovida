@@ -35,6 +35,36 @@ let currentRecipeCat = "all";
 
 const TRIAL_DAYS     = 10;  // dias de trial gratuito
 
+// ── INSTALAÇÃO PWA ───────────────────────────────────────────
+let _pwaPrompt = null;
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  _pwaPrompt = e;
+  const btn = document.getElementById("btn-instalar");
+  if (btn) btn.style.display = "flex";
+});
+
+window.addEventListener("appinstalled", () => {
+  _pwaPrompt = null;
+  const btn = document.getElementById("btn-instalar");
+  if (btn) btn.style.display = "none";
+  toast("💜 FibroVida instalado com sucesso!", "s");
+});
+
+async function instalarApp() {
+  if (!_pwaPrompt) {
+    toast("Para instalar: no navegador, toque em ⋮ → Adicionar à tela inicial", "i");
+    return;
+  }
+  _pwaPrompt.prompt();
+  const { outcome } = await _pwaPrompt.userChoice;
+  if (outcome === "accepted") toast("💜 Instalando FibroVida...", "s");
+  _pwaPrompt = null;
+  const btn = document.getElementById("btn-instalar");
+  if (btn) btn.style.display = "none";
+}
+
 // ── FRASES MOTIVACIONAIS ─────────────────────────────────────
 const motivations = [
   '"Cada pequeno passo conta. Você está indo bem!" 💜',
@@ -512,14 +542,15 @@ async function doRecovery() {
 }
 
 // ── LOGOUT ───────────────────────────────────────────────────
-async function doLogout() {
-  if (!confirm("Deseja sair do FibroVida?")) return;
+async function confirmarLogout() {
+  closeModal("modal-logout");
   await db.auth.signOut();
   currentUser = null; currentProfile = null; isAdmin = false; isPremium = false;
   showScreen("auth-screen");
   showPanel("panel-login");
   toast("Até logo! 💜", "i");
 }
+async function doLogout() { openModal("modal-logout"); }
 
 // ── EXCLUIR CONTA ────────────────────────────────────────────
 async function confirmDeleteAccount() {
