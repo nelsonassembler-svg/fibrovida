@@ -448,21 +448,10 @@ body { transition: background .25s, color .25s; }
 }
 
 /* ============================================================
-   BOTTOM NAV — 8 itens, scrollável
+   BOTTOM NAV — oculta (substituída pelo drawer lateral)
    ============================================================ */
-.bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-  height: var(--nav-h);
-  background: var(--card);
-  border-top: 1px solid var(--border);
-  display: flex; align-items: stretch;
-  justify-content: space-evenly;
-  overflow-x: auto; overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  box-shadow: 0 -2px 12px rgba(0,0,0,.07);
-}
-.bottom-nav::-webkit-scrollbar { display: none; }
+.bottom-nav,
+.bottom-nav::-webkit-scrollbar { display: none !important; }
 
 .nav-item {
   flex: 1 1 0;
