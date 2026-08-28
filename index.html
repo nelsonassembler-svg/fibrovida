@@ -709,7 +709,13 @@
             </div>
 
           </div>
-          <button class="btn btn-primary mt-8" onclick="saveVitals()">💾 Salvar Sinais Vitais</button>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+            <div class="vitals-input-group" style="flex:1;margin-bottom:0">
+              <label>🕐 Horário</label>
+              <input type="time" id="vitals-time" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px" />
+            </div>
+            <button class="btn btn-primary" style="margin-top:18px;white-space:nowrap" onclick="saveVitals()">💾 Salvar</button>
+          </div>
         </div>
       </div>
 
@@ -1388,6 +1394,20 @@
         <div class="card-body">
           <div class="card-title"><span class="icon">😴</span> Sono por dia</div>
           <div class="bar-chart" id="rep-sleep-chart"></div>
+        </div>
+      </div>
+
+      <!-- Impressão de Sinais Vitais -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">🖨️</span> Imprimir Sinais Vitais</div>
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+            Gere uma impressão dos registros de sinais vitais para levar ao médico.
+          </p>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1" onclick="imprimirSinaisVitais()">📊 Todos os Sinais Vitais</button>
+            <button class="btn btn-secondary" style="flex:1" onclick="imprimirSomentePressao()">🩺 Só Pressão Arterial</button>
+          </div>
         </div>
       </div>
 
@@ -2270,7 +2290,10 @@
       <button class="modal-close" onclick="closeModal('modal-vitals')">✕</button>
     </div>
     <input type="hidden" id="vitals-edit-id" />
-    <div class="fg"><label>Data</label><input type="date" id="vitals-edit-date" /></div>
+    <div style="display:flex;gap:10px">
+      <div class="fg" style="flex:2"><label>Data</label><input type="date" id="vitals-edit-date" /></div>
+      <div class="fg" style="flex:1"><label>Hora</label><input type="time" id="vitals-edit-time" /></div>
+    </div>
     <div class="vitals-grid" style="margin-top:8px">
       <div class="vitals-input-group">
         <label>⚖️ Peso (kg)</label>

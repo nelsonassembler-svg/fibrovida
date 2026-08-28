@@ -2767,6 +2767,8 @@ async function saveVitals() {
   const pulse     = parseInt(document.getElementById("vitals-pulse").value)       || null;
   const glucose   = parseFloat(document.getElementById("vitals-glucose").value)   || null;
   const gType     = document.getElementById("vitals-glucose-type").value;
+  const timeEl    = document.getElementById("vitals-time");
+  const recordTime = timeEl?.value || new Date().toTimeString().substring(0,5);
 
   if (!weight && !waist && !systolic && !diastolic && !pulse && !glucose) {
     toast("Preencha ao menos um campo de sinais vitais.", "w"); return;
@@ -2780,6 +2782,7 @@ async function saveVitals() {
     const { error } = await db.from("vitals_records").insert({
       user_id:      currentUser.id,
       record_date:  todayISO(),
+      record_time:  recordTime,
       weight, waist,
       bp_systolic:  systolic,
       bp_diastolic: diastolic,
@@ -2793,6 +2796,7 @@ async function saveVitals() {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
+    if (timeEl) timeEl.value = "";
     toast("Sinais vitais salvos! 📊", "s");
     loadVitals();
   } catch(e) {
@@ -2805,6 +2809,7 @@ function openVitalsModal(r = null) {
   document.getElementById("mv-title").textContent = r ? "✏️ Editar Sinais Vitais" : "📊 Novo Registro";
   document.getElementById("vitals-edit-id").value   = r?.id || "";
   document.getElementById("vitals-edit-date").value = r?.record_date || todayISO();
+  document.getElementById("vitals-edit-time").value = r?.record_time ? r.record_time.substring(0,5) : new Date().toTimeString().substring(0,5);
   document.getElementById("ve-weight").value         = r?.weight || "";
   document.getElementById("ve-waist").value          = r?.waist || "";
   document.getElementById("ve-systolic").value       = r?.bp_systolic || "";
@@ -2819,6 +2824,7 @@ function openVitalsModal(r = null) {
 async function saveVitalsModal() {
   const id        = document.getElementById("vitals-edit-id").value;
   const date      = document.getElementById("vitals-edit-date").value;
+  const timeVal   = document.getElementById("vitals-edit-time").value;
   const weight    = parseFloat(document.getElementById("ve-weight").value)    || null;
   const waist     = parseFloat(document.getElementById("ve-waist").value)     || null;
   const systolic  = parseInt(document.getElementById("ve-systolic").value)    || null;
@@ -2830,6 +2836,7 @@ async function saveVitalsModal() {
 
   const payload = {
     user_id: currentUser.id, record_date: date,
+    record_time: timeVal || null,
     weight, waist, bp_systolic: systolic, bp_diastolic: diastolic, pulse,
     glucose, glucose_type: glucose ? gType : null,
     notes: notes || null,
@@ -2906,7 +2913,7 @@ function renderVitalsList(list) {
 
     return `<div class="vitals-history-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="vhc-date">📅 ${fmtDate(r.record_date)}</div>
+        <div class="vhc-date">📅 ${fmtDate(r.record_date)}${r.record_time ? " às " + r.record_time.substring(0,5) : ""}</div>
         <div class="vhc-actions">
           <button class="ia-btn edit" onclick='openVitalsModal(${JSON.stringify(r)})' title="Editar">✏️</button>
           <button class="ia-btn del"  onclick="deleteVitals('${r.id}')" title="Excluir">🗑️</button>
@@ -2927,6 +2934,133 @@ async function deleteVitals(id) {
     toast("Registro excluído.", "i");
     loadVitals();
   } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
+}
+
+// ── IMPRESSÃO DE SINAIS VITAIS ─────────────────────────────────
+
+async function imprimirSinaisVitais() {
+  showLoad();
+  try {
+    const { data } = await db.from("vitals_records")
+      .select("*").eq("user_id", currentUser.id)
+      .order("record_date", { ascending: false }).order("record_time", { ascending: false });
+    if (!data || !data.length) { toast("Nenhum registro encontrado.", "w"); return; }
+
+    const userName = document.getElementById("profile-name")?.textContent || "Paciente";
+    const hoje = new Date().toLocaleDateString("pt-BR");
+
+    const rows = data.map(r => {
+      const hora = r.record_time ? r.record_time.substring(0,5) : "—";
+      const bp = (r.bp_systolic && r.bp_diastolic) ? `${r.bp_systolic}/${r.bp_diastolic} mmHg${r.pulse ? " · " + r.pulse + " bpm" : ""}` : "—";
+      const glu = r.glucose ? `${r.glucose} mg/dL (${r.glucose_type === "pos_prandial" ? "pós-prandial" : r.glucose_type || "jejum"})` : "—";
+      const peso = r.weight ? `${r.weight} kg` : "—";
+      const cintura = r.waist ? `${r.waist} cm` : "—";
+      return `<tr>
+        <td>${fmtDate(r.record_date)}</td>
+        <td>${hora}</td>
+        <td>${bp}</td>
+        <td>${peso}</td>
+        <td>${cintura}</td>
+        <td>${glu}</td>
+        ${r.notes ? `<td>${r.notes}</td>` : "<td>—</td>"}
+      </tr>`;
+    }).join("");
+
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Sinais Vitais — ${userName}</title>
+      <style>
+        body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
+        h1{color:#7D3C98;font-size:18px;margin-bottom:4px}
+        p.sub{color:#666;font-size:11px;margin-bottom:16px}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:#9B59B6;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
+        td{padding:6px 8px;border-bottom:1px solid #ddd}
+        tr:nth-child(even) td{background:#f9f4fc}
+        @media print{body{margin:10px}}
+      </style></head><body>
+      <h1>💜 FibroVida — Sinais Vitais</h1>
+      <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
+      <table>
+        <thead><tr><th>Data</th><th>Hora</th><th>Pressão / Pulso</th><th>Peso</th><th>Cintura</th><th>Glicemia</th><th>Obs.</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
+  finally { hideLoad(); }
+}
+
+async function imprimirSomentePressao() {
+  showLoad();
+  try {
+    const { data } = await db.from("vitals_records")
+      .select("id,record_date,record_time,bp_systolic,bp_diastolic,pulse,notes")
+      .eq("user_id", currentUser.id)
+      .not("bp_systolic", "is", null)
+      .order("record_date", { ascending: false })
+      .order("record_time", { ascending: false });
+    if (!data || !data.length) { toast("Nenhum registro de pressão encontrado.", "w"); return; }
+
+    const userName = document.getElementById("profile-name")?.textContent || "Paciente";
+    const hoje = new Date().toLocaleDateString("pt-BR");
+
+    const bpCategory = s => {
+      if (!s) return "";
+      if (s < 120) return '<span style="color:#27ae60">Ótima</span>';
+      if (s < 130) return '<span style="color:#2ecc71">Normal</span>';
+      if (s < 140) return '<span style="color:#f39c12">Limítrofe</span>';
+      if (s < 160) return '<span style="color:#e67e22">Elevada</span>';
+      return '<span style="color:#c0392b">Alta</span>';
+    };
+
+    const rows = data.map(r => {
+      const hora = r.record_time ? r.record_time.substring(0,5) : "—";
+      return `<tr>
+        <td>${fmtDate(r.record_date)}</td>
+        <td>${hora}</td>
+        <td><strong>${r.bp_systolic}</strong></td>
+        <td><strong>${r.bp_diastolic}</strong></td>
+        <td>${r.pulse || "—"}</td>
+        <td>${bpCategory(r.bp_systolic)}</td>
+        <td>${r.notes || "—"}</td>
+      </tr>`;
+    }).join("");
+
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Pressão Arterial — ${userName}</title>
+      <style>
+        body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
+        h1{color:#7D3C98;font-size:18px;margin-bottom:4px}
+        p.sub{color:#666;font-size:11px;margin-bottom:16px}
+        .legenda{display:flex;gap:16px;margin-bottom:12px;font-size:11px;flex-wrap:wrap}
+        .leg{padding:3px 8px;border-radius:4px;font-weight:600}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:#9B59B6;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
+        td{padding:6px 8px;border-bottom:1px solid #ddd}
+        tr:nth-child(even) td{background:#f9f4fc}
+        @media print{body{margin:10px}}
+      </style></head><body>
+      <h1>💜 FibroVida — Aferição da Pressão Arterial</h1>
+      <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
+      <div class="legenda">
+        <span class="leg" style="background:#d5f5e3;color:#1a6b3a">Ótima &lt;120</span>
+        <span class="leg" style="background:#d5f5e3;color:#27ae60">Normal 120–129</span>
+        <span class="leg" style="background:#fef9e7;color:#b7770d">Limítrofe 130–139</span>
+        <span class="leg" style="background:#fde8d8;color:#c0392b">Elevada 140–159</span>
+        <span class="leg" style="background:#fadbd8;color:#922b21">Alta ≥160</span>
+      </div>
+      <table>
+        <thead><tr><th>Data</th><th>Hora</th><th>Sistólica (mmHg)</th><th>Diastólica (mmHg)</th><th>Pulso (bpm)</th><th>Classificação</th><th>Obs.</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
+  finally { hideLoad(); }
 }
 
 // ── DOCUMENTOS DE SAÚDE ────────────────────────────────────────
