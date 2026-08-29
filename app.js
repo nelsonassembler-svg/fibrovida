@@ -65,6 +65,121 @@ async function instalarApp() {
   if (btn) btn.style.display = "none";
 }
 
+// ── DITADO POR VOZ (Web Speech API) ─────────────────────────
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+let _vozAtiva      = false;
+let _vozRec        = null;
+let _vozAlvo       = null;   // campo de texto com foco
+let _vozTextoBase  = "";     // texto do campo antes de começar
+
+// Rastreia o campo com foco para saber onde inserir o texto
+document.addEventListener("focusin", e => {
+  const el = e.target;
+  const tipos = ["textarea", "text", "search", "email", "tel", "url", "number", "date", "time"];
+  const aceitavel = el.tagName === "TEXTAREA" ||
+    (el.tagName === "INPUT" && tipos.includes(el.type));
+
+  if (aceitavel && !el.readOnly && !el.disabled) {
+    _vozAlvo = el;
+    const fab = document.getElementById("voice-fab");
+    if (fab && SpeechRec) fab.style.display = "flex";
+  }
+});
+
+document.addEventListener("focusout", e => {
+  setTimeout(() => {
+    // Se o foco foi para o botão do mic, mantém visível
+    const fab = document.getElementById("voice-fab");
+    if (!_vozAtiva && fab && document.activeElement !== fab) {
+      fab.style.display = "none";
+    }
+  }, 250);
+});
+
+function toggleVoz() {
+  if (_vozAtiva) pararVoz();
+  else iniciarVoz();
+}
+
+function iniciarVoz() {
+  if (!SpeechRec) {
+    toast("Ditado por voz não disponível neste navegador. Use Chrome ou Safari.", "w");
+    return;
+  }
+  if (!_vozAlvo) {
+    toast("Toque em um campo de texto primeiro, depois no microfone.", "i");
+    return;
+  }
+
+  _vozTextoBase = _vozAlvo.value;
+  _vozRec = new SpeechRec();
+  _vozRec.lang = "pt-BR";
+  _vozRec.continuous = true;
+  _vozRec.interimResults = true;
+
+  _vozRec.onstart = () => {
+    _vozAtiva = true;
+    document.getElementById("voice-fab")?.classList.add("mic-ativo");
+    const ind = document.getElementById("voice-indicator");
+    if (ind) ind.style.display = "flex";
+  };
+
+  _vozRec.onresult = e => {
+    let interim = "", final = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += t;
+      else interim += t;
+    }
+    if (final) {
+      const sep = _vozTextoBase && !_vozTextoBase.endsWith(" ") ? " " : "";
+      _vozTextoBase += sep + final.trim();
+    }
+    if (_vozAlvo) {
+      _vozAlvo.value = _vozTextoBase + (interim ? " " + interim : "");
+      _vozAlvo.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    const st = document.getElementById("voice-status-text");
+    if (st) st.textContent = interim ? `"${interim}"` : "Ouvindo...";
+  };
+
+  _vozRec.onerror = e => {
+    if (e.error === "no-speech")   toast("Nenhuma fala detectada. Tente novamente.", "w");
+    else if (e.error === "not-allowed") toast("Permissão de microfone negada. Verifique as configurações do navegador.", "e");
+    else if (e.error !== "aborted") toast("Erro no microfone: " + e.error, "e");
+    pararVoz();
+  };
+
+  _vozRec.onend = () => {
+    if (_vozAtiva) pararVoz();
+  };
+
+  try {
+    _vozRec.start();
+  } catch(err) {
+    toast("Não foi possível iniciar o microfone.", "e");
+    pararVoz();
+  }
+}
+
+function pararVoz() {
+  _vozAtiva = false;
+  try { _vozRec?.stop(); } catch(e) {}
+  _vozRec = null;
+  document.getElementById("voice-fab")?.classList.remove("mic-ativo");
+  const ind = document.getElementById("voice-indicator");
+  if (ind) ind.style.display = "none";
+  const st = document.getElementById("voice-status-text");
+  if (st) st.textContent = "Ouvindo...";
+  // Restaura foco no campo para o usuário continuar editando
+  if (_vozAlvo) {
+    _vozAlvo.focus();
+    const len = _vozAlvo.value.length;
+    try { _vozAlvo.setSelectionRange(len, len); } catch(e) {}
+  }
+}
+
 // ── FRASES MOTIVACIONAIS ─────────────────────────────────────
 const motivations = [
   '"Cada pequeno passo conta. Você está indo bem!" 💜',

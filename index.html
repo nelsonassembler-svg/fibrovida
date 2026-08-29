@@ -2738,6 +2738,19 @@
   </div>
 </div>
 
+<!-- FAB: Microfone / Ditado por Voz -->
+<button class="voice-fab" id="voice-fab" onclick="toggleVoz()" title="Ditado por voz" aria-label="Ditado por voz" style="display:none">
+  <span class="voice-fab-icon">🎙️</span>
+  <span class="voice-fab-label">Voz</span>
+</button>
+
+<!-- Indicador de gravação -->
+<div class="voice-indicator" id="voice-indicator" style="display:none">
+  <span class="voice-dot"></span>
+  <span id="voice-status-text">Ouvindo...</span>
+  <button onclick="pararVoz()" style="background:none;border:none;color:#fff;font-size:13px;cursor:pointer;margin-left:8px">✕ Parar</button>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 </body>
