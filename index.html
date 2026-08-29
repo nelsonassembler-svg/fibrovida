@@ -165,7 +165,7 @@
     <div class="paywall-card">
       <div class="paywall-icon">🔒</div>
       <h2 class="paywall-title">Seu período gratuito encerrou</h2>
-      <p class="paywall-sub">Seus <strong>10 dias gratuitos</strong> chegaram ao fim. Continue cuidando da sua saúde com o <strong>FibroVida Premium</strong> por apenas <strong>R$ 50,00/ano</strong>.</p>
+      <p class="paywall-sub">Seus <strong>10 dias gratuitos</strong> chegaram ao fim. Escolha o plano e continue cuidando da sua saúde.</p>
 
       <div class="paywall-benefits">
         <div class="pb-item">✅ Diário da Dor ilimitado</div>
@@ -176,19 +176,43 @@
         <div class="pb-item">✅ Acesso em qualquer dispositivo</div>
       </div>
 
-      <!-- PLANO PIX -->
-      <div class="pw-pix-box">
-        <div class="pw-pix-preco">
-          <span class="pw-pix-rs">R$</span>
-          <span class="pw-pix-valor">50</span>
-          <span class="pw-pix-cents">,00/ano</span>
+      <!-- PLANOS -->
+      <div class="pw-planos">
+
+        <!-- Plano Anual -->
+        <div class="pw-plano-box" id="plano-anual-box">
+          <div class="pw-plano-badge">Mais popular</div>
+          <div class="pw-plano-titulo">Plano Anual</div>
+          <div class="pw-pix-preco"><span class="pw-pix-rs">R$</span><span class="pw-pix-valor">50</span><span class="pw-pix-cents">,00/ano</span></div>
+          <div class="pw-pix-label">Equivale a R$ 4,17/mês</div>
+          <div class="pw-code-box">
+            <span class="pw-code-label">Seu código de identificação:</span>
+            <span class="pw-code-val" id="pix-code-anual">FIBRO-XXXXX-ANUM</span>
+            <button class="pw-code-copy" onclick="copiarCodigoPix('anual')" title="Copiar código">📋</button>
+          </div>
+          <button class="btn-whatsapp-pix" onclick="abrirWhatsAppPix('anual')">💬 Enviar comprovante (WhatsApp)</button>
+          <button class="btn-copiar-pix" onclick="abrirEmailPix('anual')" style="margin-top:6px">✉️ Enviar por E-mail</button>
         </div>
-        <div class="pw-pix-label">Pagamento único via PIX — acesso por 12 meses</div>
+
+        <!-- Plano Vitalício -->
+        <div class="pw-plano-box pw-plano-vita">
+          <div class="pw-plano-titulo">Plano Vitalício</div>
+          <div class="pw-pix-preco"><span class="pw-pix-rs">R$</span><span class="pw-pix-valor">149</span><span class="pw-pix-cents">,90</span></div>
+          <div class="pw-pix-label">Pague uma vez, use para sempre</div>
+          <div class="pw-code-box">
+            <span class="pw-code-label">Seu código de identificação:</span>
+            <span class="pw-code-val" id="pix-code-vitalicio">FIBRO-XXXXX-VITA</span>
+            <button class="pw-code-copy" onclick="copiarCodigoPix('vitalicio')" title="Copiar código">📋</button>
+          </div>
+          <button class="btn-whatsapp-pix" onclick="abrirWhatsAppPix('vitalicio')">💬 Enviar comprovante (WhatsApp)</button>
+          <button class="btn-copiar-pix" onclick="abrirEmailPix('vitalicio')" style="margin-top:6px">✉️ Enviar por E-mail</button>
+        </div>
+
       </div>
 
       <!-- DADOS PIX -->
       <div class="pix-dados">
-        <div class="pix-dados-titulo">📲 Dados para pagamento</div>
+        <div class="pix-dados-titulo">📲 Dados para transferência PIX</div>
         <div class="pix-row"><span class="pix-label">Banco</span><span class="pix-val">Banco Inter</span></div>
         <div class="pix-row"><span class="pix-label">Titular</span><span class="pix-val">Nelson Tomaz Catunda Magalhães</span></div>
         <div class="pix-row pix-row-chave">
@@ -199,18 +223,10 @@
       </div>
 
       <div class="pix-instrucao">
-        Após realizar o pagamento, envie o <strong>comprovante</strong> pelo WhatsApp ou e-mail para ativar seu acesso.
+        Informe seu <strong>código de identificação</strong> no comprovante e envie pelo WhatsApp ou e-mail para ativar o acesso.
       </div>
 
-      <button class="btn-whatsapp-pix" onclick="abrirWhatsAppPix()">
-        💬 Enviar comprovante pelo WhatsApp
-      </button>
-
-      <div class="pix-contato-email">
-        Ou envie para: <strong>nelsontcmagalhaes@gmail.com</strong>
-      </div>
-
-      <button class="btn-paywall-logout" onclick="doLogout()">↩ Sair da conta</button>
+      <button class="btn-paywall-logout" onclick="openModal('modal-logout')">↩ Sair da conta</button>
     </div>
 
   </div>
@@ -226,6 +242,7 @@
     <button class="menu-toggle-btn" onclick="openDrawer()" title="Menu" aria-label="Abrir menu">
       <span></span><span></span><span></span>
     </button>
+    <button class="btn-voltar" id="btn-voltar" onclick="voltarTab()" title="Voltar" style="display:none">&#8592;</button>
     <span class="header-logo-icon">💜</span>
     <div class="header-brand">
       <div class="name">FibroVida</div>
@@ -248,23 +265,68 @@
       <button class="drawer-close" onclick="closeDrawer()" title="Fechar menu">✕</button>
     </div>
     <div class="drawer-items">
-      <button class="drawer-item active" data-tab="inicio"        onclick="showTab('inicio',this);closeDrawer()">        <span class="di">🏠</span><span>Início</span></button>
-      <button class="drawer-item"        data-tab="saude"         onclick="showTab('saude',this);closeDrawer()">         <span class="di">❤️</span><span>Saúde &amp; Sinais Vitais</span></button>
-      <button class="drawer-item"        data-tab="medicamentos"  onclick="showTab('medicamentos',this);closeDrawer()">  <span class="di">💊</span><span>Medicamentos</span></button>
-      <button class="drawer-item"        data-tab="tarefas"       onclick="showTab('tarefas',this);closeDrawer()">       <span class="di">✅</span><span>Tarefas</span></button>
-      <button class="drawer-item"        data-tab="bemestar"      onclick="showTab('bemestar',this);closeDrawer()">      <span class="di">🧘</span><span>Bem-Estar</span></button>
-      <button class="drawer-item"        data-tab="terapias"      onclick="showTab('terapias',this);closeDrawer()">      <span class="di">〰️</span><span>Terapias</span></button>
-      <button class="drawer-item"        data-tab="consultas"     onclick="showTab('consultas',this);closeDrawer()">     <span class="di">🩺</span><span>Consultas</span></button>
-      <button class="drawer-item"        data-tab="profissionais" onclick="showTab('profissionais',this);closeDrawer()"> <span class="di">👨‍⚕️</span><span>Profissionais</span></button>
-      <button class="drawer-item"        data-tab="receitas"      onclick="showTab('receitas',this);closeDrawer()">      <span class="di">🥗</span><span>Receitas</span></button>
-      <button class="drawer-item"        data-tab="exercicio"     onclick="showTab('exercicio',this);closeDrawer()">     <span class="di">🏋️</span><span>Exercício</span></button>
-      <button class="drawer-item"        data-tab="relatorios"    onclick="showTab('relatorios',this);closeDrawer()">    <span class="di">📊</span><span>Relatórios</span></button>
-      <button class="drawer-item"        data-tab="assistente"    onclick="showTab('assistente',this);closeDrawer()">    <span class="di">🤖</span><span>Assistente IA</span></button>
-      <button class="drawer-item"        data-tab="diva"          onclick="showTab('diva',this);closeDrawer()">          <span class="di">🛋️</span><span>Divã</span></button>
-      <button class="drawer-item"        data-tab="sus"           onclick="showTab('sus',this);closeDrawer()">           <span class="di">🏥</span><span>SUS / INSS</span></button>
+
+      <button class="drawer-item active" data-tab="inicio" onclick="showTab('inicio',this);closeDrawer()">
+        <span class="di">🏠</span><span>Início</span>
+      </button>
+
+      <div class="drawer-section-label">Saúde</div>
+      <button class="drawer-item" data-tab="saude" onclick="showTab('saude',this);closeDrawer()">
+        <span class="di">❤️</span><span>Diário de Saúde &amp; Dor</span>
+      </button>
+      <button class="drawer-item" onclick="openVitalsModal();closeDrawer()">
+        <span class="di"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="14" height="10" rx="2"/><path d="M16 11h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2"/><circle cx="9" cy="12" r="1.5" fill="currentColor"/><line x1="10.5" y1="12" x2="13" y2="12"/></svg></span>
+        <span>Medir Pressão Arterial</span>
+      </button>
+      <button class="drawer-item" data-tab="medicamentos" onclick="showTab('medicamentos',this);closeDrawer()">
+        <span class="di">💊</span><span>Medicamentos</span>
+      </button>
+      <button class="drawer-item" data-tab="consultas" onclick="showTab('consultas',this);closeDrawer()">
+        <span class="di">🩺</span><span>Consultas Médicas</span>
+      </button>
+      <button class="drawer-item" data-tab="profissionais" onclick="showTab('profissionais',this);closeDrawer()">
+        <span class="di">👨‍⚕️</span><span>Profissionais de Saúde</span>
+      </button>
+
+      <div class="drawer-section-label">Bem-Estar</div>
+      <button class="drawer-item" data-tab="bemestar" onclick="showTab('bemestar',this);closeDrawer()">
+        <span class="di">🧘</span><span>Bem-Estar &amp; Sono</span>
+      </button>
+      <button class="drawer-item" data-tab="terapias" onclick="showTab('terapias',this);closeDrawer()">
+        <span class="di">〰️</span><span>Terapias</span>
+      </button>
+      <button class="drawer-item" data-tab="exercicio" onclick="showTab('exercicio',this);closeDrawer()">
+        <span class="di">🏋️</span><span>Exercícios</span>
+      </button>
+      <button class="drawer-item" data-tab="diva" onclick="showTab('diva',this);closeDrawer()">
+        <span class="di">🛋️</span><span>Divã (Desabafar)</span>
+      </button>
+
+      <div class="drawer-section-label">Recursos</div>
+      <button class="drawer-item" data-tab="tarefas" onclick="showTab('tarefas',this);closeDrawer()">
+        <span class="di">✅</span><span>Tarefas do Dia</span>
+      </button>
+      <button class="drawer-item" data-tab="receitas" onclick="showTab('receitas',this);closeDrawer()">
+        <span class="di">🥗</span><span>Receitas Anti-inflamatórias</span>
+      </button>
+      <button class="drawer-item" data-tab="relatorios" onclick="showTab('relatorios',this);closeDrawer()">
+        <span class="di">📊</span><span>Relatórios</span>
+      </button>
+      <button class="drawer-item" data-tab="assistente" onclick="showTab('assistente',this);closeDrawer()">
+        <span class="di">🤖</span><span>Assistente IA</span>
+      </button>
+      <button class="drawer-item" data-tab="sus" onclick="showTab('sus',this);closeDrawer()">
+        <span class="di">🏥</span><span>Direitos SUS / INSS</span>
+      </button>
+
       <div class="drawer-divider"></div>
-      <button class="drawer-item" onclick="instalarApp();closeDrawer()">                                               <span class="di">📲</span><span>Instalar Aplicativo</span></button>
-      <button class="drawer-item"        data-tab="config"        onclick="showTab('config',this);closeDrawer()">        <span class="di">⚙️</span><span>Configurações</span></button>
+      <button class="drawer-item" onclick="instalarApp();closeDrawer()">
+        <span class="di">📲</span><span>Instalar Aplicativo</span>
+      </button>
+      <button class="drawer-item" data-tab="config" onclick="showTab('config',this);closeDrawer()">
+        <span class="di">⚙️</span><span>Configurações</span>
+      </button>
+
     </div>
   </nav>
 

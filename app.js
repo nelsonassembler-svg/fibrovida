@@ -373,7 +373,10 @@ function showScreen(id) {
   document.getElementById(id)?.classList.add("active");
 }
 
-function showTab(name, navEl) {
+let _tabHistory = [];
+let _navigatingBack = false;
+
+function showTab(name, navEl, pushState = true) {
   document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
   document.getElementById("tab-" + name)?.classList.add("active");
 
@@ -381,12 +384,16 @@ function showTab(name, navEl) {
   document.querySelectorAll(".drawer-item").forEach(n => n.classList.remove("active"));
   document.querySelector(`.drawer-item[data-tab="${name}"]`)?.classList.add("active");
 
-  // Mantém compatibilidade com bottom-nav (oculta mas ainda referenciada)
-  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-  if (navEl && navEl.classList.contains("nav-item")) {
-    navEl.classList.add("active");
-  } else {
-    document.querySelector(`.nav-item[data-tab="${name}"]`)?.classList.add("active");
+  // Botão voltar — mostra apenas quando não está no início
+  const btnVoltar = document.getElementById("btn-voltar");
+  if (btnVoltar) btnVoltar.style.display = (name === "inicio") ? "none" : "flex";
+
+  // Histórico para botão voltar
+  if (pushState && !_navigatingBack) {
+    if (_tabHistory[_tabHistory.length - 1] !== name) {
+      _tabHistory.push(name);
+      history.pushState({ tab: name }, "", "#" + name);
+    }
   }
 
   const loaders = {
@@ -405,6 +412,35 @@ function showTab(name, navEl) {
   };
   loaders[name]?.();
 }
+
+function voltarTab() {
+  if (_tabHistory.length > 1) {
+    _tabHistory.pop();
+    const anterior = _tabHistory[_tabHistory.length - 1];
+    _navigatingBack = true;
+    showTab(anterior, null, false);
+    _navigatingBack = false;
+  } else {
+    showTab("inicio", null, false);
+  }
+}
+
+// Intercepta botão Voltar do celular para não fechar o app
+window.addEventListener("popstate", e => {
+  const tab = e.state?.tab;
+  if (tab) {
+    _navigatingBack = true;
+    if (_tabHistory.length > 1) _tabHistory.pop();
+    showTab(tab, null, false);
+    _navigatingBack = false;
+  } else {
+    // Sem histórico — vai para início em vez de fechar
+    history.pushState({ tab: "inicio" }, "", "#inicio");
+    _navigatingBack = true;
+    showTab("inicio", null, false);
+    _navigatingBack = false;
+  }
+});
 
 // ── DRAWER LATERAL ───────────────────────────────────────────
 function openDrawer() {
@@ -802,6 +838,8 @@ async function afterLogin(user) {
   // Admin/Premium = acesso total sempre
   if (isPremium || isAdmin) {
     showScreen("main-screen");
+    _tabHistory = [];
+    history.replaceState({ tab: "inicio" }, "", "#inicio");
     showTab("inicio");
     checkLowStock();
     scheduleAllConsultaAlerts();
@@ -853,24 +891,64 @@ async function afterLogin(user) {
   }
 }
 
-function showPaywall() {
-  showScreen("paywall-screen");
+function gerarCodigoPix(email, plano) {
+  // Código único para identificar o pagante: FIBRO-[5 chars do email]-[PLANO]
+  const base = (email || "user").replace(/[^a-z0-9]/gi, "").toUpperCase().substring(0, 5).padEnd(5, "X");
+  const sufixo = plano === "vitalicio" ? "VITA" : "ANUM";
+  return `FIBRO-${base}-${sufixo}`;
 }
 
-// ── PIX: ENVIAR COMPROVANTE VIA WHATSAPP ─────────────────────
-function abrirWhatsAppPix() {
-  const email = currentUser?.email || "(não identificado)";
+function showPaywall() {
+  showScreen("paywall-screen");
+  // Atualiza código PIX personalizado
+  const email = currentUser?.email || "";
+  const codAnual = gerarCodigoPix(email, "anual");
+  const codVita  = gerarCodigoPix(email, "vitalicio");
+  const elAnual = document.getElementById("pix-code-anual");
+  const elVita  = document.getElementById("pix-code-vitalicio");
+  if (elAnual) elAnual.textContent = codAnual;
+  if (elVita)  elVita.textContent  = codVita;
+}
+
+// ── PIX: ENVIAR COMPROVANTE ───────────────────────────────────
+function abrirWhatsAppPix(plano = "anual") {
+  const email  = currentUser?.email || "(não identificado)";
+  const codigo = gerarCodigoPix(email, plano);
+  const valor  = plano === "vitalicio" ? "R$ 149,90 (Vitalício)" : "R$ 50,00/ano";
   const msg = encodeURIComponent(
-    `Olá! Acabei de realizar o pagamento do FibroVida Premium (R$ 50,00/ano).\n` +
+    `Olá! Realizei o pagamento do FibroVida Premium.\n` +
+    `Plano: ${valor}\n` +
+    `Código: ${codigo}\n` +
     `E-mail da conta: ${email}\n` +
-    `Por favor, ative meu acesso. Segue o comprovante PIX.`
+    `Segue o comprovante. Por favor, ative meu acesso.`
   );
   window.open(`https://wa.me/5585998251219?text=${msg}`, "_blank");
 }
 
+function abrirEmailPix(plano = "anual") {
+  const email  = currentUser?.email || "(não identificado)";
+  const codigo = gerarCodigoPix(email, plano);
+  const valor  = plano === "vitalicio" ? "R$ 149,90 (Vitalício)" : "R$ 50,00/ano";
+  const assunto = encodeURIComponent(`FibroVida Premium — ${codigo}`);
+  const corpo   = encodeURIComponent(
+    `Olá!\n\nRealizei o pagamento do FibroVida Premium.\nPlano: ${valor}\nCódigo: ${codigo}\nE-mail da conta: ${email}\n\nSegue o comprovante em anexo.\n\nObrigado!`
+  );
+  window.open(`mailto:nelsontcmagalhaes@gmail.com?subject=${assunto}&body=${corpo}`, "_blank");
+}
+
+function copiarCodigoPix(plano = "anual") {
+  const email  = currentUser?.email || "";
+  const codigo = gerarCodigoPix(email, plano);
+  navigator.clipboard.writeText(codigo).then(() => {
+    toast("Código copiado: " + codigo, "s");
+  }).catch(() => {
+    toast("Código: " + codigo, "i");
+  });
+}
+
 function copiarChavePix() {
   navigator.clipboard.writeText(PIX_INFO.chave).then(() => {
-    toast("✅ Chave PIX copiada!", "s");
+    toast("Chave PIX copiada!", "s");
   }).catch(() => {
     toast("Chave PIX: " + PIX_INFO.chave, "i");
   });

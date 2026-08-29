@@ -480,6 +480,17 @@ body { transition: background .25s, color .25s; }
    MENU HAMBÚRGUER + DRAWER LATERAL
    ============================================================ */
 
+/* Botão ← Voltar no header */
+.btn-voltar {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--bg2);
+  cursor: pointer; font-size: 18px; font-weight: 700;
+  color: var(--green-dark); flex-shrink: 0;
+  transition: background .15s;
+}
+.btn-voltar:hover { background: var(--green-pale); }
+
 /* Botão ☰ no header */
 .menu-toggle-btn {
   display: flex; flex-direction: column; justify-content: center;
@@ -551,6 +562,11 @@ body { transition: background .25s, color .25s; }
 .drawer-divider {
   height: 1px; background: var(--border);
   margin: 8px 16px;
+}
+.drawer-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted);
+  padding: 14px 20px 4px; pointer-events: none;
 }
 
 /* ============================================================
@@ -1559,6 +1575,32 @@ input[type=range].fv-range::-moz-range-thumb {
 
 /* ── PLANOS (3 colunas) ── */
 /* ── PLANO PIX ── */
+/* Dois planos lado a lado */
+.pw-planos { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.pw-plano-box {
+  flex: 1; min-width: 140px;
+  background: var(--green-pale); border: 2px solid var(--green);
+  border-radius: var(--radius-sm); padding: 14px 10px 10px;
+  text-align: center; position: relative;
+}
+.pw-plano-vita { background: var(--accent-bg); border-color: var(--accent); }
+.pw-plano-badge {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: #fff;
+  font-size: 9px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; white-space: nowrap;
+}
+.pw-plano-titulo { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.pw-code-box {
+  background: var(--card); border: 1px dashed var(--border);
+  border-radius: 6px; padding: 6px 8px; margin: 8px 0;
+  font-size: 10px; display: flex; flex-wrap: wrap;
+  align-items: center; gap: 4px; text-align: left;
+}
+.pw-code-label { color: var(--text-muted); width: 100%; }
+.pw-code-val { font-size: 12px; font-weight: 800; color: var(--green-dark); font-family: monospace; flex: 1; }
+.pw-code-copy { border: none; background: none; cursor: pointer; font-size: 14px; padding: 0; }
+
 .pw-pix-box {
   background: var(--green-pale);
   border: 2px solid var(--green);
