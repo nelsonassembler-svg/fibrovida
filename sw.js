@@ -3,7 +3,7 @@
    Cache-first para assets estáticos | Network-first para API
    ============================================================ */
 
-const CACHE_NAME  = 'fibrovida-v4.6';
+const CACHE_NAME  = 'fibrovida-v4.7';
 const STATIC_URLS = [
   './',
   './index.html',
@@ -82,30 +82,67 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// ── PUSH NOTIFICATIONS ────────────────────────────────────────
+// ── PUSH NOTIFICATIONS (Web Push via Supabase Edge Function) ──
 self.addEventListener('push', event => {
-  let data = { title: 'FibroVida', body: 'Lembrete do seu app de saúde 💊', icon: './icons/icon-192.png' };
-  try { if (event.data) data = { ...data, ...event.data.json() }; } catch(e) {}
+  let data = {
+    title: '💊 FibroVida',
+    body:  'Hora do seu medicamento!',
+    icon:  './icons/icon-192.png',
+    badge: './icons/icon-72.png',
+    tag:   'fibrovida-med',
+    url:   './#medicamentos',
+  };
+  try {
+    if (event.data) {
+      const parsed = event.data.json();
+      data = { ...data, ...parsed };
+    }
+  } catch(e) {
+    // payload não é JSON — usa texto como body
+    try { data.body = event.data?.text() || data.body; } catch(_) {}
+  }
 
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body:    data.body,
-      icon:    data.icon || './icons/icon-192.png',
-      badge:   './icons/icon-72.png',
-      tag:     data.tag || 'fibrovida-reminder',
-      data:    { url: data.url || './' },
-      vibrate: [200, 100, 200],
+      icon:    data.icon,
+      badge:   data.badge,
+      tag:     data.tag,
+      data:    { url: data.url },
+      vibrate: [200, 100, 200, 100, 200],
+      requireInteraction: true,   // mantém a notificação na tela até o usuário agir
+      actions: [
+        { action: 'tomei',   title: '✅ Tomei' },
+        { action: 'adiar',   title: '⏰ Lembrar em 10 min' },
+      ],
     })
   );
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = event.notification.data?.url || './';
+
+  // Ação "Adiar 10 min" — reagenda a notificação
+  if (event.action === 'adiar') {
+    const { title, body, icon, badge, tag } = event.notification;
+    setTimeout(() => {
+      self.registration.showNotification(title, {
+        body, icon, badge, tag: tag + '-reag',
+        vibrate: [200, 100, 200],
+        data: event.notification.data,
+        requireInteraction: true,
+        actions: [{ action: 'tomei', title: '✅ Tomei' }],
+      });
+    }, 10 * 60 * 1000);
+    return;
+  }
+
+  // "Tomei" ou clique direto: abre o app na aba de medicamentos
+  const url = event.notification.data?.url || './#medicamentos';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       const existing = list.find(c => c.url.includes(self.location.origin));
-      if (existing) return existing.focus();
+      if (existing) { existing.focus(); return; }
       return clients.openWindow(url);
     })
   );

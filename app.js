@@ -961,6 +961,7 @@ async function afterLogin(user) {
     updateLastSeen();
     setInterval(updateLastSeen, 5 * 60 * 1000);
     startMedScheduler();
+    autoRenovarPushSubscription();
     if (isAdmin) {
       const panel = document.getElementById("admin-stats-panel");
       if (panel) panel.style.display = "block";
@@ -999,6 +1000,9 @@ async function afterLogin(user) {
 
   // Inicia verificador de horário dos medicamentos
   startMedScheduler();
+
+  // Renova inscrição de Web Push silenciosamente (mantém alertas mesmo com app fechado)
+  autoRenovarPushSubscription();
 
   // Painel admin
   if (isAdmin) {
@@ -5160,7 +5164,10 @@ async function copiarResumo() {
 
 // ============================================================
 // MÓDULO PUSH NOTIFICATIONS — Lembretes de medicamentos
+// Usa Web Push API + Supabase Edge Function para funcionar mesmo com o app fechado.
 // ============================================================
+
+const VAPID_PUBLIC_KEY = "BA60eg357_7vK2YuTUsLeZchdaTJebyQzVmg3NEWU80i4MJ09GtgHDvDbJtChcyfVAPc-m7VXztiAs-kFyFAbKU";
 
 async function requestNotificationPermission() {
   if (!("Notification" in window)) return false;
@@ -5170,47 +5177,85 @@ async function requestNotificationPermission() {
   return result === "granted";
 }
 
-// Agenda notificações locais para medicamentos com horário definido
-async function scheduleMedNotifications() {
-  if (!currentUser || !navigator.serviceWorker?.controller) return;
-  const granted = await requestNotificationPermission();
-  if (!granted) return;
+// Converte base64url para Uint8Array (necessário para VAPID)
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw     = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+// Inscreve este dispositivo no serviço de Web Push e salva no Supabase
+async function subscribeWebPush() {
+  if (!currentUser) return null;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
 
   try {
-    const { data: meds } = await db.from("medications")
-      .select("id,name,dosage,schedule_time,active")
-      .eq("user_id", currentUser.id)
-      .eq("active", true);
-
-    if (!meds?.length) return;
-
-    const now = new Date();
-    meds.forEach(med => {
-      if (!med.schedule_time) return;
-      const [h, m] = med.schedule_time.split(":").map(Number);
-      const target = new Date(now);
-      target.setHours(h, m, 0, 0);
-      // Se o horário já passou hoje, agendamos para amanhã
-      if (target <= now) target.setDate(target.getDate() + 1);
-      const delayMs = target - now;
-      navigator.serviceWorker.controller.postMessage({
-        type: "SCHEDULE_MED_ALERT",
-        med: { id: med.id, name: med.name, dosage: med.dosage },
-        delayMs,
+    const registration = await navigator.serviceWorker.ready;
+    // Verifica se já tem subscription ativa
+    let sub = await registration.pushManager.getSubscription();
+    if (!sub) {
+      sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
-    });
-  } catch(e) { console.error("[push] scheduleMedNotifications:", e); }
+    }
+
+    // Salva/atualiza no Supabase (upsert pela combinação user_id + endpoint)
+    const subJson = sub.toJSON();
+    const { error } = await db.from("push_subscriptions").upsert({
+      user_id:    currentUser.id,
+      subscription: subJson,
+      user_agent: navigator.userAgent.substring(0, 200),
+    }, { onConflict: "user_id,subscription->endpoint" }).select();
+
+    if (error && error.code !== "23505") {
+      // 23505 = duplicate key, já existe — tudo bem
+      // Tenta insert simples como fallback
+      await db.from("push_subscriptions").insert({
+        user_id:    currentUser.id,
+        subscription: subJson,
+        user_agent: navigator.userAgent.substring(0, 200),
+      });
+    }
+
+    console.log("[push] subscription salva no Supabase");
+    return sub;
+  } catch(e) {
+    console.error("[push] subscribeWebPush:", e);
+    return null;
+  }
 }
 
 // Botão "Ativar lembretes de medicamentos" — chamado do painel de medicamentos
 async function ativarLembretesMedicamentos() {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    toast("⚠️ Seu dispositivo não suporta notificações push.", "w");
+    return;
+  }
+
   const granted = await requestNotificationPermission();
   if (!granted) {
     toast("⚠️ Permissão de notificação negada. Habilite nas configurações do navegador.", "w");
     return;
   }
-  await scheduleMedNotifications();
-  toast("🔔 Lembretes de medicamentos ativados!", "s");
+
+  toast("⏳ Ativando lembretes em segundo plano...", "i");
+  const sub = await subscribeWebPush();
+  if (sub) {
+    toast("🔔 Lembretes ativados! Você receberá notificações mesmo com o app fechado.", "s");
+  } else {
+    toast("⚠️ Não foi possível ativar os lembretes automáticos. Tente novamente.", "w");
+  }
+}
+
+// Chama automaticamente ao fazer login se já tinha permissão concedida
+async function autoRenovarPushSubscription() {
+  if (!currentUser) return;
+  if (Notification.permission !== "granted") return;
+  if (!("PushManager" in window)) return;
+  // Renova silenciosamente em background
+  setTimeout(() => subscribeWebPush(), 3000);
 }
 
 // ============================================================
