@@ -33,7 +33,7 @@ let allTasks         = [];
 let allRecipes       = [];
 let currentRecipeCat = "all";
 
-const TRIAL_DAYS     = 10;  // dias de trial gratuito
+const TRIAL_DAYS     = 7;   // dias de trial gratuito
 
 // ── INSTALAÇÃO PWA ───────────────────────────────────────────
 let _pwaPrompt = null;
@@ -981,9 +981,11 @@ async function afterLogin(user) {
   }
 
   if (diasRestantes <= 3) {
-    toast(`⚠️ Seu período gratuito termina em ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""}! Pague via PIX para liberar o acesso completo.`, "w");
+    toast(`🚨 URGENTE: seu período gratuito termina em ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""}! Assine agora via PIX para não perder o acesso.`, "e");
+  } else if (diasRestantes <= 5) {
+    toast(`⚠️ Atenção: apenas ${diasRestantes} dias restantes do período gratuito. Escolha seu plano antes que acabe!`, "w");
   } else {
-    toast(`💜 Trial gratuito: ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`, "i");
+    toast(`💜 Período gratuito: ${diasRestantes} dias restantes.`, "i");
   }
 
   showScreen("main-screen");
