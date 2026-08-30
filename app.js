@@ -18,7 +18,8 @@ const PIX_INFO = {
   titular:  "Nelson Tomaz Catunda Magalhães",
   whatsapp: "+55 85 9 9825-1219",
   email:    "nelsontcmagalhaes@gmail.com",
-  valor:    "R$ 50,00/ano",
+  valorAnual:    "R$ 69,90/ano",
+  valorVitalicio: "R$ 169,90",
 };
 
 const { createClient } = supabase;
@@ -981,10 +982,14 @@ async function afterLogin(user) {
     return;
   }
 
-  if (diasRestantes <= 3) {
-    toast(`🚨 URGENTE: seu período gratuito termina em ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""}! Assine agora via PIX para não perder o acesso.`, "e");
+  if (diasRestantes <= 1) {
+    toast(`🚨 URGENTE: seu período gratuito termina HOJE! Assine via PIX para não perder o acesso.`, "e");
+  } else if (diasRestantes <= 2) {
+    toast(`🚨 Atenção: faltam apenas ${diasRestantes} dias! Assine agora via PIX (R$ 69,90/ano ou R$ 169,90 vitalício).`, "e");
+  } else if (diasRestantes <= 3) {
+    toast(`⚠️ ${diasRestantes} dias restantes do período gratuito. Assine via PIX para continuar.`, "w");
   } else if (diasRestantes <= 5) {
-    toast(`⚠️ Atenção: apenas ${diasRestantes} dias restantes do período gratuito. Escolha seu plano antes que acabe!`, "w");
+    toast(`⚠️ Período gratuito: faltam ${diasRestantes} dias. Que tal garantir já o seu acesso via PIX?`, "w");
   } else {
     toast(`💜 Período gratuito: ${diasRestantes} dias restantes.`, "i");
   }
@@ -1035,7 +1040,7 @@ function showPaywall() {
 function abrirWhatsAppPix(plano = "anual") {
   const email  = currentUser?.email || "(não identificado)";
   const codigo = gerarCodigoPix(email, plano);
-  const valor  = plano === "vitalicio" ? "R$ 149,90 (Vitalício)" : "R$ 50,00/ano";
+  const valor  = plano === "vitalicio" ? "R$ 169,90 (Vitalício)" : "R$ 69,90/ano";
   const msg = encodeURIComponent(
     `Olá! Realizei o pagamento do FibroVida Premium.\n` +
     `Plano: ${valor}\n` +
@@ -1049,7 +1054,7 @@ function abrirWhatsAppPix(plano = "anual") {
 function abrirEmailPix(plano = "anual") {
   const email  = currentUser?.email || "(não identificado)";
   const codigo = gerarCodigoPix(email, plano);
-  const valor  = plano === "vitalicio" ? "R$ 149,90 (Vitalício)" : "R$ 50,00/ano";
+  const valor  = plano === "vitalicio" ? "R$ 169,90 (Vitalício)" : "R$ 69,90/ano";
   const assunto = encodeURIComponent(`FibroVida Premium — ${codigo}`);
   const corpo   = encodeURIComponent(
     `Olá!\n\nRealizei o pagamento do FibroVida Premium.\nPlano: ${valor}\nCódigo: ${codigo}\nE-mail da conta: ${email}\n\nSegue o comprovante em anexo.\n\nObrigado!`
@@ -5681,6 +5686,121 @@ nelsontcmagalhaes@gmail.com
     toast('Erro ao gerar relatório: ' + e.message, 'e');
   } finally { hideLoad(); }
 }
+
+// ── RECONHECIMENTO DE VOZ GLOBAL ─────────────────────────────
+// Botão flutuante de microfone aparece ao focar qualquer input/textarea.
+// Fala do usuário é transcrita diretamente no campo ativo.
+(function initVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return; // navegador não suporta
+
+  const btn = document.createElement("button");
+  btn.id = "voice-mic-btn";
+  btn.title = "Preencher por voz";
+  btn.setAttribute("aria-label", "Preencher por voz");
+  btn.innerHTML = "🎤";
+  btn.style.cssText = `
+    position:fixed; z-index:99999; bottom:80px; right:16px;
+    width:48px; height:48px; border-radius:50%; border:none; cursor:pointer;
+    background:linear-gradient(135deg,#7B5EA7,#5A3080);
+    color:#fff; font-size:1.3rem; box-shadow:0 4px 16px rgba(90,48,128,.45);
+    display:none; align-items:center; justify-content:center;
+    transition:background .2s, transform .15s;
+  `;
+  document.body.appendChild(btn);
+
+  let recognition = null;
+  let activeField = null;
+  let isListening = false;
+
+  function getActiveField() {
+    const el = document.activeElement;
+    if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA") && el.type !== "password") return el;
+    return null;
+  }
+
+  document.addEventListener("focusin", () => {
+    activeField = getActiveField();
+    if (activeField) {
+      btn.style.display = "flex";
+      positionBtn(activeField);
+    }
+  });
+
+  document.addEventListener("focusout", (e) => {
+    // pequeno delay para não fechar antes do clique no botão
+    setTimeout(() => {
+      if (!isListening && document.activeElement !== btn && !getActiveField()) {
+        btn.style.display = "none";
+      }
+    }, 200);
+  });
+
+  function positionBtn(field) {
+    const rect = field.getBoundingClientRect();
+    // Posiciona ao lado direito do campo, centralizado verticalmente
+    const top = Math.max(8, rect.top + rect.height / 2 - 24);
+    const right = window.innerWidth - rect.right + 8;
+    btn.style.top  = top + "px";
+    btn.style.right = Math.max(8, right) + "px";
+    btn.style.bottom = "auto";
+  }
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (isListening) {
+      recognition?.stop();
+      return;
+    }
+    activeField = getActiveField() || activeField;
+    if (!activeField) return;
+    startListening(activeField);
+  });
+
+  function startListening(field) {
+    recognition = new SpeechRecognition();
+    recognition.lang = "pt-BR";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    isListening = true;
+    btn.innerHTML = "⏹️";
+    btn.style.background = "linear-gradient(135deg,#C02040,#8B1A2A)";
+    btn.style.animation = "voice-pulse 1s ease-in-out infinite";
+    if (!document.getElementById("voice-pulse-style")) {
+      const st = document.createElement("style");
+      st.id = "voice-pulse-style";
+      st.textContent = "@keyframes voice-pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,32,64,.5)}50%{box-shadow:0 0 0 10px rgba(192,32,64,0)}}";
+      document.head.appendChild(st);
+    }
+
+    const originalValue = field.value;
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results).map(r => r[0].transcript).join("");
+      field.value = originalValue + (originalValue ? " " : "") + transcript;
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      btn.innerHTML = "🎤";
+      btn.style.background = "linear-gradient(135deg,#7B5EA7,#5A3080)";
+      btn.style.animation = "";
+      field.focus();
+    };
+
+    recognition.onerror = (ev) => {
+      isListening = false;
+      btn.innerHTML = "🎤";
+      btn.style.background = "linear-gradient(135deg,#7B5EA7,#5A3080)";
+      btn.style.animation = "";
+      if (ev.error !== "aborted") toast("🎤 Erro ao reconhecer voz. Tente novamente.", "e");
+    };
+
+    recognition.start();
+    toast("🎤 Fale agora — estou ouvindo...", "i");
+  }
+})();
 
 // Wrapper para salvar com fallback offline
 async function saveWithOfflineFallback(table, payload) {
