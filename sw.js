@@ -3,7 +3,7 @@
    Cache-first para assets estáticos | Network-first para API
    ============================================================ */
 
-const CACHE_NAME  = 'fibrovida-v4.7';
+const CACHE_NAME  = 'fibrovida-v4.8';
 const STATIC_URLS = [
   './',
   './index.html',
@@ -82,15 +82,22 @@ self.addEventListener('fetch', event => {
   }
 });
 
+const SUPABASE_PROJECT  = 'pmupshodvtddlzrohuvi';
+// Anon key já é pública (está também em app.js) — usada para autenticar no Edge Function
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdXBzaG9kdnRkZGx6cm9odXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzUxNjYsImV4cCI6MjA5NDMxMTE2Nn0.2v3oQrkw9Lz5ZqjM2tftVBEZrbE7Gu86sUe9uzFrNm4';
+const ACTION_URL        = `https://${SUPABASE_PROJECT}.supabase.co/functions/v1/handle-med-action`;
+
 // ── PUSH NOTIFICATIONS (Web Push via Supabase Edge Function) ──
 self.addEventListener('push', event => {
   let data = {
-    title: '💊 FibroVida',
-    body:  'Hora do seu medicamento!',
-    icon:  './icons/icon-192.png',
-    badge: './icons/icon-72.png',
-    tag:   'fibrovida-med',
-    url:   './#medicamentos',
+    title:   '💊 FibroVida',
+    body:    'Hora do seu medicamento!',
+    icon:    './icons/icon-192.png',
+    badge:   './icons/icon-72.png',
+    tag:     'fibrovida-med',
+    url:     './#medicamentos',
+    med_id:  null,
+    user_id: null,
   };
   try {
     if (event.data) {
@@ -98,7 +105,6 @@ self.addEventListener('push', event => {
       data = { ...data, ...parsed };
     }
   } catch(e) {
-    // payload não é JSON — usa texto como body
     try { data.body = event.data?.text() || data.body; } catch(_) {}
   }
 
@@ -108,32 +114,66 @@ self.addEventListener('push', event => {
       icon:    data.icon,
       badge:   data.badge,
       tag:     data.tag,
-      data:    { url: data.url },
+      data:    { url: data.url, med_id: data.med_id, user_id: data.user_id },
       vibrate: [200, 100, 200, 100, 200],
-      requireInteraction: true,   // mantém a notificação na tela até o usuário agir
+      requireInteraction: true,
       actions: [
-        { action: 'tomei',   title: '✅ Tomei' },
-        { action: 'adiar',   title: '⏰ Lembrar em 10 min' },
+        { action: 'tomei', title: '✅ Tomei' },
+        { action: 'adiar', title: '⏰ Lembrar em 10 min' },
       ],
     })
   );
 });
 
+// Envia ação para a Edge Function (funciona com app fechado)
+async function enviarAcao(action, med_id, user_id) {
+  if (!med_id || !user_id) return;
+  try {
+    await fetch(ACTION_URL, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ action, med_id, user_id }),
+    });
+  } catch(e) {
+    console.error('[SW] enviarAcao falhou:', e);
+  }
+}
+
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  const { url, med_id, user_id } = event.notification.data || {};
 
-  // Ação "Adiar 10 min" — reagenda a notificação
+  if (event.action === 'tomei') {
+    // Registra no banco e desconta estoque — sem precisar abrir o app
+    event.waitUntil(
+      enviarAcao('tomei', med_id, user_id).then(() => {
+        // Confirmação visual: pequena notificação de feedback
+        return self.registration.showNotification('✅ FibroVida', {
+          body:    'Dose registrada! Estoque atualizado.',
+          icon:    './icons/icon-192.png',
+          tag:     'tomei-confirm',
+          vibrate: [100, 50, 100],
+        });
+      })
+    );
+    return;
+  }
+
   if (event.action === 'adiar') {
-    const { title, body, icon, badge, tag } = event.notification;
-    setTimeout(() => {
-      self.registration.showNotification(title, {
-        body, icon, badge, tag: tag + '-reag',
-        vibrate: [200, 100, 200],
-        data: event.notification.data,
-        requireInteraction: true,
-        actions: [{ action: 'tomei', title: '✅ Tomei' }],
-      });
-    }, 10 * 60 * 1000);
+    // Agenda re-notificação no servidor — 100% confiável, independe do SW estar vivo
+    event.waitUntil(
+      enviarAcao('adiar', med_id, user_id).then(() => {
+        return self.registration.showNotification('⏰ FibroVida', {
+          body:    'Lembrete adiado para 10 minutos.',
+          icon:    './icons/icon-192.png',
+          tag:     'adiar-confirm',
+          vibrate: [100],
+        });
+      })
+    );
     return;
   }
 

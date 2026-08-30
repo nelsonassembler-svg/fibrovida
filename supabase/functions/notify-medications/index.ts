@@ -55,7 +55,20 @@ serve(async (req) => {
   });
 
   console.log(`[notify] ${dueMeds.length} medicamento(s) no horário ${currentTime}`);
-  if (!dueMeds.length) {
+
+  // Busca também notificações adiadas cujo fire_at já passou
+  const { data: agendadas } = await supabase
+    .from("push_scheduled")
+    .select("id, user_id, med_id, med_name, med_dosage")
+    .lte("fire_at", new Date().toISOString())
+    .eq("sent", false);
+
+  const toSend: Array<{ source: "med" | "scheduled"; user_id: string; med_id: string; med_name: string; med_dosage: string | null; scheduled_id?: string }> = [
+    ...dueMeds.map(m => ({ source: "med" as const, user_id: m.user_id, med_id: m.id, med_name: m.name, med_dosage: m.dosage })),
+    ...(agendadas ?? []).map(a => ({ source: "scheduled" as const, user_id: a.user_id, med_id: a.med_id, med_name: a.med_name, med_dosage: a.med_dosage, scheduled_id: a.id })),
+  ];
+
+  if (!toSend.length) {
     return new Response(JSON.stringify({ sent: 0, time: currentTime }), {
       headers: { "Content-Type": "application/json" },
     });
@@ -64,37 +77,43 @@ serve(async (req) => {
   let sent = 0;
   const errors: string[] = [];
 
-  for (const med of dueMeds) {
+  // Helper para enviar push a todos os devices de um usuário
+  async function sendToUser(userId: string, payloadObj: Record<string, unknown>): Promise<void> {
     const { data: subs } = await supabase
       .from("push_subscriptions")
       .select("id, subscription")
-      .eq("user_id", med.user_id);
+      .eq("user_id", userId);
 
-    if (!subs?.length) continue;
-
-    const payload = JSON.stringify({
-      title: "💊 FibroVida — Medicamento",
-      body:  `${med.name}${med.dosage ? " — " + med.dosage : ""}`,
-      icon:  "/fibrovida/icons/icon-192.png",
-      badge: "/fibrovida/icons/icon-72.png",
-      tag:   `med-${med.id}`,
-      url:   "/fibrovida/#medicamentos",
-    });
-
-    for (const { id, subscription } of subs) {
+    for (const { id, subscription } of (subs ?? [])) {
       try {
-        await webpush.sendNotification(subscription, payload);
+        await webpush.sendNotification(subscription, JSON.stringify(payloadObj));
         sent++;
       } catch (e: unknown) {
-        // Status 410 = subscription expirada — remove do banco
         const status = (e as { statusCode?: number }).statusCode;
         if (status === 410 || status === 404) {
           await supabase.from("push_subscriptions").delete().eq("id", id);
-          console.log(`[notify] subscription expirada removida: ${id}`);
         } else {
-          errors.push(`${med.name}: ${String(e)}`);
+          errors.push(String(e));
         }
       }
+    }
+  }
+
+  for (const item of toSend) {
+    await sendToUser(item.user_id, {
+      title:   "💊 FibroVida — Medicamento",
+      body:    `${item.med_name}${item.med_dosage ? " — " + item.med_dosage : ""}`,
+      icon:    "/fibrovida/icons/icon-192.png",
+      badge:   "/fibrovida/icons/icon-72.png",
+      tag:     `med-${item.med_id}`,
+      url:     "/fibrovida/#medicamentos",
+      med_id:  item.med_id,
+      user_id: item.user_id,
+    });
+
+    // Marca notificação adiada como enviada
+    if (item.source === "scheduled" && item.scheduled_id) {
+      await supabase.from("push_scheduled").update({ sent: true }).eq("id", item.scheduled_id);
     }
   }
 
