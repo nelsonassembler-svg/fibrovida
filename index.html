@@ -412,6 +412,27 @@
             </div>
           </div>
         </div>
+
+        <!-- ── CONTROLE DE VENDAS (admin only) ── -->
+        <div class="admin-users-wrap" id="admin-sales-wrap">
+          <div class="auw-header">
+            <span class="auw-title">💰 Controle de Vendas</span>
+            <button class="auw-toggle-btn" onclick="toggleAdminSales()" id="asv-toggle-btn">▼ Expandir</button>
+          </div>
+          <div class="auw-body" id="asv-body" style="display:none">
+            <div class="auw-search-row">
+              <input type="text" id="asv-search-input" placeholder="🔍 Buscar por código FIBRO-..."
+                oninput="loadAdminSales(this.value)" autocomplete="off" />
+              <button class="auw-search-btn" onclick="loadAdminSales()">Todos</button>
+            </div>
+            <div id="asv-list" class="auw-list">
+              <div class="auw-empty">Clique em "Todos" para carregar</div>
+            </div>
+            <div class="auw-footer" id="asv-footer">
+              <span id="asv-count"></span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 🌡️ Índice FibroVida -->
@@ -1616,6 +1637,14 @@
               <div class="sr-sub">Alterar nome</div>
             </div>
             <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row" style="cursor:default">
+            <span class="sr-icon">🔖</span>
+            <div class="sr-body">
+              <div class="sr-title">Seu código de usuário</div>
+              <div class="sr-sub" id="config-user-code" style="font-family:monospace;letter-spacing:1px">—</div>
+            </div>
+            <button class="sr-arrow" style="border:none;background:none;cursor:pointer;font-size:18px" onclick="navigator.clipboard.writeText(currentProfile?.user_code||'').then(()=>toast('Código copiado!','s'))" title="Copiar">📋</button>
           </div>
           <div class="settings-row" onclick="showTab('relatorios')">
             <span class="sr-icon">📊</span>

@@ -937,6 +937,119 @@ function tempoRelativo(date) {
   return `${Math.floor(diff/86400)}d atrás`;
 }
 
+// ── CONTROLE DE VENDAS (ADMIN) ────────────────────────────────
+
+function toggleAdminSales() {
+  const body = document.getElementById("asv-body");
+  const btn  = document.getElementById("asv-toggle-btn");
+  if (!body) return;
+  const open = body.style.display === "none";
+  body.style.display = open ? "block" : "none";
+  btn.textContent = open ? "▲ Recolher" : "▼ Expandir";
+  if (open) loadAdminSales();
+}
+
+async function loadAdminSales(search = "") {
+  if (!isAdmin) return;
+  const list = document.getElementById("asv-list");
+  if (!list) return;
+  list.innerHTML = `<div class="auw-loading">⏳ Carregando vendas...</div>`;
+
+  try {
+    let q = db.from("payments")
+      .select("id, user_id, user_code, plano, valor, status, created_at, confirmed_at, profiles(name, email)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (search.trim()) {
+      q = q.or(`user_code.ilike.%${search.trim()}%`);
+    }
+
+    const { data, error } = await q;
+    if (error) throw error;
+    renderAdminSales(data || []);
+  } catch(e) {
+    list.innerHTML = `<div class="auw-empty">❌ Erro: ${e.message}</div>`;
+  }
+}
+
+function renderAdminSales(sales) {
+  const list  = document.getElementById("asv-list");
+  const count = document.getElementById("asv-count");
+  if (!list) return;
+
+  if (!sales.length) {
+    list.innerHTML = `<div class="auw-empty">Nenhuma venda registrada ainda.</div>`;
+    if (count) count.textContent = "0 venda(s)";
+    return;
+  }
+
+  if (count) count.textContent = `${sales.length} venda(s)`;
+
+  list.innerHTML = sales.map(s => {
+    const nome   = s.profiles?.name  || "—";
+    const email  = s.profiles?.email || "—";
+    const status = s.status === "confirmed" ? "✅ Confirmado" : "⏳ Pendente";
+    const cor    = s.status === "confirmed" ? "#22c55e" : "#f59e0b";
+    const data   = new Date(s.created_at).toLocaleDateString("pt-BR");
+    const btnConf = s.status !== "confirmed"
+      ? `<button class="auw-btn auw-btn-green" onclick="confirmarPagamento('${s.id}','${s.user_id}','${s.plano}')">✅ Confirmar Pagamento</button>`
+      : `<span style="color:var(--text2);font-size:12px">Confirmado em ${s.confirmed_at ? new Date(s.confirmed_at).toLocaleDateString("pt-BR") : "—"}</span>`;
+
+    return `
+      <div class="auw-card" style="border-left:4px solid ${cor}">
+        <div class="auw-card-top">
+          <div class="auw-user-info">
+            <div class="auw-user-name">${nome}</div>
+            <div class="auw-user-email">${email}</div>
+            <div style="margin-top:4px;font-size:12px;color:var(--text2)">
+              Código: <strong>${s.user_code || "—"}</strong> · Plano: <strong>${s.plano}</strong> · ${s.valor}
+            </div>
+          </div>
+          <div class="auw-user-meta">
+            <div class="auw-meta-item" style="color:${cor}">${status}</div>
+            <div class="auw-meta-item">📅 ${data}</div>
+          </div>
+        </div>
+        <div class="auw-actions">${btnConf}</div>
+      </div>`;
+  }).join("");
+}
+
+async function confirmarPagamento(paymentId, userId, plano) {
+  if (!isAdmin) return;
+  if (!confirm(`Confirmar pagamento e ativar ${plano} para este usuário?`)) return;
+
+  try {
+    const now = new Date().toISOString();
+    const [r1, r2] = await Promise.all([
+      db.from("payments").update({ status: "confirmed", confirmed_at: now }).eq("id", paymentId),
+      db.from("profiles").update({ plan: "premium", updated_at: now }).eq("id", userId),
+    ]);
+    if (r1.error) throw r1.error;
+    if (r2.error) throw r2.error;
+    toast("✅ Pagamento confirmado e premium ativado!", "s");
+    loadAdminSales();
+    loadAdminStats();
+  } catch(e) {
+    toast("Erro ao confirmar: " + e.message, "e");
+  }
+}
+
+async function registrarPagamentoPendente(plano) {
+  if (!currentUser || !currentProfile) return;
+  try {
+    const valor = plano === "vitalicio" ? "R$ 169,90" : "R$ 69,90";
+    await db.from("payments").upsert({
+      user_id:   currentUser.id,
+      user_code: currentProfile.user_code,
+      plano,
+      valor,
+      status:    "pending",
+    }, { onConflict: "user_id,plano" });
+  } catch(e) { /* silencioso — não interrompe o fluxo */ }
+}
+
 async function updateLastSeen() {
   if (!currentUser) return;
   try {
@@ -1017,29 +1130,30 @@ async function afterLogin(user) {
   }
 }
 
-function gerarCodigoPix(email, plano) {
-  // Código único para identificar o pagante: FIBRO-[5 chars do email]-[PLANO]
-  const base = (email || "user").replace(/[^a-z0-9]/gi, "").toUpperCase().substring(0, 5).padEnd(5, "X");
-  const sufixo = plano === "vitalicio" ? "VITA" : "ANUM";
-  return `FIBRO-${base}-${sufixo}`;
+function gerarCodigoAleatorio() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "FIBRO-";
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+function getUserCode() {
+  return currentProfile?.user_code || "FIBRO-??????";
 }
 
 function showPaywall() {
   showScreen("paywall-screen");
-  // Atualiza código PIX personalizado
-  const email = currentUser?.email || "";
-  const codAnual = gerarCodigoPix(email, "anual");
-  const codVita  = gerarCodigoPix(email, "vitalicio");
+  const codigo = getUserCode();
   const elAnual = document.getElementById("pix-code-anual");
   const elVita  = document.getElementById("pix-code-vitalicio");
-  if (elAnual) elAnual.textContent = codAnual;
-  if (elVita)  elVita.textContent  = codVita;
+  if (elAnual) elAnual.textContent = codigo;
+  if (elVita)  elVita.textContent  = codigo;
 }
 
 // ── PIX: ENVIAR COMPROVANTE ───────────────────────────────────
 function abrirWhatsAppPix(plano = "anual") {
   const email  = currentUser?.email || "(não identificado)";
-  const codigo = gerarCodigoPix(email, plano);
+  const codigo = getUserCode();
   const valor  = plano === "vitalicio" ? "R$ 169,90 (Vitalício)" : "R$ 69,90/ano";
   const msg = encodeURIComponent(
     `Olá! Realizei o pagamento do FibroVida Premium.\n` +
@@ -1048,23 +1162,24 @@ function abrirWhatsAppPix(plano = "anual") {
     `E-mail da conta: ${email}\n` +
     `Segue o comprovante. Por favor, ative meu acesso.`
   );
+  registrarPagamentoPendente(plano);
   window.open(`https://wa.me/5585998251219?text=${msg}`, "_blank");
 }
 
 function abrirEmailPix(plano = "anual") {
   const email  = currentUser?.email || "(não identificado)";
-  const codigo = gerarCodigoPix(email, plano);
+  const codigo = getUserCode();
   const valor  = plano === "vitalicio" ? "R$ 169,90 (Vitalício)" : "R$ 69,90/ano";
   const assunto = encodeURIComponent(`FibroVida Premium — ${codigo}`);
   const corpo   = encodeURIComponent(
     `Olá!\n\nRealizei o pagamento do FibroVida Premium.\nPlano: ${valor}\nCódigo: ${codigo}\nE-mail da conta: ${email}\n\nSegue o comprovante em anexo.\n\nObrigado!`
   );
+  registrarPagamentoPendente(plano);
   window.open(`mailto:nelsontcmagalhaes@gmail.com?subject=${assunto}&body=${corpo}`, "_blank");
 }
 
 function copiarCodigoPix(plano = "anual") {
-  const email  = currentUser?.email || "";
-  const codigo = gerarCodigoPix(email, plano);
+  const codigo = getUserCode();
   navigator.clipboard.writeText(codigo).then(() => {
     toast("Código copiado: " + codigo, "s");
   }).catch(() => {
@@ -1085,10 +1200,24 @@ async function loadProfile() {
   try {
     const { data } = await db.from("profiles").select("*").eq("id", currentUser.id).single();
     if (data) {
+      // Gera user_code se o perfil ainda não tiver um
+      if (!data.user_code) {
+        const user_code = gerarCodigoAleatorio();
+        await db.from("profiles").update({ user_code }).eq("id", currentUser.id);
+        data.user_code = user_code;
+      }
       currentProfile = data;
       isAdmin   = data.is_admin || currentUser.email === ADMIN_EMAIL;
       isPremium = data.plan === "premium" || isAdmin || COURTESY_EMAILS.includes(currentUser.email);
     } else {
+      // Primeiro acesso: cria perfil com user_code único
+      const name      = currentUser.user_metadata?.name || currentUser.email.split("@")[0];
+      const user_code = gerarCodigoAleatorio();
+      const { data: novo } = await db.from("profiles").upsert({
+        id: currentUser.id, name, email: currentUser.email,
+        user_code, updated_at: new Date().toISOString()
+      }).select().single();
+      currentProfile = novo || { name, email: currentUser.email, user_code };
       isAdmin   = currentUser.email === ADMIN_EMAIL;
       isPremium = isAdmin || COURTESY_EMAILS.includes(currentUser.email);
     }
@@ -1121,6 +1250,8 @@ function renderConfig() {
   document.getElementById("config-name").textContent  = name;
   document.getElementById("config-email").textContent = email;
   document.getElementById("avatar-initials").textContent = getInitials(name);
+  const codeEl = document.getElementById("config-user-code");
+  if (codeEl) codeEl.textContent = currentProfile?.user_code || "—";
   if (isAdmin) {
     document.getElementById("config-admin-badge").style.display = "inline-block";
     document.getElementById("admin-section").style.display      = "block";
