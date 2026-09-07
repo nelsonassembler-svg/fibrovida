@@ -3150,6 +3150,7 @@ async function saveVitals() {
   const systolic  = parseInt(document.getElementById("vitals-systolic").value)    || null;
   const diastolic = parseInt(document.getElementById("vitals-diastolic").value)   || null;
   const pulse     = parseInt(document.getElementById("vitals-pulse").value)       || null;
+  const bpType    = document.getElementById("vitals-bp-type")?.value.trim()      || null;
   const glucose   = parseFloat(document.getElementById("vitals-glucose").value)   || null;
   const gType     = document.getElementById("vitals-glucose-type").value;
   const timeEl    = document.getElementById("vitals-time");
@@ -3171,13 +3172,14 @@ async function saveVitals() {
       weight, waist,
       bp_systolic:  systolic,
       bp_diastolic: diastolic,
+      bp_type:      bpType,
       pulse,
       glucose,
       glucose_type: glucose ? gType : null,
     });
     if (error) throw error;
 
-    ["vitals-weight","vitals-waist","vitals-systolic","vitals-diastolic","vitals-pulse","vitals-glucose"].forEach(id => {
+    ["vitals-weight","vitals-waist","vitals-systolic","vitals-diastolic","vitals-pulse","vitals-bp-type","vitals-glucose"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
