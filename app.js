@@ -683,7 +683,7 @@ async function doRecovery() {
   showLoad();
   try {
     const { error } = await db.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://nelsonassembler-svg.github.io/fibrovida/"
+      redirectTo: "https://fibrovida.com.br/"
     });
     if (error) throw error;
     toast("Link enviado! Verifique sua caixa de entrada.", "s");
