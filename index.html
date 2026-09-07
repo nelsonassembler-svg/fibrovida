@@ -817,11 +817,8 @@
 
             <div class="vitals-input-group">
               <label>Tipo de medição</label>
-              <select id="vitals-glucose-type" class="humor-select" style="font-size:12px;height:42px">
-                <option value="jejum">Em jejum</option>
-                <option value="pos_prandial">Pós-prandial</option>
-                <option value="aleatoria">Aleatória</option>
-              </select>
+              <input type="text" id="vitals-glucose-type" placeholder="Ex: jejum, pós-prandial, aleatória..."
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none" />
             </div>
 
           </div>
@@ -2464,11 +2461,8 @@
       </div>
       <div class="vitals-input-group">
         <label>Tipo de medição</label>
-        <select id="ve-glucose-type" class="humor-select" style="font-size:12px;height:42px">
-          <option value="jejum">Em jejum</option>
-          <option value="pos_prandial">Pós-prandial</option>
-          <option value="aleatoria">Aleatória</option>
-        </select>
+        <input type="text" id="ve-glucose-type" placeholder="Ex: jejum, pós-prandial, aleatória..."
+          style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none" />
       </div>
     </div>
     <div class="fg" style="margin-top:10px"><label>Observações</label><textarea id="ve-notes" placeholder="Notas sobre este registro..."></textarea></div>
@@ -2638,6 +2632,42 @@
             <div class="slider-hints"><span>Calma</span><span>Ansiedade intensa</span></div>
           </div>
           <div class="slider-val"><span id="crise-anxiety-val">5</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">🔴 Alergia / Reação Medicamentosa</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="0" id="crise-allergy"
+              oninput="updateRange(this,'crise-allergy-val',10)" style="--pct:0%" />
+            <div class="slider-hints"><span>Nenhuma</span><span>Reação grave</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-allergy-val">0</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">🌿 Coceiras</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="0" id="crise-itch"
+              oninput="updateRange(this,'crise-itch-val',10)" style="--pct:0%" />
+            <div class="slider-hints"><span>Nenhuma</span><span>Insuportável</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-itch-val">0</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">🟡 Urticárias</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="0" id="crise-hives"
+              oninput="updateRange(this,'crise-hives-val',10)" style="--pct:0%" />
+            <div class="slider-hints"><span>Nenhuma</span><span>Muito intensa</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-hives-val">0</span>/10</div>
         </div>
       </div>
 

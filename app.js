@@ -4208,15 +4208,15 @@ function openCriseModal() {
   if (!overlay) return;
 
   // Reseta sliders para valores padrão
-  ["crise-pain","crise-fatigue","crise-anxiety"].forEach((id, i) => {
-    const defaults = [8, 7, 5];
+  const _sliderDefs = {
+    "crise-pain": 8, "crise-fatigue": 7, "crise-anxiety": 5,
+    "crise-allergy": 0, "crise-itch": 0, "crise-hives": 0,
+  };
+  Object.entries(_sliderDefs).forEach(([id, def]) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.value = defaults[i];
-      el.style.setProperty("--pct", (defaults[i] / 10 * 100) + "%");
-    }
+    if (el) { el.value = def; el.style.setProperty("--pct", (def / 10 * 100) + "%"); }
     const valEl = document.getElementById(id + "-val");
-    if (valEl) valEl.textContent = defaults[i];
+    if (valEl) valEl.textContent = def;
   });
 
   // Desmarca todos os gatilhos
@@ -4237,10 +4237,13 @@ function closeCriseModal() {
 }
 
 async function saveCrise() {
-  const pain     = parseInt(document.getElementById("crise-pain").value);
-  const fatigue  = parseInt(document.getElementById("crise-fatigue").value);
-  const anxiety  = parseInt(document.getElementById("crise-anxiety").value);
-  const notes    = document.getElementById("crise-notes").value.trim();
+  const pain    = parseInt(document.getElementById("crise-pain").value);
+  const fatigue = parseInt(document.getElementById("crise-fatigue").value);
+  const anxiety = parseInt(document.getElementById("crise-anxiety").value);
+  const allergy = parseInt(document.getElementById("crise-allergy").value);
+  const itch    = parseInt(document.getElementById("crise-itch").value);
+  const hives   = parseInt(document.getElementById("crise-hives").value);
+  const notes   = document.getElementById("crise-notes").value.trim();
 
   // Coleta gatilhos marcados
   const triggers = [];
@@ -4249,13 +4252,16 @@ async function saveCrise() {
   showLoad();
   try {
     const { error } = await db.from("crisis_logs").insert({
-      user_id:       currentUser.id,
-      logged_at:     new Date().toISOString(),
-      pain_level:    pain,
-      fatigue_level: fatigue,
-      anxiety_level: anxiety,
-      triggers:      triggers.length ? triggers : [],
-      notes:         notes || null,
+      user_id:        currentUser.id,
+      logged_at:      new Date().toISOString(),
+      pain_level:     pain,
+      fatigue_level:  fatigue,
+      anxiety_level:  anxiety,
+      allergy_level:  allergy,
+      itch_level:     itch,
+      hives_level:    hives,
+      triggers:       triggers.length ? triggers : [],
+      notes:          notes || null,
     });
     if (error) throw error;
     closeCriseModal();
