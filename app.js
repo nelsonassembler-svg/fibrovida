@@ -3260,7 +3260,8 @@ async function imprimirSinaisVitais() {
         th{background:#9B59B6;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
         td{padding:6px 8px;border-bottom:1px solid #ddd}
         tr:nth-child(even) td{background:#f9f4fc}
-        @media print{body{margin:10px}}
+        @page{size:A4;margin:15mm}
+        @media print{body{margin:0}}
       </style></head><body>
       <h1>💜 FibroVida — Sinais Vitais</h1>
       <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
@@ -3322,7 +3323,8 @@ async function imprimirSomentePressao() {
         th{background:#9B59B6;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
         td{padding:6px 8px;border-bottom:1px solid #ddd}
         tr:nth-child(even) td{background:#f9f4fc}
-        @media print{body{margin:10px}}
+        @page{size:A4;margin:15mm}
+        @media print{body{margin:0}}
       </style></head><body>
       <h1>💜 FibroVida — Aferição da Pressão Arterial</h1>
       <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
@@ -3390,7 +3392,8 @@ async function imprimirMedicamentos() {
         td{padding:6px 8px;border-bottom:1px solid #ddd;vertical-align:top}
         tr:nth-child(even) td{background:#f9f4fc}
         .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
-        @media print{body{margin:10px}}
+        @page{size:A4;margin:15mm}
+        @media print{body{margin:0}}
       </style></head><body>
       <h1>💊 FibroVida — Relação de Medicamentos</h1>
       <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total: ${data.length} medicamento(s)</p>
@@ -3448,7 +3451,8 @@ async function imprimirCrises() {
         td{padding:5px 7px;border-bottom:1px solid #eee;vertical-align:top}
         tr:nth-child(even) td{background:#fdf2f2}
         .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
-        @media print{body{margin:10px}}
+        @page{size:A4;margin:15mm}
+        @media print{body{margin:0}}
       </style></head><body>
       <h1>🚨 FibroVida — Histórico de Crises</h1>
       <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total: ${data.length} crise(s) registrada(s)</p>
@@ -3512,7 +3516,8 @@ async function imprimirGlicemia() {
         td{padding:6px 8px;border-bottom:1px solid #ddd}
         tr:nth-child(even) td{background:#f0fdf4}
         .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
-        @media print{body{margin:10px}}
+        @page{size:A4;margin:15mm}
+        @media print{body{margin:0}}
       </style></head><body>
       <h1>🩸 FibroVida — Registro de Glicemia</h1>
       <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
@@ -3566,7 +3571,8 @@ async function imprimirPeso() {
         td{padding:6px 8px;border-bottom:1px solid #ddd}
         tr:nth-child(even) td{background:#eaf4fc}
         .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
-        @media print{body{margin:10px}}
+        @page{size:A4;margin:15mm}
+        @media print{body{margin:0}}
       </style></head><body>
       <h1>⚖️ FibroVida — Peso e Medidas</h1>
       <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
@@ -3582,6 +3588,190 @@ async function imprimirPeso() {
 }
 
 // ── DOCUMENTOS DE SAÚDE ────────────────────────────────────────
+
+// ── RELATÓRIO PERSONALIZADO A4 ─────────────────────────────────
+async function gerarRelatorioPersonalizado() {
+  const incDor   = document.getElementById("rpt-dor")?.checked;
+  const incPres  = document.getElementById("rpt-pressao")?.checked;
+  const incGli   = document.getElementById("rpt-glicemia")?.checked;
+  const incPeso  = document.getElementById("rpt-peso")?.checked;
+  const incMed   = document.getElementById("rpt-medicamentos")?.checked;
+  const incCrise = document.getElementById("rpt-crises")?.checked;
+
+  if (!incDor && !incPres && !incGli && !incPeso && !incMed && !incCrise) {
+    toast("Selecione pelo menos uma seção para incluir no relatório.", "w"); return;
+  }
+
+  showLoad();
+  try {
+    const userName = currentProfile?.name || "Paciente";
+    const medico   = document.getElementById("rep-medico")?.value.trim() || "";
+    const hoje     = new Date().toLocaleDateString("pt-BR");
+
+    const CSS = `
+      @page { size: A4; margin: 15mm; }
+      *{box-sizing:border-box}
+      body{font-family:Arial,sans-serif;font-size:12px;color:#222;margin:0;padding:0}
+      .cabecalho{background:#7B5EA7;color:#fff;padding:14px 18px;border-radius:6px;margin-bottom:16px}
+      .cabecalho h1{margin:0 0 4px;font-size:18px}
+      .cabecalho p{margin:0;font-size:10px;opacity:.85}
+      .secao{margin-bottom:20px;page-break-inside:avoid}
+      .secao-titulo{font-size:13px;font-weight:bold;color:#7B5EA7;border-bottom:2px solid #C9B8E8;padding-bottom:4px;margin-bottom:8px}
+      table{width:100%;border-collapse:collapse;font-size:11px}
+      th{background:#7B5EA7;color:#fff;padding:6px 8px;text-align:left;font-weight:600}
+      td{padding:5px 8px;border-bottom:1px solid #e0d4f5;vertical-align:top}
+      tr:nth-child(even) td{background:#f9f4fc}
+      .rodape{margin-top:24px;font-size:9px;color:#888;border-top:1px solid #ddd;padding-top:8px;text-align:center}
+      @media print{.secao{page-break-inside:avoid}}
+    `;
+
+    let secoes = "";
+
+    // ── Diário de Dor ──
+    if (incDor) {
+      const { data: dr } = await db.from("health_records")
+        .select("record_date,pain_level,fatigue_level,energy_level,sleep_quality,humor,notes")
+        .eq("user_id", currentUser.id)
+        .order("record_date", { ascending: false })
+        .limit(60);
+      if (dr && dr.length) {
+        const rows = dr.map(r => `<tr>
+          <td>${fmtDate(r.record_date)}</td>
+          <td style="text-align:center">${r.pain_level ?? "—"}</td>
+          <td style="text-align:center">${r.fatigue_level ?? "—"}</td>
+          <td style="text-align:center">${r.energy_level ?? "—"}</td>
+          <td style="text-align:center">${r.sleep_quality ?? "—"}</td>
+          <td style="text-align:center">${r.humor ?? "—"}</td>
+          <td>${r.notes ? esc(r.notes) : "—"}</td>
+        </tr>`).join("");
+        secoes += `<div class="secao"><div class="secao-titulo">📅 Diário de Dor e Saúde (últimos ${dr.length} registros)</div>
+          <table><thead><tr><th>Data</th><th>Dor</th><th>Fadiga</th><th>Energia</th><th>Sono</th><th>Humor</th><th>Obs.</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+      }
+    }
+
+    // ── Pressão Arterial ──
+    if (incPres) {
+      const { data: bp } = await db.from("vitals_records")
+        .select("record_date,record_time,bp_systolic,bp_diastolic,pulse,bp_type,notes")
+        .eq("user_id", currentUser.id).not("bp_systolic","is",null)
+        .order("record_date",{ascending:false}).limit(60);
+      if (bp && bp.length) {
+        const catBP = s => !s?"":s<120?"Ótima":s<130?"Normal":s<140?"Limítrofe":s<160?"Elevada":"Alta";
+        const rows = bp.map(r => `<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><b>${r.bp_systolic}</b></td><td><b>${r.bp_diastolic}</b></td>
+          <td>${r.pulse||"—"}</td><td>${catBP(r.bp_systolic)}</td>
+          <td>${r.bp_type?esc(r.bp_type):"—"}</td><td>${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        secoes += `<div class="secao"><div class="secao-titulo">🩺 Pressão Arterial (${bp.length} registros)</div>
+          <table><thead><tr><th>Data</th><th>Hora</th><th>Sistólica</th><th>Diastólica</th><th>Pulso</th><th>Classificação</th><th>Tipo</th><th>Obs.</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+      }
+    }
+
+    // ── Glicemia ──
+    if (incGli) {
+      const { data: gl } = await db.from("vitals_records")
+        .select("record_date,record_time,glucose,glucose_type,notes")
+        .eq("user_id", currentUser.id).not("glucose","is",null)
+        .order("record_date",{ascending:false}).limit(60);
+      if (gl && gl.length) {
+        const rows = gl.map(r => `<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><b>${r.glucose} mg/dL</b></td>
+          <td>${r.glucose_type?esc(r.glucose_type):"—"}</td>
+          <td>${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        secoes += `<div class="secao"><div class="secao-titulo">🩸 Glicemia (${gl.length} registros)</div>
+          <table><thead><tr><th>Data</th><th>Hora</th><th>Glicemia</th><th>Tipo de Medição</th><th>Obs.</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+      }
+    }
+
+    // ── Peso ──
+    if (incPeso) {
+      const { data: pe } = await db.from("vitals_records")
+        .select("record_date,record_time,weight,waist")
+        .eq("user_id", currentUser.id).not("weight","is",null)
+        .order("record_date",{ascending:false}).limit(60);
+      if (pe && pe.length) {
+        const rows = pe.map(r => `<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><b>${r.weight} kg</b></td><td>${r.waist?r.waist+" cm":"—"}</td>
+        </tr>`).join("");
+        secoes += `<div class="secao"><div class="secao-titulo">⚖️ Peso e Medidas (${pe.length} registros)</div>
+          <table><thead><tr><th>Data</th><th>Hora</th><th>Peso</th><th>Circunferência Abdominal</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+      }
+    }
+
+    // ── Medicamentos ──
+    if (incMed) {
+      const { data: meds } = await db.from("medications")
+        .select("name,dosage,schedule_time,frequency,stock,active,is_extra,notes")
+        .eq("user_id", currentUser.id).order("is_extra").order("name");
+      if (meds && meds.length) {
+        const rows = meds.map(m => `<tr>
+          <td><b>${esc(m.name)}</b>${m.is_extra?"<br><small style='color:#888'>Outro</small>":""}</td>
+          <td>${m.dosage?esc(m.dosage):"—"}</td>
+          <td>${m.schedule_time?esc(m.schedule_time):"—"}</td>
+          <td>${m.frequency?esc(m.frequency):"—"}</td>
+          <td>${m.stock!=null?m.stock+" un.":"—"}</td>
+          <td>${m.active===false?"Inativo":"Ativo"}</td>
+          <td>${m.notes?esc(m.notes):"—"}</td>
+        </tr>`).join("");
+        secoes += `<div class="secao"><div class="secao-titulo">💊 Medicamentos e Horários (${meds.length})</div>
+          <table><thead><tr><th>Medicamento</th><th>Dose</th><th>Horários</th><th>Frequência</th><th>Estoque</th><th>Status</th><th>Obs.</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+      }
+    }
+
+    // ── Crises ──
+    if (incCrise) {
+      const { data: cr } = await db.from("crisis_logs")
+        .select("created_at,pain_level,fatigue_level,anxiety_level,allergy_level,itch_level,hives_level,triggers,notes")
+        .eq("user_id", currentUser.id).order("created_at",{ascending:false}).limit(60);
+      if (cr && cr.length) {
+        const rows = cr.map(r => {
+          const dt = new Date(r.created_at);
+          const gat = r.triggers?(Array.isArray(r.triggers)?r.triggers.join(", "):r.triggers):"—";
+          return `<tr>
+            <td>${dt.toLocaleDateString("pt-BR")}<br><small style="color:#888">${dt.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</small></td>
+            <td style="text-align:center">${r.pain_level??""}</td>
+            <td style="text-align:center">${r.fatigue_level??""}</td>
+            <td style="text-align:center">${r.anxiety_level??""}</td>
+            <td style="text-align:center">${r.allergy_level??""}</td>
+            <td style="text-align:center">${r.itch_level??""}</td>
+            <td style="text-align:center">${r.hives_level??""}</td>
+            <td style="font-size:10px">${gat}</td>
+            <td style="font-size:10px">${r.notes?esc(r.notes):"—"}</td>
+          </tr>`;
+        }).join("");
+        secoes += `<div class="secao"><div class="secao-titulo">🚨 Histórico de Crises (${cr.length})</div>
+          <table><thead><tr><th>Data/Hora</th><th>Dor</th><th>Fadiga</th><th>Ansiedade</th><th>Alergia</th><th>Coceira</th><th>Urticária</th><th>Gatilhos</th><th>Obs.</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+      }
+    }
+
+    if (!secoes) { toast("Nenhum dado encontrado para as seções selecionadas.", "w"); return; }
+
+    abrirImpressao(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Relatório Médico — ${userName}</title>
+      <style>${CSS}</style></head><body>
+      <div class="cabecalho">
+        <h1>💜 FibroVida — Relatório de Acompanhamento</h1>
+        <p>Paciente: <b>${esc(userName)}</b>${medico?" &nbsp;|&nbsp; Profissional: <b>"+esc(medico)+"</b>":""} &nbsp;|&nbsp; Gerado em: ${hoje}</p>
+        <p>fibrovida.com.br &nbsp;|&nbsp; N Tech IA — Nelson Tomaz Catunda Magalhães</p>
+      </div>
+      ${secoes}
+      <div class="rodape">Relatório gerado pelo FibroVida · fibrovida.com.br · Dados de uso exclusivo do paciente e profissional de saúde</div>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+
+  } catch(e) { toast("Erro ao gerar relatório: " + e.message, "e"); console.error(e); }
+  finally { hideLoad(); }
+}
 
 function docTypeLabel(t) {
   return { receita_medica:"💊 Receita Médica", solicitacao_exame:"🔬 Solicitação de Exame", resultado_exame:"📋 Resultado de Exame" }[t] || t;
