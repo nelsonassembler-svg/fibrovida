@@ -3209,11 +3209,35 @@ async function deleteVitals(id) {
   } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
 }
 
-// ── HELPER: abre janela de impressão (trata bloqueio de pop-up) ─
+// ── HELPER: imprime via iframe oculto (sem pop-up) ────────────
 function abrirImpressao(html) {
+  // Tenta iframe oculto primeiro (não depende de pop-up)
+  try {
+    let frame = document.getElementById("_print_frame_fv");
+    if (!frame) {
+      frame = document.createElement("iframe");
+      frame.id = "_print_frame_fv";
+      frame.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:0";
+      document.body.appendChild(frame);
+    }
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    // Aguarda o carregamento antes de imprimir
+    frame.contentWindow.focus();
+    setTimeout(() => {
+      try { frame.contentWindow.print(); } catch(e) { _abrirImpressaoPopup(html); }
+    }, 300);
+  } catch(e) {
+    _abrirImpressaoPopup(html);
+  }
+}
+
+function _abrirImpressaoPopup(html) {
   const win = window.open("", "_blank");
   if (!win) {
-    toast("Pop-up bloqueado! Permita pop-ups para fibrovida.com.br no navegador e tente novamente.", "e");
+    toast("Permita pop-ups para fibrovida.com.br no navegador e tente novamente.", "e");
     return;
   }
   win.document.write(html);
