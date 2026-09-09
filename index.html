@@ -17,7 +17,7 @@
   <meta name="application-name" content="FibroVida" />
   <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
 
-  <link rel="stylesheet" href="style.css?v=16" />
+  <link rel="stylesheet" href="style.css?v=17" />
 </head>
 <body>
 
@@ -1512,16 +1512,45 @@
         </div>
       </div>
 
-      <!-- Impressão de Sinais Vitais -->
+      <!-- Impressão por categoria -->
       <div class="card">
         <div class="card-body">
-          <div class="card-title"><span class="icon">🖨️</span> Imprimir Sinais Vitais</div>
-          <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
-            Gere uma impressão dos registros de sinais vitais para levar ao médico.
+          <div class="card-title"><span class="icon">🖨️</span> Imprimir por Categoria</div>
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
+            Escolha o que deseja imprimir. Cada opção abre uma janela de impressão com apenas aquela categoria.
           </p>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-primary" style="flex:1" onclick="imprimirSinaisVitais()">📊 Todos os Sinais Vitais</button>
-            <button class="btn btn-secondary" style="flex:1" onclick="imprimirSomentePressao()">🩺 Só Pressão Arterial</button>
+
+          <!-- Pressão Arterial -->
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">🩺 Pressão Arterial</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" style="flex:1" onclick="imprimirSomentePressao()">🖨️ Imprimir Pressão</button>
+              <button class="btn btn-secondary" style="flex:1" onclick="imprimirSinaisVitais()">📊 Todos os Sinais Vitais</button>
+            </div>
+          </div>
+
+          <!-- Glicemia -->
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">🩸 Glicemia</div>
+            <button class="btn btn-secondary btn-full" onclick="imprimirGlicemia()">🖨️ Imprimir Glicemia</button>
+          </div>
+
+          <!-- Peso e Medidas -->
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">⚖️ Peso e Medidas</div>
+            <button class="btn btn-secondary btn-full" onclick="imprimirPeso()">🖨️ Imprimir Peso e Circunferência</button>
+          </div>
+
+          <!-- Medicamentos -->
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">💊 Medicamentos</div>
+            <button class="btn btn-secondary btn-full" onclick="imprimirMedicamentos()">🖨️ Imprimir Relação de Medicamentos e Horários</button>
+          </div>
+
+          <!-- Histórico de Crises -->
+          <div style="margin-bottom:4px">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">🚨 Crises</div>
+            <button class="btn btn-secondary btn-full" onclick="imprimirCrises()">🖨️ Imprimir Histórico de Crises</button>
           </div>
         </div>
       </div>
@@ -1529,7 +1558,7 @@
       <!-- Relatório PDF para médico -->
       <div class="card">
         <div class="card-body">
-          <div class="card-title"><span class="icon">📄</span> Relatório para o Médico</div>
+          <div class="card-title"><span class="icon">📄</span> Relatório Completo para o Médico</div>
           <div class="fg">
             <label style="font-size:12px;color:var(--text2);margin-bottom:4px;display:block">Nome do médico (opcional)</label>
             <input type="text" id="rep-medico" placeholder="Dr(a). Nome do Médico..."

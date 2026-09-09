@@ -3336,6 +3336,252 @@ async function imprimirSomentePressao() {
   finally { hideLoad(); }
 }
 
+// ── IMPRESSÃO: MEDICAMENTOS ────────────────────────────────────
+async function imprimirMedicamentos() {
+  showLoad();
+  try {
+    const { data, error } = await db.from("medications")
+      .select("name,dosage,schedule_time,frequency,stock,notes,active,is_extra")
+      .eq("user_id", currentUser.id)
+      .order("is_extra", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) throw error;
+    if (!data || !data.length) { toast("Nenhum medicamento cadastrado.", "w"); return; }
+
+    const userName = currentProfile?.name || "Paciente";
+    const hoje = new Date().toLocaleDateString("pt-BR");
+
+    const renderGrupo = (lista, titulo, cor) => {
+      if (!lista.length) return "";
+      const rows = lista.map(m => `<tr>
+        <td><strong>${esc(m.name)}</strong></td>
+        <td>${m.dosage ? esc(m.dosage) : "—"}</td>
+        <td>${m.schedule_time ? esc(m.schedule_time) : "—"}</td>
+        <td>${m.frequency ? esc(m.frequency) : "—"}</td>
+        <td>${m.stock != null ? m.stock + " un." : "—"}</td>
+        <td>${m.active === false ? "Inativo" : "Ativo"}</td>
+        <td>${m.notes ? esc(m.notes) : "—"}</td>
+      </tr>`).join("");
+      return `<h2 style="color:${cor};margin:20px 0 8px;font-size:14px;border-bottom:2px solid ${cor};padding-bottom:4px">${titulo}</h2>
+        <table>
+          <thead><tr><th>Medicamento</th><th>Dose</th><th>Horários</th><th>Frequência</th><th>Estoque</th><th>Status</th><th>Observações</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    };
+
+    const fibro = (data).filter(m => !m.is_extra);
+    const extra = (data).filter(m => m.is_extra);
+
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Medicamentos — ${userName}</title>
+      <style>
+        body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
+        h1{color:#7D3C98;font-size:18px;margin-bottom:4px}
+        p.sub{color:#666;font-size:11px;margin-bottom:16px}
+        table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+        th{background:#9B59B6;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
+        td{padding:6px 8px;border-bottom:1px solid #ddd;vertical-align:top}
+        tr:nth-child(even) td{background:#f9f4fc}
+        .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
+        @media print{body{margin:10px}}
+      </style></head><body>
+      <h1>💊 FibroVida — Relação de Medicamentos</h1>
+      <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total: ${data.length} medicamento(s)</p>
+      ${renderGrupo(fibro, "💜 Medicamentos para Fibromialgia", "#7D3C98")}
+      ${renderGrupo(extra, "💊 Outros Medicamentos", "#2471A3")}
+      <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
+  finally { hideLoad(); }
+}
+
+// ── IMPRESSÃO: CRISES ──────────────────────────────────────────
+async function imprimirCrises() {
+  showLoad();
+  try {
+    const { data, error } = await db.from("crisis_logs")
+      .select("created_at,pain_level,fatigue_level,anxiety_level,allergy_level,itch_level,hives_level,triggers,notes")
+      .eq("user_id", currentUser.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    if (!data || !data.length) { toast("Nenhum registro de crise encontrado.", "w"); return; }
+
+    const userName = currentProfile?.name || "Paciente";
+    const hoje = new Date().toLocaleDateString("pt-BR");
+    const escT = v => v != null ? v : "—";
+
+    const rows = data.map(r => {
+      const dt = new Date(r.created_at);
+      const data_fmt = dt.toLocaleDateString("pt-BR");
+      const hora_fmt = dt.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+      const gatilhos = r.triggers ? (Array.isArray(r.triggers) ? r.triggers.join(", ") : r.triggers) : "—";
+      return `<tr>
+        <td>${data_fmt}<br><small style="color:#888">${hora_fmt}</small></td>
+        <td style="text-align:center">${escT(r.pain_level)}</td>
+        <td style="text-align:center">${escT(r.fatigue_level)}</td>
+        <td style="text-align:center">${escT(r.anxiety_level)}</td>
+        <td style="text-align:center">${escT(r.allergy_level)}</td>
+        <td style="text-align:center">${escT(r.itch_level)}</td>
+        <td style="text-align:center">${escT(r.hives_level)}</td>
+        <td style="font-size:11px">${gatilhos}</td>
+        <td style="font-size:11px">${r.notes ? esc(r.notes) : "—"}</td>
+      </tr>`;
+    }).join("");
+
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Histórico de Crises — ${userName}</title>
+      <style>
+        body{font-family:Arial,sans-serif;font-size:12px;color:#222;margin:20px}
+        h1{color:#C0392B;font-size:17px;margin-bottom:4px}
+        p.sub{color:#666;font-size:11px;margin-bottom:16px}
+        table{width:100%;border-collapse:collapse;font-size:11px}
+        th{background:#C0392B;color:#fff;padding:6px 7px;text-align:center;font-weight:600}
+        th:first-child,th:last-child,th:nth-child(8){text-align:left}
+        td{padding:5px 7px;border-bottom:1px solid #eee;vertical-align:top}
+        tr:nth-child(even) td{background:#fdf2f2}
+        .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
+        @media print{body{margin:10px}}
+      </style></head><body>
+      <h1>🚨 FibroVida — Histórico de Crises</h1>
+      <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total: ${data.length} crise(s) registrada(s)</p>
+      <table>
+        <thead><tr><th>Data/Hora</th><th>Dor</th><th>Fadiga</th><th>Ansiedade</th><th>Alergia</th><th>Coceira</th><th>Urticária</th><th>Gatilhos</th><th>Observações</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
+  finally { hideLoad(); }
+}
+
+// ── IMPRESSÃO: GLICEMIA ────────────────────────────────────────
+async function imprimirGlicemia() {
+  showLoad();
+  try {
+    const { data, error } = await db.from("vitals_records")
+      .select("record_date,record_time,glucose,glucose_type,notes")
+      .eq("user_id", currentUser.id)
+      .not("glucose", "is", null)
+      .order("record_date", { ascending: false })
+      .order("record_time", { ascending: false });
+    if (error) throw error;
+    if (!data || !data.length) { toast("Nenhum registro de glicemia encontrado.", "w"); return; }
+
+    const userName = currentProfile?.name || "Paciente";
+    const hoje = new Date().toLocaleDateString("pt-BR");
+
+    const classGlicemia = v => {
+      if (!v) return "";
+      if (v < 70)  return '<span style="color:#e67e22">Hipoglicemia</span>';
+      if (v <= 99) return '<span style="color:#27ae60">Normal</span>';
+      if (v <= 125) return '<span style="color:#f39c12">Atenção</span>';
+      return '<span style="color:#c0392b">Elevada</span>';
+    };
+
+    const rows = data.map(r => {
+      const hora = r.record_time ? r.record_time.substring(0,5) : "—";
+      return `<tr>
+        <td>${fmtDate(r.record_date)}</td>
+        <td>${hora}</td>
+        <td><strong>${r.glucose} mg/dL</strong></td>
+        <td>${classGlicemia(r.glucose)}</td>
+        <td>${r.glucose_type ? esc(r.glucose_type) : "—"}</td>
+        <td>${r.notes ? esc(r.notes) : "—"}</td>
+      </tr>`;
+    }).join("");
+
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Glicemia — ${userName}</title>
+      <style>
+        body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
+        h1{color:#27AE60;font-size:18px;margin-bottom:4px}
+        p.sub{color:#666;font-size:11px;margin-bottom:12px}
+        .legenda{display:flex;gap:12px;margin-bottom:12px;font-size:11px;flex-wrap:wrap}
+        .leg{padding:3px 8px;border-radius:4px;font-weight:600}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:#27AE60;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
+        td{padding:6px 8px;border-bottom:1px solid #ddd}
+        tr:nth-child(even) td{background:#f0fdf4}
+        .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
+        @media print{body{margin:10px}}
+      </style></head><body>
+      <h1>🩸 FibroVida — Registro de Glicemia</h1>
+      <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
+      <div class="legenda">
+        <span class="leg" style="background:#fde8d0;color:#c05000">Hipoglicemia &lt;70</span>
+        <span class="leg" style="background:#d5f5e3;color:#1a6b3a">Normal 70–99</span>
+        <span class="leg" style="background:#fef9e7;color:#b7770d">Atenção 100–125</span>
+        <span class="leg" style="background:#fadbd8;color:#922b21">Elevada ≥126</span>
+      </div>
+      <table>
+        <thead><tr><th>Data</th><th>Hora</th><th>Glicemia</th><th>Classificação</th><th>Tipo de Medição</th><th>Obs.</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
+  finally { hideLoad(); }
+}
+
+// ── IMPRESSÃO: PESO E MEDIDAS ──────────────────────────────────
+async function imprimirPeso() {
+  showLoad();
+  try {
+    const { data, error } = await db.from("vitals_records")
+      .select("record_date,record_time,weight,waist,notes")
+      .eq("user_id", currentUser.id)
+      .not("weight", "is", null)
+      .order("record_date", { ascending: false });
+    if (error) throw error;
+    if (!data || !data.length) { toast("Nenhum registro de peso encontrado.", "w"); return; }
+
+    const userName = currentProfile?.name || "Paciente";
+    const hoje = new Date().toLocaleDateString("pt-BR");
+    const rows = data.map(r => `<tr>
+      <td>${fmtDate(r.record_date)}</td>
+      <td>${r.record_time ? r.record_time.substring(0,5) : "—"}</td>
+      <td><strong>${r.weight} kg</strong></td>
+      <td>${r.waist ? r.waist + " cm" : "—"}</td>
+      <td>${r.notes ? esc(r.notes) : "—"}</td>
+    </tr>`).join("");
+
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Peso e Medidas — ${userName}</title>
+      <style>
+        body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
+        h1{color:#2471A3;font-size:18px;margin-bottom:4px}
+        p.sub{color:#666;font-size:11px;margin-bottom:16px}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:#2471A3;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
+        td{padding:6px 8px;border-bottom:1px solid #ddd}
+        tr:nth-child(even) td{background:#eaf4fc}
+        .rodape{margin-top:20px;font-size:10px;color:#888;border-top:1px solid #eee;padding-top:8px}
+        @media print{body{margin:10px}}
+      </style></head><body>
+      <h1>⚖️ FibroVida — Peso e Medidas</h1>
+      <p class="sub">Paciente: <strong>${userName}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; Total de registros: ${data.length}</p>
+      <table>
+        <thead><tr><th>Data</th><th>Hora</th><th>Peso</th><th>Circunferência Abdominal</th><th>Obs.</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
+  finally { hideLoad(); }
+}
+
 // ── DOCUMENTOS DE SAÚDE ────────────────────────────────────────
 
 function docTypeLabel(t) {
