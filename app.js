@@ -3213,16 +3213,296 @@ async function deleteVitals(id) {
 function abrirImpressao(html) {
   const win = window.open("", "_blank");
   if (!win) {
-    toast("Pop-up bloqueado! No seu navegador, permita pop-ups para fibrovida.com.br e tente novamente.", "e");
+    toast("Pop-up bloqueado! Permita pop-ups para fibrovida.com.br no navegador e tente novamente.", "e");
     return;
   }
   win.document.write(html);
   win.document.close();
 }
 
-// ── IMPRESSÃO DE SINAIS VITAIS ─────────────────────────────────
+// ── LOGOMARCA N TECH IA (SVG inline) ─────────────────────────
+function logoNTeciaHtml() {
+  return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle">
+    <path d="M22 5C13 5 7 11 7 18c0 4 1.5 7.5 4 9.5 0 3.5 2 6.5 5 8 1.5 1 3 1.5 5 1.5h2c2 0 3.5-.5 5-1.5 3-1.5 5-4.5 5-8 2.5-2 4-5.5 4-9.5 0-7-6-13-15-13z" fill="#EAF0FF" stroke="#1A3A6B" stroke-width="2"/>
+    <line x1="22" y1="7" x2="22" y2="36" stroke="#1A3A6B" stroke-width="1" stroke-dasharray="3,2" opacity="0.4"/>
+    <circle cx="14" cy="17" r="2" fill="#1A3A6B"/>
+    <circle cx="14" cy="25" r="2" fill="#1A3A6B"/>
+    <circle cx="18" cy="21" r="2" fill="#7B5EA7"/>
+    <polyline points="14,17 14,21 18,21 18,25 14,25" fill="none" stroke="#1A3A6B" stroke-width="1.3"/>
+    <circle cx="30" cy="17" r="2" fill="#1A3A6B"/>
+    <circle cx="30" cy="25" r="2" fill="#1A3A6B"/>
+    <circle cx="26" cy="21" r="2" fill="#7B5EA7"/>
+    <polyline points="30,17 30,21 26,21 26,25 30,25" fill="none" stroke="#1A3A6B" stroke-width="1.3"/>
+  </svg>`;
+}
 
-async function imprimirSinaisVitais() {
+function rodapeNTecia() {
+  return `<div style="margin-top:32px;padding-top:14px;border-top:2px solid #C9B8E8;text-align:center;font-family:Arial,sans-serif">
+    ${logoNTeciaHtml()}
+    <div style="font-size:10px;font-weight:800;color:#1A3A6B;letter-spacing:2px;margin-top:4px">N TECH IA</div>
+    <div style="font-size:9px;color:#999;margin-top:8px">Desenvolvido por</div>
+    <div style="font-size:13px;font-weight:700;color:#7B5EA7;margin-top:2px">Nelson Tomaz Catunda Magalhães</div>
+    <div style="font-size:10px;color:#1A3A6B;margin-top:3px">nelsontcmagalhaes@gmail.com &nbsp;·&nbsp; © 2026</div>
+  </div>`;
+}
+
+function buildPrintDoc(titulo, subtitulo, conteudoHtml, extraCss) {
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>${titulo}</title>
+    <style>
+      @page{size:A4;margin:15mm}
+      body{font-family:Arial,sans-serif;font-size:12px;color:#222;margin:0;padding:0}
+      h1{color:#7B5EA7;font-size:17px;margin:0 0 4px}
+      .sub{color:#666;font-size:10px;margin:0 0 14px}
+      table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:6px}
+      th{background:#7B5EA7;color:#fff;padding:7px 8px;text-align:left;font-weight:600;white-space:nowrap}
+      td{padding:6px 8px;border-bottom:1px solid #e0d4f5;vertical-align:top}
+      tr:nth-child(even) td{background:#f9f4fc}
+      .legenda{display:flex;gap:10px;margin-bottom:12px;font-size:10px;flex-wrap:wrap}
+      .leg{padding:2px 8px;border-radius:4px;font-weight:600}
+      .secao-titulo{font-size:13px;font-weight:bold;color:#7B5EA7;border-bottom:2px solid #C9B8E8;padding-bottom:4px;margin:20px 0 8px}
+      ${extraCss || ""}
+      @media print{body{margin:0}}
+    </style></head><body>
+    <h1>${titulo}</h1>
+    <p class="sub">${subtitulo}</p>
+    ${conteudoHtml}
+    ${rodapeNTecia()}
+    <script>window.onload=()=>window.print()<\/script>
+  </body></html>`;
+}
+
+// ── MODAL DE HISTÓRICO / IMPRESSÃO ────────────────────────────
+let _printHtml = "";
+
+function imprimirHistoricoAtual() {
+  if (!_printHtml) { toast("Nenhum dado para imprimir.", "w"); return; }
+  abrirImpressao(_printHtml);
+}
+
+function fecharModalRelatorioCategoria() {
+  const m = document.getElementById("modal-rel-categoria");
+  if (m) m.style.display = "none";
+  _printHtml = "";
+}
+
+async function verHistoricoCategoria(cat) {
+  showLoad();
+  try {
+    const nome = currentProfile?.name || "Paciente";
+    const hoje = new Date().toLocaleDateString("pt-BR");
+    let titulo = "";
+    let tabelaModal = "";
+    let printConteudo = "";
+    let printExtraCss = "";
+
+    if (cat === "pressao") {
+      titulo = "🩺 Pressão Arterial";
+      const { data, error } = await db.from("vitals_records")
+        .select("record_date,record_time,bp_systolic,bp_diastolic,pulse,bp_type,notes")
+        .eq("user_id", currentUser.id).not("bp_systolic","is",null)
+        .order("record_date",{ascending:false}).order("record_time",{ascending:false});
+      if (error) throw error;
+      if (!data || !data.length) {
+        tabelaModal = `<div class="relcat-vazio">Nenhum registro de pressão arterial encontrado.</div>`;
+      } else {
+        const bpCat = s => !s?"":s<120?"<span style='color:#27ae60'>Ótima</span>":s<130?"<span style='color:#2ecc71'>Normal</span>":s<140?"<span style='color:#f39c12'>Limítrofe</span>":s<160?"<span style='color:#e67e22'>Elevada</span>":"<span style='color:#c0392b'>Alta</span>";
+        const bpTxt = s => !s?"":s<120?"Ótima":s<130?"Normal":s<140?"Limítrofe":s<160?"Elevada":"Alta";
+        const rows = data.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><strong>${r.bp_systolic}</strong></td><td><strong>${r.bp_diastolic}</strong></td>
+          <td>${r.pulse||"—"}</td><td>${bpCat(r.bp_systolic)}</td>
+          <td>${r.bp_type?esc(r.bp_type):"—"}</td><td style="font-size:11px">${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        const rowsPrint = data.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><strong>${r.bp_systolic}</strong></td><td><strong>${r.bp_diastolic}</strong></td>
+          <td>${r.pulse||"—"}</td><td>${bpTxt(r.bp_systolic)}</td>
+          <td>${r.bp_type?esc(r.bp_type):"—"}</td><td>${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Sistólica</th><th>Diastólica</th><th>Pulso</th><th>Classificação</th><th>Tipo</th><th>Obs.</th></tr></thead>`;
+        const legenda = `<div class="legenda">
+          <span class="leg" style="background:#d5f5e3;color:#1a6b3a">Ótima &lt;120</span>
+          <span class="leg" style="background:#d5f5e3;color:#27ae60">Normal 120–129</span>
+          <span class="leg" style="background:#fef9e7;color:#b7770d">Limítrofe 130–139</span>
+          <span class="leg" style="background:#fde8d8;color:#c0392b">Elevada 140–159</span>
+          <span class="leg" style="background:#fadbd8;color:#922b21">Alta ≥160</span>
+        </div>`;
+        tabelaModal = `<div class="relcat-info">Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; ${data.length} registros &nbsp;|&nbsp; ${hoje}</div>
+          ${legenda}<div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${rows}</tbody></table></div>`;
+        printConteudo = legenda + `<table>${cab}<tbody>${rowsPrint}</tbody></table>`;
+      }
+
+    } else if (cat === "glicemia") {
+      titulo = "🩸 Glicemia";
+      const { data, error } = await db.from("vitals_records")
+        .select("record_date,record_time,glucose,glucose_type,notes")
+        .eq("user_id", currentUser.id).not("glucose","is",null)
+        .order("record_date",{ascending:false}).order("record_time",{ascending:false});
+      if (error) throw error;
+      if (!data || !data.length) {
+        tabelaModal = `<div class="relcat-vazio">Nenhum registro de glicemia encontrado.</div>`;
+      } else {
+        const glClass = v=>!v?"":v<70?"<span style='color:#e67e22'>Hipoglicemia</span>":v<=99?"<span style='color:#27ae60'>Normal</span>":v<=125?"<span style='color:#f39c12'>Atenção</span>":"<span style='color:#c0392b'>Elevada</span>";
+        const glTxt   = v=>!v?"":v<70?"Hipoglicemia":v<=99?"Normal":v<=125?"Atenção":"Elevada";
+        const rows = data.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><strong>${r.glucose} mg/dL</strong></td><td>${glClass(r.glucose)}</td>
+          <td>${r.glucose_type?esc(r.glucose_type):"—"}</td><td style="font-size:11px">${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        const rowsPrint = data.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><strong>${r.glucose} mg/dL</strong></td><td>${glTxt(r.glucose)}</td>
+          <td>${r.glucose_type?esc(r.glucose_type):"—"}</td><td>${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Glicemia</th><th>Classificação</th><th>Tipo de Medição</th><th>Obs.</th></tr></thead>`;
+        const legenda = `<div class="legenda">
+          <span class="leg" style="background:#fde8d0;color:#c05000">Hipoglicemia &lt;70</span>
+          <span class="leg" style="background:#d5f5e3;color:#1a6b3a">Normal 70–99</span>
+          <span class="leg" style="background:#fef9e7;color:#b7770d">Atenção 100–125</span>
+          <span class="leg" style="background:#fadbd8;color:#922b21">Elevada ≥126</span>
+        </div>`;
+        tabelaModal = `<div class="relcat-info">Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; ${data.length} registros &nbsp;|&nbsp; ${hoje}</div>
+          ${legenda}<div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${rows}</tbody></table></div>`;
+        printConteudo = legenda + `<table>${cab}<tbody>${rowsPrint}</tbody></table>`;
+      }
+
+    } else if (cat === "peso") {
+      titulo = "⚖️ Peso e Medidas";
+      const { data, error } = await db.from("vitals_records")
+        .select("record_date,record_time,weight,waist,notes")
+        .eq("user_id", currentUser.id).not("weight","is",null)
+        .order("record_date",{ascending:false});
+      if (error) throw error;
+      if (!data || !data.length) {
+        tabelaModal = `<div class="relcat-vazio">Nenhum registro de peso encontrado.</div>`;
+      } else {
+        const rows = data.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><strong>${r.weight} kg</strong></td><td>${r.waist?r.waist+" cm":"—"}</td>
+          <td style="font-size:11px">${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Peso</th><th>Circunferência Abdominal</th><th>Obs.</th></tr></thead>`;
+        tabelaModal = `<div class="relcat-info">Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; ${data.length} registros &nbsp;|&nbsp; ${hoje}</div>
+          <div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${rows}</tbody></table></div>`;
+        printConteudo = `<table>${cab}<tbody>${rows}</tbody></table>`;
+      }
+
+    } else if (cat === "medicamentos") {
+      titulo = "💊 Medicamentos e Horários";
+      const { data, error } = await db.from("medications")
+        .select("name,dosage,schedule_time,frequency,stock,notes,active,is_extra")
+        .eq("user_id", currentUser.id).order("is_extra",{ascending:true}).order("name",{ascending:true});
+      if (error) throw error;
+      if (!data || !data.length) {
+        tabelaModal = `<div class="relcat-vazio">Nenhum medicamento cadastrado.</div>`;
+      } else {
+        const mkRowsMed = lista => lista.map(m=>`<tr>
+          <td><strong>${esc(m.name)}</strong></td>
+          <td>${m.dosage?esc(m.dosage):"—"}</td><td>${m.schedule_time?esc(m.schedule_time):"—"}</td>
+          <td>${m.frequency?esc(m.frequency):"—"}</td><td>${m.stock!=null?m.stock+" un.":"—"}</td>
+          <td>${m.active===false?"Inativo":"Ativo"}</td><td style="font-size:11px">${m.notes?esc(m.notes):"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Medicamento</th><th>Dose</th><th>Horários</th><th>Frequência</th><th>Estoque</th><th>Status</th><th>Obs.</th></tr></thead>`;
+        const fibro = data.filter(m=>!m.is_extra);
+        const extra = data.filter(m=>m.is_extra);
+        const blocoMed = (lista, tit, cor) => !lista.length ? "" :
+          `<div style="font-size:12px;font-weight:700;color:${cor};margin:12px 0 6px">${tit}</div>
+           <div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${mkRowsMed(lista)}</tbody></table></div>`;
+        const blocoMedPrint = (lista, tit, cor) => !lista.length ? "" :
+          `<div class="secao-titulo" style="color:${cor}">${tit}</div>
+           <table>${cab}<tbody>${mkRowsMed(lista)}</tbody></table>`;
+        tabelaModal = `<div class="relcat-info">Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; ${data.length} medicamento(s) &nbsp;|&nbsp; ${hoje}</div>
+          ${blocoMed(fibro,"💜 Medicamentos para Fibromialgia","#7D3C98")}
+          ${blocoMed(extra,"💊 Outros Medicamentos","#2471A3")}`;
+        printConteudo = blocoMedPrint(fibro,"💜 Medicamentos para Fibromialgia","#7D3C98") +
+                        blocoMedPrint(extra,"💊 Outros Medicamentos","#2471A3");
+      }
+
+    } else if (cat === "crises") {
+      titulo = "🚨 Histórico de Crises";
+      const { data, error } = await db.from("crisis_logs")
+        .select("created_at,pain_level,fatigue_level,anxiety_level,allergy_level,itch_level,hives_level,triggers,notes")
+        .eq("user_id", currentUser.id).order("created_at",{ascending:false});
+      if (error) throw error;
+      if (!data || !data.length) {
+        tabelaModal = `<div class="relcat-vazio">Nenhum registro de crise encontrado.</div>`;
+      } else {
+        const escT = v => v!=null?v:"—";
+        const rows = data.map(r=>{
+          const dt = new Date(r.created_at);
+          const gat = r.triggers?(Array.isArray(r.triggers)?r.triggers.join(", "):r.triggers):"—";
+          return `<tr>
+            <td>${dt.toLocaleDateString("pt-BR")}<br><small style="color:#888">${dt.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</small></td>
+            <td style="text-align:center">${escT(r.pain_level)}</td><td style="text-align:center">${escT(r.fatigue_level)}</td>
+            <td style="text-align:center">${escT(r.anxiety_level)}</td><td style="text-align:center">${escT(r.allergy_level)}</td>
+            <td style="text-align:center">${escT(r.itch_level)}</td><td style="text-align:center">${escT(r.hives_level)}</td>
+            <td style="font-size:11px">${gat}</td><td style="font-size:11px">${r.notes?esc(r.notes):"—"}</td>
+          </tr>`;
+        }).join("");
+        const cab = `<thead><tr><th>Data/Hora</th><th>Dor</th><th>Fadiga</th><th>Ansi.</th><th>Alergia</th><th>Coceira</th><th>Urtic.</th><th>Gatilhos</th><th>Obs.</th></tr></thead>`;
+        tabelaModal = `<div class="relcat-info">Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; ${data.length} crise(s) &nbsp;|&nbsp; ${hoje}</div>
+          <div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${rows}</tbody></table></div>`;
+        printConteudo = `<table>${cab}<tbody>${rows}</tbody></table>`;
+        printExtraCss = "th:first-child,th:nth-child(8),th:last-child{text-align:left}";
+      }
+
+    } else if (cat === "sinais") {
+      titulo = "📊 Todos os Sinais Vitais";
+      const { data, error } = await db.from("vitals_records")
+        .select("*").eq("user_id", currentUser.id)
+        .order("record_date",{ascending:false}).order("record_time",{ascending:false});
+      if (error) throw error;
+      if (!data || !data.length) {
+        tabelaModal = `<div class="relcat-vazio">Nenhum registro encontrado.</div>`;
+      } else {
+        const rows = data.map(r=>{
+          const hora = r.record_time?r.record_time.substring(0,5):"—";
+          const bp = (r.bp_systolic&&r.bp_diastolic)?`${r.bp_systolic}/${r.bp_diastolic}${r.pulse?" · "+r.pulse+" bpm":""}` : "—";
+          const glu = r.glucose?`${r.glucose} mg/dL (${r.glucose_type||"—"})` : "—";
+          return `<tr>
+            <td>${fmtDate(r.record_date)}</td><td>${hora}</td>
+            <td>${bp}</td><td>${r.weight?r.weight+" kg":"—"}</td>
+            <td>${r.waist?r.waist+" cm":"—"}</td><td>${glu}</td>
+            <td style="font-size:11px">${r.notes?esc(r.notes):"—"}</td>
+          </tr>`;
+        }).join("");
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Pressão / Pulso</th><th>Peso</th><th>Cintura</th><th>Glicemia</th><th>Obs.</th></tr></thead>`;
+        tabelaModal = `<div class="relcat-info">Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; ${data.length} registros &nbsp;|&nbsp; ${hoje}</div>
+          <div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${rows}</tbody></table></div>`;
+        printConteudo = `<table>${cab}<tbody>${rows}</tbody></table>`;
+      }
+    }
+
+    if (printConteudo) {
+      const sub = `Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; Gerado em: ${hoje} &nbsp;|&nbsp; fibrovida.com.br`;
+      _printHtml = buildPrintDoc(`💜 FibroVida — ${titulo.replace(/^\S+\s/,"")}`, sub, printConteudo, printExtraCss);
+    } else {
+      _printHtml = "";
+    }
+
+    document.getElementById("relcat-titulo").textContent = titulo;
+    document.getElementById("relcat-body").innerHTML = tabelaModal;
+    const modal = document.getElementById("modal-rel-categoria");
+    modal.style.display = "";
+    modal.scrollTop = 0;
+
+  } catch(e) {
+    toast("Erro ao carregar dados: " + e.message, "e");
+    console.error(e);
+  } finally { hideLoad(); }
+}
+
+// ── ATALHOS RETROCOMPATÍVEIS ───────────────────────────────────
+const imprimirSomentePressao  = () => verHistoricoCategoria("pressao");
+const imprimirGlicemia        = () => verHistoricoCategoria("glicemia");
+const imprimirPeso            = () => verHistoricoCategoria("peso");
+const imprimirMedicamentos    = () => verHistoricoCategoria("medicamentos");
+const imprimirCrises          = () => verHistoricoCategoria("crises");
+const imprimirSinaisVitais    = () => verHistoricoCategoria("sinais");
+
+// ── LEGADO: imprimirSinaisVitais full (mantido para compatibilidade) ──
+async function _imprimirSinaisVitaisLegado() {
   showLoad();
   try {
     const { data } = await db.from("vitals_records")
@@ -3275,7 +3555,9 @@ async function imprimirSinaisVitais() {
   finally { hideLoad(); }
 }
 
-async function imprimirSomentePressao() {
+// (funções individuais removidas — usar verHistoricoCategoria())
+
+async function _imprimirSomentePressaoLEGADO() {
   showLoad();
   try {
     const { data } = await db.from("vitals_records")
@@ -3346,7 +3628,7 @@ async function imprimirSomentePressao() {
 }
 
 // ── IMPRESSÃO: MEDICAMENTOS ────────────────────────────────────
-async function imprimirMedicamentos() {
+async function _imprimirMedicamentosLEGADO() {
   showLoad();
   try {
     const { data, error } = await db.from("medications")
@@ -3407,7 +3689,7 @@ async function imprimirMedicamentos() {
 }
 
 // ── IMPRESSÃO: CRISES ──────────────────────────────────────────
-async function imprimirCrises() {
+async function _imprimirCrisesLEGADO() {
   showLoad();
   try {
     const { data, error } = await db.from("crisis_logs")
@@ -3468,7 +3750,7 @@ async function imprimirCrises() {
 }
 
 // ── IMPRESSÃO: GLICEMIA ────────────────────────────────────────
-async function imprimirGlicemia() {
+async function _imprimirGlicemiaLEGADO() {
   showLoad();
   try {
     const { data, error } = await db.from("vitals_records")
@@ -3539,7 +3821,7 @@ async function imprimirGlicemia() {
 }
 
 // ── IMPRESSÃO: PESO E MEDIDAS ──────────────────────────────────
-async function imprimirPeso() {
+async function _imprimirPesoLEGADO() {
   showLoad();
   try {
     const { data, error } = await db.from("vitals_records")
@@ -3591,6 +3873,148 @@ async function imprimirPeso() {
 
 // ── RELATÓRIO PERSONALIZADO A4 ─────────────────────────────────
 async function gerarRelatorioPersonalizado() {
+  const incDor   = document.getElementById("rpt-dor")?.checked;
+  const incPres  = document.getElementById("rpt-pressao")?.checked;
+  const incGli   = document.getElementById("rpt-glicemia")?.checked;
+  const incPeso  = document.getElementById("rpt-peso")?.checked;
+  const incMed   = document.getElementById("rpt-medicamentos")?.checked;
+  const incCrise = document.getElementById("rpt-crises")?.checked;
+
+  if (!incDor && !incPres && !incGli && !incPeso && !incMed && !incCrise) {
+    toast("Selecione pelo menos uma seção para incluir no relatório.", "w"); return;
+  }
+
+  showLoad();
+  try {
+    const userName = currentProfile?.name || "Paciente";
+    const medico   = document.getElementById("rep-medico")?.value.trim() || "";
+    const hoje     = new Date().toLocaleDateString("pt-BR");
+    let secoesPrint = "";
+    let secoesModal = "";
+
+    // helper para bloco de seção
+    const bloco = (tit, cab, rows, n) => {
+      const t = `<table>${cab}<tbody>${rows}</tbody></table>`;
+      secoesPrint += `<div class="secao-titulo">${tit} (${n} registros)</div>${t}`;
+      secoesModal += `<div style="font-size:12px;font-weight:700;color:#7B5EA7;margin:14px 0 6px">${tit} (${n})</div>
+        <div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${rows}</tbody></table></div>`;
+    };
+
+    if (incDor) {
+      const { data: dr } = await db.from("health_records")
+        .select("record_date,pain_level,fatigue_level,energy_level,sleep_quality,humor,notes")
+        .eq("user_id", currentUser.id).order("record_date",{ascending:false}).limit(60);
+      if (dr && dr.length) {
+        const rows = dr.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td>
+          <td style="text-align:center">${r.pain_level??""}</td><td style="text-align:center">${r.fatigue_level??""}</td>
+          <td style="text-align:center">${r.energy_level??""}</td><td style="text-align:center">${r.sleep_quality??""}</td>
+          <td style="text-align:center">${r.humor??""}</td><td>${r.notes?esc(r.notes):""}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Data</th><th>Dor</th><th>Fadiga</th><th>Energia</th><th>Sono</th><th>Humor</th><th>Obs.</th></tr></thead>`;
+        bloco("📅 Diário de Dor e Saúde", cab, rows, dr.length);
+      }
+    }
+    if (incPres) {
+      const { data: bp } = await db.from("vitals_records")
+        .select("record_date,record_time,bp_systolic,bp_diastolic,pulse,bp_type,notes")
+        .eq("user_id",currentUser.id).not("bp_systolic","is",null)
+        .order("record_date",{ascending:false}).limit(60);
+      if (bp && bp.length) {
+        const catBP = s=>!s?"":s<120?"Ótima":s<130?"Normal":s<140?"Limítrofe":s<160?"Elevada":"Alta";
+        const rows = bp.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><b>${r.bp_systolic}</b></td><td><b>${r.bp_diastolic}</b></td>
+          <td>${r.pulse||"—"}</td><td>${catBP(r.bp_systolic)}</td>
+          <td>${r.bp_type?esc(r.bp_type):"—"}</td><td>${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Sistólica</th><th>Diastólica</th><th>Pulso</th><th>Classif.</th><th>Tipo</th><th>Obs.</th></tr></thead>`;
+        bloco("🩺 Pressão Arterial", cab, rows, bp.length);
+      }
+    }
+    if (incGli) {
+      const { data: gl } = await db.from("vitals_records")
+        .select("record_date,record_time,glucose,glucose_type,notes")
+        .eq("user_id",currentUser.id).not("glucose","is",null)
+        .order("record_date",{ascending:false}).limit(60);
+      if (gl && gl.length) {
+        const rows = gl.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><b>${r.glucose} mg/dL</b></td>
+          <td>${r.glucose_type?esc(r.glucose_type):"—"}</td><td>${r.notes?esc(r.notes):"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Glicemia</th><th>Tipo</th><th>Obs.</th></tr></thead>`;
+        bloco("🩸 Glicemia", cab, rows, gl.length);
+      }
+    }
+    if (incPeso) {
+      const { data: pe } = await db.from("vitals_records")
+        .select("record_date,record_time,weight,waist")
+        .eq("user_id",currentUser.id).not("weight","is",null)
+        .order("record_date",{ascending:false}).limit(60);
+      if (pe && pe.length) {
+        const rows = pe.map(r=>`<tr>
+          <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
+          <td><b>${r.weight} kg</b></td><td>${r.waist?r.waist+" cm":"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Peso</th><th>Circunferência Abdominal</th></tr></thead>`;
+        bloco("⚖️ Peso e Medidas", cab, rows, pe.length);
+      }
+    }
+    if (incMed) {
+      const { data: meds } = await db.from("medications")
+        .select("name,dosage,schedule_time,frequency,stock,active,is_extra,notes")
+        .eq("user_id",currentUser.id).order("is_extra").order("name");
+      if (meds && meds.length) {
+        const rows = meds.map(m=>`<tr>
+          <td><b>${esc(m.name)}</b>${m.is_extra?"<br><small style='color:#888'>Outro</small>":""}</td>
+          <td>${m.dosage?esc(m.dosage):"—"}</td><td>${m.schedule_time?esc(m.schedule_time):"—"}</td>
+          <td>${m.frequency?esc(m.frequency):"—"}</td><td>${m.stock!=null?m.stock+" un.":"—"}</td>
+          <td>${m.active===false?"Inativo":"Ativo"}</td><td>${m.notes?esc(m.notes):"—"}</td>
+        </tr>`).join("");
+        const cab = `<thead><tr><th>Medicamento</th><th>Dose</th><th>Horários</th><th>Frequência</th><th>Estoque</th><th>Status</th><th>Obs.</th></tr></thead>`;
+        bloco("💊 Medicamentos e Horários", cab, rows, meds.length);
+      }
+    }
+    if (incCrise) {
+      const { data: cr } = await db.from("crisis_logs")
+        .select("created_at,pain_level,fatigue_level,anxiety_level,allergy_level,itch_level,hives_level,triggers,notes")
+        .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(60);
+      if (cr && cr.length) {
+        const rows = cr.map(r=>{
+          const dt = new Date(r.created_at);
+          const gat = r.triggers?(Array.isArray(r.triggers)?r.triggers.join(", "):r.triggers):"—";
+          return `<tr>
+            <td>${dt.toLocaleDateString("pt-BR")} ${dt.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</td>
+            <td style="text-align:center">${r.pain_level??""}</td><td style="text-align:center">${r.fatigue_level??""}</td>
+            <td style="text-align:center">${r.anxiety_level??""}</td><td style="text-align:center">${r.allergy_level??""}</td>
+            <td style="text-align:center">${r.itch_level??""}</td><td style="text-align:center">${r.hives_level??""}</td>
+            <td style="font-size:10px">${gat}</td><td style="font-size:10px">${r.notes?esc(r.notes):"—"}</td>
+          </tr>`;
+        }).join("");
+        const cab = `<thead><tr><th>Data/Hora</th><th>Dor</th><th>Fadiga</th><th>Ansi.</th><th>Alergia</th><th>Coceira</th><th>Urtic.</th><th>Gatilhos</th><th>Obs.</th></tr></thead>`;
+        bloco("🚨 Histórico de Crises", cab, rows, cr.length);
+      }
+    }
+
+    if (!secoesPrint) { toast("Nenhum dado encontrado para as seções selecionadas.", "w"); return; }
+
+    const sub = `Paciente: <strong>${esc(userName)}</strong>${medico?" &nbsp;|&nbsp; Profissional: <strong>"+esc(medico)+"</strong>":""} &nbsp;|&nbsp; Gerado em: ${hoje}`;
+    _printHtml = buildPrintDoc("💜 FibroVida — Relatório de Acompanhamento", sub, secoesPrint, "");
+
+    const infoModal = `<div class="relcat-info">Paciente: <strong>${esc(userName)}</strong>${medico?" &nbsp;|&nbsp; Profissional: <strong>"+esc(medico)+"</strong>":""} &nbsp;|&nbsp; ${hoje}</div>`;
+    document.getElementById("relcat-titulo").textContent = "📄 Relatório Personalizado";
+    document.getElementById("relcat-body").innerHTML = infoModal + secoesModal;
+    const modal = document.getElementById("modal-rel-categoria");
+    modal.style.display = "";
+    modal.scrollTop = 0;
+
+  } catch(e) { toast("Erro ao gerar relatório: " + e.message, "e"); console.error(e); }
+  finally { hideLoad(); }
+}
+
+// ── FIM DO BLOCO DE RELATÓRIOS ─────────────────────────────────
+async function _gerarRelatorioPersonalizadoLEGADO_PLACEHOLDER() {
   const incDor   = document.getElementById("rpt-dor")?.checked;
   const incPres  = document.getElementById("rpt-pressao")?.checked;
   const incGli   = document.getElementById("rpt-glicemia")?.checked;

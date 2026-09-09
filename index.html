@@ -17,7 +17,7 @@
   <meta name="application-name" content="FibroVida" />
   <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
 
-  <link rel="stylesheet" href="style.css?v=18" />
+  <link rel="stylesheet" href="style.css?v=19" />
 </head>
 <body>
 
@@ -1515,42 +1515,41 @@
       <!-- Impressão por categoria -->
       <div class="card">
         <div class="card-body">
-          <div class="card-title"><span class="icon">🖨️</span> Imprimir por Categoria</div>
+          <div class="card-title"><span class="icon">📋</span> Histórico e Impressão</div>
           <p style="font-size:11px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
-            Escolha o que deseja imprimir. Cada opção abre uma janela de impressão com apenas aquela categoria.
+            Toque em uma categoria para ver o histórico completo e depois escolha imprimir ou salvar em PDF.
           </p>
-
-          <!-- Pressão Arterial -->
-          <div style="margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">🩺 Pressão Arterial</div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-secondary" style="flex:1" onclick="imprimirSomentePressao()">🖨️ Imprimir Pressão</button>
-              <button class="btn btn-secondary" style="flex:1" onclick="imprimirSinaisVitais()">📊 Todos os Sinais Vitais</button>
-            </div>
-          </div>
-
-          <!-- Glicemia -->
-          <div style="margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">🩸 Glicemia</div>
-            <button class="btn btn-secondary btn-full" onclick="imprimirGlicemia()">🖨️ Imprimir Glicemia</button>
-          </div>
-
-          <!-- Peso e Medidas -->
-          <div style="margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">⚖️ Peso e Medidas</div>
-            <button class="btn btn-secondary btn-full" onclick="imprimirPeso()">🖨️ Imprimir Peso e Circunferência</button>
-          </div>
-
-          <!-- Medicamentos -->
-          <div style="margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">💊 Medicamentos</div>
-            <button class="btn btn-secondary btn-full" onclick="imprimirMedicamentos()">🖨️ Imprimir Relação de Medicamentos e Horários</button>
-          </div>
-
-          <!-- Histórico de Crises -->
-          <div style="margin-bottom:4px">
-            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">🚨 Crises</div>
-            <button class="btn btn-secondary btn-full" onclick="imprimirCrises()">🖨️ Imprimir Histórico de Crises</button>
+          <div class="cat-print-list">
+            <button class="cat-print-item" onclick="verHistoricoCategoria('pressao')">
+              <span class="cpi-icon">🩺</span>
+              <span class="cpi-label">Pressão Arterial</span>
+              <span class="cpi-arrow">›</span>
+            </button>
+            <button class="cat-print-item" onclick="verHistoricoCategoria('glicemia')">
+              <span class="cpi-icon">🩸</span>
+              <span class="cpi-label">Glicemia</span>
+              <span class="cpi-arrow">›</span>
+            </button>
+            <button class="cat-print-item" onclick="verHistoricoCategoria('peso')">
+              <span class="cpi-icon">⚖️</span>
+              <span class="cpi-label">Peso e Medidas</span>
+              <span class="cpi-arrow">›</span>
+            </button>
+            <button class="cat-print-item" onclick="verHistoricoCategoria('medicamentos')">
+              <span class="cpi-icon">💊</span>
+              <span class="cpi-label">Medicamentos e Horários</span>
+              <span class="cpi-arrow">›</span>
+            </button>
+            <button class="cat-print-item" onclick="verHistoricoCategoria('crises')">
+              <span class="cpi-icon">🚨</span>
+              <span class="cpi-label">Histórico de Crises</span>
+              <span class="cpi-arrow">›</span>
+            </button>
+            <button class="cat-print-item" onclick="verHistoricoCategoria('sinais')">
+              <span class="cpi-icon">📊</span>
+              <span class="cpi-label">Todos os Sinais Vitais</span>
+              <span class="cpi-arrow">›</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1593,7 +1592,7 @@
           <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
             O relatório é gerado em formato A4 e abre a janela de impressão. Use "Salvar como PDF" no navegador para gerar o arquivo.
           </p>
-          <button class="btn btn-primary btn-full" onclick="gerarRelatorioPersonalizado()">🖨️ Gerar e Imprimir Relatório A4</button>
+          <button class="btn btn-primary btn-full" onclick="gerarRelatorioPersonalizado()">📋 Ver e Imprimir Relatório A4</button>
         </div>
       </div>
 
@@ -2188,6 +2187,21 @@
 </div><!-- /main-screen -->
 </div><!-- /app -->
 
+<!-- ================================================================
+     MODAL: HISTÓRICO / RELATÓRIO DE CATEGORIA
+     ================================================================ -->
+<div id="modal-rel-categoria" class="relcat-modal" style="display:none">
+  <div class="relcat-header">
+    <span id="relcat-titulo" class="relcat-titulo-txt">Histórico</span>
+    <div class="relcat-acoes">
+      <button class="btn btn-sm" style="background:#fff;color:#7B5EA7;font-weight:700;border:none"
+        onclick="imprimirHistoricoAtual()">🖨️ Imprimir / PDF</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:none"
+        onclick="fecharModalRelatorioCategoria()">✕ Fechar</button>
+    </div>
+  </div>
+  <div id="relcat-body" class="relcat-body"></div>
+</div>
 
 <!-- ================================================================
      MODAIS
