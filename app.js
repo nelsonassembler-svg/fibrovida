@@ -3209,6 +3209,17 @@ async function deleteVitals(id) {
   } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
 }
 
+// ── HELPER: abre janela de impressão (trata bloqueio de pop-up) ─
+function abrirImpressao(html) {
+  const win = window.open("", "_blank");
+  if (!win) {
+    toast("Pop-up bloqueado! No seu navegador, permita pop-ups para fibrovida.com.br e tente novamente.", "e");
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+}
+
 // ── IMPRESSÃO DE SINAIS VITAIS ─────────────────────────────────
 
 async function imprimirSinaisVitais() {
@@ -3239,8 +3250,7 @@ async function imprimirSinaisVitais() {
       </tr>`;
     }).join("");
 
-    const win = window.open("", "_blank");
-    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    abrirImpressao(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
       <title>Sinais Vitais — ${userName}</title>
       <style>
         body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
@@ -3260,7 +3270,6 @@ async function imprimirSinaisVitais() {
       </table>
       <script>window.onload=()=>window.print()<\/script>
     </body></html>`);
-    win.document.close();
   } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
   finally { hideLoad(); }
 }
@@ -3301,8 +3310,7 @@ async function imprimirSomentePressao() {
       </tr>`;
     }).join("");
 
-    const win = window.open("", "_blank");
-    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    abrirImpressao(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
       <title>Pressão Arterial — ${userName}</title>
       <style>
         body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
@@ -3331,7 +3339,6 @@ async function imprimirSomentePressao() {
       </table>
       <script>window.onload=()=>window.print()<\/script>
     </body></html>`);
-    win.document.close();
   } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
   finally { hideLoad(); }
 }
@@ -3372,8 +3379,7 @@ async function imprimirMedicamentos() {
     const fibro = (data).filter(m => !m.is_extra);
     const extra = (data).filter(m => m.is_extra);
 
-    const win = window.open("", "_blank");
-    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    abrirImpressao(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
       <title>Medicamentos — ${userName}</title>
       <style>
         body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
@@ -3393,7 +3399,6 @@ async function imprimirMedicamentos() {
       <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
       <script>window.onload=()=>window.print()<\/script>
     </body></html>`);
-    win.document.close();
   } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
   finally { hideLoad(); }
 }
@@ -3431,8 +3436,7 @@ async function imprimirCrises() {
       </tr>`;
     }).join("");
 
-    const win = window.open("", "_blank");
-    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    abrirImpressao(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
       <title>Histórico de Crises — ${userName}</title>
       <style>
         body{font-family:Arial,sans-serif;font-size:12px;color:#222;margin:20px}
@@ -3455,7 +3459,6 @@ async function imprimirCrises() {
       <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
       <script>window.onload=()=>window.print()<\/script>
     </body></html>`);
-    win.document.close();
   } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
   finally { hideLoad(); }
 }
@@ -3496,8 +3499,7 @@ async function imprimirGlicemia() {
       </tr>`;
     }).join("");
 
-    const win = window.open("", "_blank");
-    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    abrirImpressao(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
       <title>Glicemia — ${userName}</title>
       <style>
         body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
@@ -3527,7 +3529,6 @@ async function imprimirGlicemia() {
       <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
       <script>window.onload=()=>window.print()<\/script>
     </body></html>`);
-    win.document.close();
   } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
   finally { hideLoad(); }
 }
@@ -3554,8 +3555,7 @@ async function imprimirPeso() {
       <td>${r.notes ? esc(r.notes) : "—"}</td>
     </tr>`).join("");
 
-    const win = window.open("", "_blank");
-    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    abrirImpressao(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
       <title>Peso e Medidas — ${userName}</title>
       <style>
         body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}
@@ -3577,7 +3577,6 @@ async function imprimirPeso() {
       <div class="rodape">FibroVida · fibrovida.com.br · Desenvolvido por Nelson Tomaz Catunda Magalhães</div>
       <script>window.onload=()=>window.print()<\/script>
     </body></html>`);
-    win.document.close();
   } catch(e) { toast("Erro ao gerar impressão.", "e"); console.error(e); }
   finally { hideLoad(); }
 }
