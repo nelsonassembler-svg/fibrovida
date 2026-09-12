@@ -2924,16 +2924,18 @@ async function loadReports() {
     const end   = todayISO();
     document.getElementById("report-range").textContent = `${fmtDate(start)} — ${fmtDate(end)}`;
 
-    const [{ data: hd }, { data: crises }] = await Promise.all([
+    // Promise.allSettled garante que uma tabela inexistente não derruba o relatório
+    const [hdResult, crisesResult] = await Promise.allSettled([
       db.from("health_records").select("*")
         .eq("user_id", currentUser.id)
         .gte("record_date", start).lte("record_date", end)
         .order("record_date", { ascending: true }),
-      db.from("crisis_events").select("crisis_date")
+      db.from("crisis_logs").select("created_at")
         .eq("user_id", currentUser.id)
-        .gte("crisis_date", start).lte("crisis_date", end)
-        .catch(() => ({ data: [] })),  // tabela pode não existir em instâncias antigas
+        .gte("created_at", start + "T00:00:00").lte("created_at", end + "T23:59:59"),
     ]);
+    const hd     = hdResult.status === "fulfilled"     ? (hdResult.value?.data || [])     : [];
+    const crises = crisesResult.status === "fulfilled" ? (crisesResult.value?.data || []) : [];
 
     if (hd?.length) {
       const avgPain  = (hd.reduce((s,r)=>s+(r.pain_level||0),0)/hd.length).toFixed(1);
@@ -2989,7 +2991,7 @@ async function loadReports() {
       }
 
       // Gráfico SVG de evolução da dor (com marcadores de crise)
-      const criseDates = (crises || []).map(c => c.crisis_date);
+      const criseDates = (crises || []).map(c => (c.created_at || "").split("T")[0]);
       renderSVGPainChart(hd, repPeriodDias, criseDates);
 
       renderBarChart("rep-pain-chart",  hd.map(r=>({ label: fmtDate(r.record_date).slice(0,5), value: r.pain_level||0, max:10 })));
@@ -3007,11 +3009,15 @@ async function loadReports() {
       if (svgEl) svgEl.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px 0">Sem dados para exibir</p>`;
     }
 
-    const { data: td } = await db.from("tasks").select("id").eq("user_id",currentUser.id).eq("completed",true).gte("task_date",start);
-    document.getElementById("rep-tasks").textContent = td?.length || 0;
+    try {
+      const { data: td } = await db.from("tasks").select("id").eq("user_id",currentUser.id).eq("completed",true).gte("task_date",start);
+      document.getElementById("rep-tasks").textContent = td?.length || 0;
+    } catch(_) { document.getElementById("rep-tasks").textContent = "—"; }
 
-    const { data: md } = await db.from("medications").select("id").eq("user_id",currentUser.id);
-    document.getElementById("rep-meds").textContent = md?.length || 0;
+    try {
+      const { data: md } = await db.from("medications").select("id").eq("user_id",currentUser.id);
+      document.getElementById("rep-meds").textContent = md?.length || 0;
+    } catch(_) { document.getElementById("rep-meds").textContent = "—"; }
 
   } catch(e) { toast("Erro ao carregar relatórios.", "e"); console.error(e); }
   finally { hideLoad(); }
