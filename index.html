@@ -393,6 +393,15 @@
             <button class="auw-toggle-btn" onclick="toggleAdminUsers()" id="auw-toggle-btn">▼ Expandir</button>
           </div>
           <div class="auw-body" id="auw-body" style="display:none">
+            <!-- Ativar por código -->
+            <div class="auw-search-row" style="margin-bottom:8px">
+              <input type="text" id="admin-code-input" placeholder="🔑 Código FIBRO-XXXXXX para ativar..."
+                autocomplete="off" maxlength="12"
+                oninput="this.value=this.value.toUpperCase()"
+                onkeydown="if(event.key==='Enter')ativarPorCodigo(this.value)" />
+              <button class="auw-search-btn" style="background:var(--success,#22c55e);color:#fff"
+                onclick="ativarPorCodigo(document.getElementById('admin-code-input').value)">✅ Ativar</button>
+            </div>
             <div class="auw-search-row">
               <input type="text" id="admin-search-input" placeholder="🔍 Buscar por nome ou e-mail..."
                 oninput="searchAdminUsers(this.value)" autocomplete="off" />
@@ -477,6 +486,24 @@
           <button class="mqc-btn mqc-warn" onclick="selectMoodQuick('mal')" data-mood="mal" title="Dor Moderada">😣<span class="mqc-txt">Dor Mod.</span></button>
           <button class="mqc-btn mqc-bad" onclick="selectMoodQuick('muito_mal')" data-mood="muito_mal" title="Crise Forte">😭<span class="mqc-txt">Crise</span></button>
         </div>
+      </div>
+
+      <!-- Banner de trial -->
+      <div id="trial-banner" style="display:none;margin:0 0 12px;background:var(--card-bg);border:2px solid var(--warning);border-radius:14px;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span id="trial-banner-badge" style="background:var(--warning);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px">⏳ TRIAL</span>
+          <span id="trial-banner-dias" style="font-size:13px;font-weight:700;color:var(--text1)"></span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
+          Seu código de pagamento:
+          <span id="trial-banner-code" style="font-family:monospace;font-weight:700;color:var(--primary);letter-spacing:1px"></span>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('trial-banner-code').textContent).then(()=>toast('Código copiado!','s'))"
+            style="border:none;background:none;cursor:pointer;font-size:14px;margin-left:4px" title="Copiar código">📋</button>
+        </div>
+        <button onclick="abrirWhatsAppPix('anual')"
+          style="width:100%;padding:9px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
+          💜 Assinar via WhatsApp · R$ 69,90/ano
+        </button>
       </div>
 
       <!-- Frase motivacional -->

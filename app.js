@@ -703,7 +703,7 @@ async function loadAdminUsers(search = "") {
 
   try {
     let q = db.from("profiles")
-      .select("id, name, email, plan, courtesy, is_admin, last_seen, created_at")
+      .select("id, name, email, plan, courtesy, is_admin, last_seen, created_at, user_code")
       .order("created_at", { ascending: false })
       .limit(200);
 
@@ -771,6 +771,7 @@ function renderAdminUsers(users) {
           <div class="auw-user-info">
             <div class="auw-user-name">${u.name || "Sem nome"} ${badgeHtml}</div>
             <div class="auw-user-email">${u.email || "—"}</div>
+            <div class="auw-user-code" style="font-family:monospace;font-size:11px;color:var(--text2);margin-top:2px;letter-spacing:.5px">${u.user_code || "—"}</div>
           </div>
           <div class="auw-user-meta">
             <div class="auw-meta-item">🕐 ${lastSeen}</div>
@@ -993,6 +994,9 @@ async function afterLogin(user) {
     toast(`💜 Período gratuito: ${diasRestantes} dias restantes.`, "i");
   }
 
+  // Agenda notificação push diária de trial (SW) — uma vez por dia
+  agendarNotificacaoTrialDiaria(diasRestantes);
+
   showScreen("main-screen");
   showTab("inicio");
   checkLowStock();
@@ -1025,6 +1029,65 @@ function gerarCodigoAleatorio() {
 
 function getUserCode() {
   return currentProfile?.user_code || "FIBRO-??????";
+}
+
+// Agenda notificação push diária de trial via Service Worker
+function agendarNotificacaoTrialDiaria(diasRestantes) {
+  if (!diasRestantes || diasRestantes <= 0 || isPremium || isAdmin) return;
+  if (!("serviceWorker" in navigator) || !navigator.serviceWorker.controller) return;
+
+  const hoje = todayISO();
+  if (localStorage.getItem("_trial_notif_date") === hoje) return; // já agendou hoje
+  localStorage.setItem("_trial_notif_date", hoje);
+
+  // Calcula delay até amanhã às 09:00
+  const amanha = new Date();
+  amanha.setDate(amanha.getDate() + 1);
+  amanha.setHours(9, 0, 0, 0);
+  const delayMs = Math.max(0, amanha - Date.now());
+
+  navigator.serviceWorker.controller.postMessage({
+    type: "SCHEDULE_TRIAL_ALERT",
+    diasRestantes,
+    delayMs,
+  });
+}
+
+// Ativa premium de um usuário pelo seu código FIBRO-XXXXXX (uso pelo admin)
+async function ativarPorCodigo(codigo, plano = "premium") {
+  if (!isAdmin) return;
+  const c = (codigo || "").trim().toUpperCase();
+  if (!c) { toast("Digite o código.", "e"); return; }
+
+  showLoad();
+  try {
+    const { data: prof, error } = await db
+      .from("profiles")
+      .select("id, name, email, plan")
+      .eq("user_code", c)
+      .single();
+
+    if (error || !prof) { toast(`Código ${c} não encontrado.`, "e"); return; }
+    if (prof.plan === "premium") { toast(`${prof.email} já é premium.`, "w"); return; }
+
+    await db.from("profiles")
+      .update({ plan: plano, courtesy: false, updated_at: new Date().toISOString() })
+      .eq("id", prof.id);
+
+    toast(`✅ ${prof.name || prof.email} (${c}) ativado como premium!`, "s");
+
+    // Atualiza cache do admin sem recarregar tudo
+    _adminUsersCache = _adminUsersCache.map(u =>
+      u.id === prof.id ? { ...u, plan: plano } : u
+    );
+    renderAdminUsers(_adminUsersCache);
+
+    // Limpa o campo de código
+    const el = document.getElementById("admin-code-input");
+    if (el) el.value = "";
+  } catch(e) {
+    toast("Erro ao ativar: " + (e.message || ""), "e");
+  } finally { hideLoad(); }
 }
 
 function showPaywall() {
@@ -1184,6 +1247,32 @@ async function loadHome() {
   document.getElementById("greeting-date").textContent = new Date().toLocaleDateString("pt-BR", {
     weekday:"long", day:"2-digit", month:"long"
   });
+  // Banner de trial — mostra código e dias restantes para usuários não-premium
+  const trialBanner = document.getElementById("trial-banner");
+  if (trialBanner) {
+    if (!isPremium && !isAdmin) {
+      const criadoEm     = currentProfile?.created_at ? new Date(currentProfile.created_at) : new Date();
+      const diasPassados = Math.floor((new Date() - criadoEm) / 86400000);
+      const diasRestantes = Math.max(0, TRIAL_DAYS - diasPassados);
+      const codigo = getUserCode();
+      const urgente = diasRestantes <= 2;
+
+      document.getElementById("trial-banner-dias").textContent =
+        diasRestantes === 0 ? "Último dia!" :
+        diasRestantes === 1 ? "1 dia restante" :
+        `${diasRestantes} dias restantes`;
+
+      document.getElementById("trial-banner-code").textContent = codigo;
+
+      trialBanner.style.display  = "block";
+      trialBanner.style.borderColor = urgente ? "var(--danger)" : "var(--warning)";
+      const badge = document.getElementById("trial-banner-badge");
+      if (badge) badge.style.background = urgente ? "var(--danger)" : "var(--warning)";
+    } else {
+      trialBanner.style.display = "none";
+    }
+  }
+
   // Frase motivacional rotativa
   const motEl = document.getElementById("motivation-text");
   if (motEl) motEl.textContent = motivations[_motivIdx % motivations.length];

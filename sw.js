@@ -3,7 +3,7 @@
    Cache-first para assets estáticos | Network-first para API
    ============================================================ */
 
-const CACHE_NAME  = 'fibrovida-v5.7';
+const CACHE_NAME  = 'fibrovida-v5.8';
 const STATIC_URLS = [
   './',
   './index.html',
@@ -191,16 +191,49 @@ self.addEventListener('notificationclick', event => {
 // ── NOTIFICAÇÕES LOCAIS AGENDADAS (via postMessage) ──────────
 // O app envia { type:'SCHEDULE_MED_ALERT', med, delayMs } ao SW
 self.addEventListener('message', event => {
-  if (!event.data || event.data.type !== 'SCHEDULE_MED_ALERT') return;
-  const { med, delayMs } = event.data;
-  setTimeout(() => {
-    self.registration.showNotification('💊 FibroVida — Medicamento', {
-      body:    `Hora de tomar: ${med.name}${med.dosage ? ' — ' + med.dosage : ''}`,
-      icon:    './icons/icon-192.png',
-      badge:   './icons/icon-72.png',
-      tag:     `med-${med.id}`,
-      vibrate: [150, 80, 150, 80, 150],
-      data:    { url: './#medicamentos' },
-    });
-  }, delayMs);
+  if (!event.data) return;
+
+  // ── Alerta de medicamento ─────────────────────────────
+  if (event.data.type === 'SCHEDULE_MED_ALERT') {
+    const { med, delayMs } = event.data;
+    setTimeout(() => {
+      self.registration.showNotification('💊 FibroVida — Medicamento', {
+        body:    `Hora de tomar: ${med.name}${med.dosage ? ' — ' + med.dosage : ''}`,
+        icon:    './icons/icon-192.png',
+        badge:   './icons/icon-72.png',
+        tag:     `med-${med.id}`,
+        vibrate: [150, 80, 150, 80, 150],
+        data:    { url: './#medicamentos' },
+      });
+    }, delayMs);
+    return;
+  }
+
+  // ── Alerta diário de trial ────────────────────────────
+  if (event.data.type === 'SCHEDULE_TRIAL_ALERT') {
+    const { diasRestantes, delayMs } = event.data;
+    setTimeout(() => {
+      const dias = Math.max(0, diasRestantes - 1); // amanhã será diasRestantes-1
+      const body = dias === 0
+        ? '🚨 HOJE é o último dia do seu período gratuito! Assine agora para não perder o acesso.'
+        : dias === 1
+          ? `⚠️ Falta apenas 1 dia para o fim do período gratuito. Garanta já o seu acesso!`
+          : `⏳ Faltam ${dias} dias para o fim do período gratuito do FibroVida.`;
+
+      self.registration.showNotification('💜 FibroVida — Período Gratuito', {
+        body,
+        icon:    './icons/icon-192.png',
+        badge:   './icons/icon-72.png',
+        tag:     'trial-alert',
+        vibrate: [200, 100, 200],
+        requireInteraction: dias <= 1,
+        data:    { url: './#inicio' },
+        actions: [
+          { action: 'assinar', title: '💳 Assinar agora' },
+          { action: 'fechar',  title: '✕ Fechar' },
+        ],
+      });
+    }, delayMs);
+    return;
+  }
 });
