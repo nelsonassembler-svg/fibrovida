@@ -1218,21 +1218,28 @@ async function verificarAtualizacoes() {
     return;
   }
 
-  if (subEl)   subEl.textContent   = "🔍 Verificando...";
-  if (arrowEl) arrowEl.textContent  = "⏳";
+  if (subEl)   subEl.textContent  = "🔍 Verificando...";
+  if (arrowEl) arrowEl.textContent = "⏳";
   if (btnHome) { btnHome.style.animation = "spin 1s linear infinite"; btnHome.disabled = true; }
 
   function pararAnimacao() {
     if (btnHome) { btnHome.style.animation = ""; btnHome.disabled = false; }
   }
 
+  function resetTexto() {
+    if (subEl)   subEl.textContent  = "Toque para verificar se há uma versão nova";
+    if (arrowEl) arrowEl.textContent = "›";
+  }
+
   try {
-    const reg = await navigator.serviceWorker.getRegistration();
+    // Busca o registro via getRegistrations() — funciona em qualquer escopo
+    const regs = await navigator.serviceWorker.getRegistrations();
+    const reg  = regs && regs.length ? regs[0] : null;
+
     if (!reg) {
-      toast("Serviço de atualização não encontrado.", "e");
-      if (subEl)   subEl.textContent  = "Toque para verificar se há uma versão nova";
-      if (arrowEl) arrowEl.textContent = "›";
-      pararAnimacao(); return;
+      pararAnimacao();
+      toast("Recarregue o app uma vez para ativar as atualizações.", "i");
+      resetTexto(); return;
     }
 
     function aplicarAtualizacao(worker) {
@@ -1247,8 +1254,10 @@ async function verificarAtualizacoes() {
       }
     }
 
+    // Já tem atualização baixada esperando?
     if (reg.waiting) { aplicarAtualizacao(reg.waiting); return; }
 
+    // Pede ao SW para verificar o servidor
     await reg.update();
 
     let encontrouNova = false;
@@ -1263,6 +1272,7 @@ async function verificarAtualizacoes() {
       });
     });
 
+    // Aguarda SW processar (máx. 4s)
     await new Promise(r => setTimeout(r, 4000));
 
     if (!encontrouNova && !reg.waiting) {
@@ -1270,17 +1280,13 @@ async function verificarAtualizacoes() {
       toast("✅ Você já está na versão mais recente!", "s");
       if (subEl)   subEl.textContent  = "Versão atual — sem atualizações disponíveis";
       if (arrowEl) arrowEl.textContent = "✓";
-      setTimeout(() => {
-        if (subEl)   subEl.textContent  = "Toque para verificar se há uma versão nova";
-        if (arrowEl) arrowEl.textContent = "›";
-      }, 5000);
+      setTimeout(resetTexto, 5000);
     }
 
   } catch(e) {
     pararAnimacao();
     toast("Erro ao verificar atualizações.", "e");
-    if (subEl)   subEl.textContent  = "Toque para verificar se há uma versão nova";
-    if (arrowEl) arrowEl.textContent = "›";
+    resetTexto();
   }
 }
 
