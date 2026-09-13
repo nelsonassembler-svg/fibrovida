@@ -1,0 +1,804 @@
+=== BLOCO 1 DE 6 — FibroVida para Android Studio ===
+Cole este bloco no AI Studio e diga: 'Estou enviando o código do app FibroVida em 6 partes. Aguarde todas antes de gerar o app Android. Esta é a PARTE 1 de 6.'
+
+--- index.html (parte 1/3: auth, paywall, início, saúde, tarefas) ---
+<!DOCTYPE html>
+<html lang="pt-BR" spellcheck="true">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#7A9B57" />
+  <title>FibroVida</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/fibrovida.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/fibrovida.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="FibroVida" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="FibroVida" />
+  <meta name="description" content="Gestão da fibromialgia: dor, sono, medicamentos, crises e bem-estar." />
+
+  <link rel="stylesheet" href="style.css?v=12" />
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Banner de instalação PWA -->
+<div id="install-banner" style="display:none">
+  <span class="ib-icon">📱</span>
+  <div class="ib-text">
+    <strong>Instale o FibroVida</strong>
+    <span>Acesse direto da tela inicial!</span>
+  </div>
+  <button class="ib-btn" onclick="installPWA()">Instalar</button>
+  <button class="ib-close" onclick="dismissInstallBanner()">✕</button>
+</div>
+
+<div id="app">
+
+<!-- ================================================================
+     TELA AUTH
+     ================================================================ -->
+<div class="screen active" id="auth-screen">
+  <div class="auth-wrap">
+
+    <!-- Logo sobre a imagem -->
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🌿</div>
+      <h1>FibroVida</h1>
+      <p>Seu bem-estar em primeiro lugar</p>
+    </div>
+
+    <!-- Frase inspiracional -->
+    <div class="auth-quote-strip">
+      <span class="auth-chip">💜 CONSCIENTIZAÇÃO</span>
+      <p class="auth-quote-text">"A dor pode ser invisível,<br>mas sua força não."</p>
+    </div>
+
+    <div class="auth-card">
+
+      <!-- LOGIN -->
+      <div class="auth-panel active" id="panel-login">
+        <h2>Entrar na conta</h2>
+        <div class="fg">
+          <label>E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email" />
+        </div>
+        <div class="fg">
+          <label>Senha</label>
+          <div class="pw-wrap">
+            <input type="password" id="login-password" placeholder="Sua senha" autocomplete="current-password" />
+            <button class="pw-toggle" onclick="togglePass('login-password',this)" type="button">👁️</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+        <div class="auth-links">
+          <button onclick="showPanel('panel-register')">Criar conta gratuita</button>
+          <button onclick="showPanel('panel-recovery')">Esqueci minha senha</button>
+        </div>
+      </div>
+
+      <!-- CADASTRO -->
+      <div class="auth-panel" id="panel-register">
+        <h2>Criar conta</h2>
+        <div class="fg">
+          <label>Nome completo</label>
+          <input type="text" id="reg-name" placeholder="Seu nome" autocomplete="name" />
+        </div>
+        <div class="fg">
+          <label>E-mail</label>
+          <input type="email" id="reg-email" placeholder="seu@email.com" autocomplete="email" />
+        </div>
+        <div class="fg">
+          <label>Senha (mín. 6 caracteres)</label>
+          <div class="pw-wrap">
+            <input type="password" id="reg-password" placeholder="Crie uma senha" autocomplete="new-password" />
+            <button class="pw-toggle" onclick="togglePass('reg-password',this)" type="button">👁️</button>
+          </div>
+        </div>
+        <div class="lgpd-row">
+          <input type="checkbox" id="lgpd-check" />
+          <label for="lgpd-check">
+            Li e concordo com a <a href="#" onclick="showLGPD();return false">Política de Privacidade (LGPD)</a>.
+            Seus dados são usados somente para o funcionamento do aplicativo.
+          </label>
+        </div>
+        <button class="btn btn-primary" onclick="doRegister()">Criar conta</button>
+        <div class="auth-links">
+          <button onclick="showPanel('panel-login')">Já tenho conta</button>
+        </div>
+      </div>
+
+      <!-- RECUPERAÇÃO -->
+      <div class="auth-panel" id="panel-recovery">
+        <h2>Recuperar senha</h2>
+        <p class="text-muted mb-12">Digite seu e-mail e enviaremos um link para redefinir sua senha.</p>
+        <div class="fg">
+          <label>E-mail</label>
+          <input type="email" id="recovery-email" placeholder="seu@email.com" />
+        </div>
+        <button class="btn btn-primary" onclick="doRecovery()">Enviar link</button>
+        <div class="auth-links">
+          <button onclick="showPanel('panel-login')">Voltar ao login</button>
+        </div>
+      </div>
+
+      <!-- CONFIRMAR E-MAIL -->
+      <div class="auth-panel" id="panel-confirm">
+        <div class="text-center" style="padding:16px 0">
+          <div style="font-size:48px;margin-bottom:12px">📧</div>
+          <h2>Confirme seu e-mail</h2>
+          <p class="text-muted mt-8" style="line-height:1.6">
+            Enviamos um link de confirmação para o seu e-mail.<br>
+            Acesse sua caixa de entrada e clique no link.
+          </p>
+        </div>
+        <button class="btn btn-secondary mt-8" onclick="showPanel('panel-login')">Voltar ao login</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ================================================================
+     TELA PAYWALL
+     ================================================================ -->
+<div class="screen" id="paywall-screen">
+  <div class="paywall-wrap">
+
+    <div class="paywall-logo">
+      <span>🌿</span>
+      <h1>FibroVida</h1>
+      <p>Seu bem-estar em primeiro lugar</p>
+    </div>
+
+    <div class="paywall-card">
+      <div class="paywall-icon">🔒</div>
+      <h2 class="paywall-title">Seu período gratuito encerrou</h2>
+      <p class="paywall-sub">Seus <strong>3 dias gratuitos</strong> chegaram ao fim. Assine o plano <strong>FibroVida Premium</strong> para continuar cuidando da sua saúde sem interrupções.</p>
+
+      <div class="paywall-benefits">
+        <div class="pb-item">✅ Diário da Dor ilimitado</div>
+        <div class="pb-item">✅ Controle de sinais vitais</div>
+        <div class="pb-item">✅ Documentos médicos em nuvem</div>
+        <div class="pb-item">✅ Relatórios em PDF</div>
+        <div class="pb-item">✅ Receitas anti-inflamatórias</div>
+        <div class="pb-item">✅ Acesso em qualquer dispositivo</div>
+      </div>
+
+      <div class="paywall-plans">
+        <!-- MENSAL -->
+        <div class="pw-plan" onclick="assinarPlano('monthly')">
+          <div class="pw-plan-name">MENSAL</div>
+          <div class="pw-plan-price">R$ 19<span class="pw-cents">,90</span></div>
+          <div class="pw-plan-period">por mês</div>
+        </div>
+        <!-- ANUAL -->
+        <div class="pw-plan pw-plan-annual" onclick="assinarPlano('annual')">
+          <div class="pw-plan-badge">MELHOR OFERTA</div>
+          <div class="pw-plan-name">ANUAL</div>
+          <div class="pw-plan-price">R$ 159<span class="pw-cents">,90</span></div>
+          <div class="pw-plan-period">por ano · R$ 13,32/mês</div>
+          <div class="pw-plan-save">Economia de 33% ✨</div>
+        </div>
+        <!-- VITALÍCIO -->
+        <div class="pw-plan pw-plan-lifetime" onclick="assinarPlano('lifetime')">
+          <div class="pw-plan-badge pw-plan-badge-gold">✨ ÚNICO</div>
+          <div class="pw-plan-name">VITALÍCIO</div>
+          <div class="pw-plan-price">R$ 297<span class="pw-cents">,00</span></div>
+          <div class="pw-plan-period">pagamento único</div>
+          <div class="pw-plan-save" style="color:#7040b0">Para sempre 💜</div>
+        </div>
+      </div>
+
+      <button class="stripe-plan-btn" onclick="assinarPlano('annual')">
+        💳 Assinar agora com cartão
+      </button>
+
+      <div class="stripe-secure">
+        🔒 Pagamento 100% seguro via <strong style="color:var(--text)">Stripe</strong>
+        &nbsp;·&nbsp; Cancele quando quiser
+      </div>
+
+      <button class="btn-paywall-logout" onclick="doLogout()">↩ Sair da conta</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================
+     TELA PRINCIPAL
+     ================================================================ -->
+<div class="screen" id="main-screen">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <span class="header-logo-icon">🌿</span>
+    <div class="header-brand">
+      <div class="name">FibroVida</div>
+      <div class="tagline">Seu bem-estar em primeiro lugar</div>
+    </div>
+    <div class="header-actions">
+      <a class="hbtn" href="manual.html" target="_blank" title="Manual do usuário" style="text-decoration:none">📖</a>
+      <button class="hbtn" id="dark-toggle-btn" onclick="toggleDarkMode()" title="Alternar modo escuro">🌙</button>
+      <button class="hbtn" onclick="doLogout()" title="Sair">↪</button>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="main-content">
+
+    <!-- ============================================================
+         INÍCIO
+         ============================================================ -->
+    <div class="tab-pane active" id="tab-inicio">
+
+      <!-- Frase do topo -->
+      <div class="fibro-topic-banner">
+        <div class="ftb-frase">💜 Fibromialgia: A dor que você não vê, mas que é real.</div>
+        <div class="ftb-sub">Como Lidar</div>
+      </div>
+
+      <!-- Saudação -->
+      <div class="greeting-card">
+        <div class="g-emoji" id="greeting-emoji">☀️</div>
+        <div>
+          <div class="g-hello" id="greeting-text">Olá!</div>
+          <div class="g-date"  id="greeting-date"></div>
+        </div>
+      </div>
+
+      <!-- Painel Admin — só visível para nelsontcmagalhaes@gmail.com -->
+      <div class="admin-stats-panel" id="admin-stats-panel" style="display:none">
+        <div class="asp-header">
+          <span class="asp-title">📊 Painel do Administrador</span>
+          <span class="asp-live"><span class="live-dot"></span> Tempo real</span>
+        </div>
+        <div class="asp-grid">
+          <div class="asp-card asp-online">
+            <div class="asp-val" id="stat-online">—</div>
+            <div class="asp-lbl">🟢 Online agora</div>
+            <div class="asp-sub">últimos 10 min</div>
+          </div>
+          <div class="asp-card asp-today">
+            <div class="asp-val" id="stat-today">—</div>
+            <div class="asp-lbl">📅 Acessaram hoje</div>
+            <div class="asp-sub">desde meia-noite</div>
+          </div>
+          <div class="asp-card asp-total">
+            <div class="asp-val" id="stat-total">—</div>
+            <div class="asp-lbl">👥 Total cadastrados</div>
+            <div class="asp-sub">todos os planos</div>
+          </div>
+          <div class="asp-card asp-premium">
+            <div class="asp-val" id="stat-premium">—</div>
+            <div class="asp-lbl">⭐ Premium ativos</div>
+            <div class="asp-sub">plano pago</div>
+          </div>
+        </div>
+        <div class="asp-footer">
+          <span id="stat-updated">Atualizando...</span>
+          <button class="asp-refresh-btn" onclick="loadAdminStats()">🔄 Atualizar</button>
+        </div>
+
+        <!-- ── GERENCIADOR DE USUÁRIOS (admin only) ── -->
+        <div class="admin-users-wrap" id="admin-users-wrap">
+          <div class="auw-header">
+            <span class="auw-title">👥 Gerenciar Usuários</span>
+            <button class="auw-toggle-btn" onclick="toggleAdminUsers()" id="auw-toggle-btn">▼ Expandir</button>
+          </div>
+          <div class="auw-body" id="auw-body" style="display:none">
+            <div class="auw-search-row">
+              <input type="text" id="admin-search-input" placeholder="🔍 Buscar por nome ou e-mail..."
+                oninput="searchAdminUsers(this.value)" autocomplete="off" />
+              <button class="auw-search-btn" onclick="loadAdminUsers()">Todos</button>
+            </div>
+            <div class="auw-legend">
+              <span class="auw-badge auw-badge-premium">⭐ Premium</span>
+              <span class="auw-badge auw-badge-courtesy">🎁 Cortesia</span>
+              <span class="auw-badge auw-badge-trial">🕐 Trial</span>
+              <span class="auw-badge auw-badge-free">🔒 Free</span>
+            </div>
+            <div id="admin-users-list" class="auw-list">
+              <div class="auw-empty">Clique em "Todos" para carregar os usuários</div>
+            </div>
+            <div class="auw-footer" id="auw-footer" style="display:none">
+              <span id="auw-count"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🌡️ Índice FibroVida -->
+      <div class="fibro-index-card" id="fibro-index-card">
+        <div class="fic-header">
+          <div class="fic-title">🌡️ Índice FibroVida — Hoje</div>
+          <div class="fic-date" id="fic-date"></div>
+        </div>
+        <div id="fic-bars-wrap">
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">❤️ Dor</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-pain" id="fib-pain" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-pain-val">—</div>
+          </div>
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">💤 Sono</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-sleep" id="fib-sleep" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-sleep-val">—</div>
+          </div>
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">⚡ Energia</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-energy" id="fib-energy" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-energy-val">—</div>
+          </div>
+          <div class="fic-bar-row">
+            <div class="fic-bar-label">😊 Humor</div>
+            <div class="fic-bar-track"><div class="fic-bar fic-bar-mood" id="fib-mood" style="width:0%"></div></div>
+            <div class="fic-bar-val" id="fib-mood-val">—</div>
+          </div>
+        </div>
+        <div class="fic-empty" id="fic-empty" style="display:none">Registre sua saúde para ver o índice de hoje 💚</div>
+        <button class="fic-btn" onclick="showTab('saude')">📝 Registrar agora</button>
+      </div>
+
+      <!-- 😊 Seletor de Humor Rápido -->
+      <div class="mood-quick-card">
+        <div class="mqc-label">Como você está agora?</div>
+        <div class="mqc-emojis">
+          <button class="mqc-btn" onclick="selectMoodQuick('muito_bem')" data-mood="muito_bem" title="Muito Bem">😊<span class="mqc-txt">Muito Bem</span></button>
+          <button class="mqc-btn" onclick="selectMoodQuick('bem')" data-mood="bem" title="Bem">🙂<span class="mqc-txt">Bem</span></button>
+          <button class="mqc-btn" onclick="selectMoodQuick('neutro')" data-mood="neutro" title="Regular">😐<span class="mqc-txt">Regular</span></button>
+          <button class="mqc-btn mqc-warn" onclick="selectMoodQuick('mal')" data-mood="mal" title="Dor Moderada">😣<span class="mqc-txt">Dor Mod.</span></button>
+          <button class="mqc-btn mqc-bad" onclick="selectMoodQuick('muito_mal')" data-mood="muito_mal" title="Crise Forte">😭<span class="mqc-txt">Crise</span></button>
+        </div>
+      </div>
+
+      <!-- Frase motivacional -->
+      <div class="motive-banner" id="motivation-text"></div>
+
+      <!-- Alerta estoque baixo -->
+      <div class="stock-alert-bar" id="stock-alert">
+        ⚠️ Medicamento com estoque baixo: <span id="stock-alert-names"></span>
+      </div>
+
+      <!-- 🚨 Botão de Crise -->
+      <button class="crisis-fab" onclick="openCriseModal()">
+        🚨 Estou em Crise — Registrar Agora
+      </button>
+
+      <!-- Cards Como está + Dicas -->
+      <div class="home-grid">
+        <div class="home-grid-card">
+          <div class="hgc-title">
+            <span class="hgc-icon">❤️</span> Como você está hoje?
+          </div>
+          <div id="home-health-mini">
+            <div class="hgc-empty">Ainda não há registro hoje. Que tal registrar como você está se sentindo?</div>
+          </div>
+        </div>
+        <div class="home-grid-card">
+          <div class="hgc-title">
+            <span class="hgc-icon">💡</span> Dicas do Dia
+          </div>
+          <ul class="dica-list" id="dica-list">
+            <li>Faça pausas regulares durante o dia</li>
+            <li>Hidrate-se: beba água a cada hora</li>
+            <li>Pratique respiração profunda ao sentir tensão</li>
+            <li>Celebre cada pequena conquista 🎉</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Resumo -->
+      <div class="summary-strip">
+        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer">
+          <div class="sc-val" id="sum-pain">—</div>
+          <div class="sc-lbl">Dor hoje</div>
+          <div class="sc-unit" id="sum-pain-unit"></div>
+        </div>
+        <div class="summary-cell" onclick="showTab('saude')" style="cursor:pointer">
+          <div class="sc-val" id="sum-sleep">—</div>
+          <div class="sc-lbl">Sono</div>
+          <div class="sc-unit" id="sum-sleep-unit"></div>
+        </div>
+        <div class="summary-cell" onclick="showTab('tarefas')" style="cursor:pointer">
+          <div class="sc-val" id="sum-tasks">0</div>
+          <div class="sc-lbl">Tarefas</div>
+        </div>
+      </div>
+
+      <!-- Evangelho do Dia -->
+      <div class="evang-card" id="evangelho-card">
+        <div class="evang-loading">
+          <span class="evang-spin">🙏</span> Carregando Evangelho do Dia...
+        </div>
+      </div>
+
+      <!-- Ações Rápidas -->
+      <div class="acoes-title">Ações Rápidas</div>
+      <div class="acoes-grid">
+        <button class="acao-btn" onclick="showTab('saude')">
+          <span class="acao-icon">♡</span>
+          <span class="acao-label">Registrar Saúde</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('tarefas')">
+          <span class="acao-icon">☑</span>
+          <span class="acao-label">Ver Tarefas</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('medicamentos')">
+          <span class="acao-icon">💊</span>
+          <span class="acao-label">Medicamentos</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('bemestar')">
+          <span class="acao-icon">🧘</span>
+          <span class="acao-label">Bem-Estar</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('receitas')">
+          <span class="acao-icon">🥗</span>
+          <span class="acao-label">Receitas</span>
+        </button>
+        <button class="acao-btn" onclick="showTab('relatorios')">
+          <span class="acao-icon">📊</span>
+          <span class="acao-label">Relatórios</span>
+        </button>
+        <button class="acao-btn" onclick="window.open('manual.html','_blank')">
+          <span class="acao-icon">📖</span>
+          <span class="acao-label">Tutorial</span>
+        </button>
+        <button class="acao-btn" onclick="openVitalsModal()">
+          <span class="acao-icon">📏</span>
+          <span class="acao-label">Medições</span>
+        </button>
+      </div>
+
+      <!-- Botão de Pânico -->
+      <div class="panico-section">
+        <button class="btn-panico" onclick="openPanicoModal()">
+          🆘 BOTÃO DE PÂNICO
+        </button>
+        <div class="panico-sub">Pressione em caso de crise grave</div>
+      </div>
+
+      <!-- Card artigo destaque -->
+      <div class="artigo-card" onclick="document.getElementById('modal-artigo').classList.add('open')">
+        <div class="artigo-card-tag">✍️ Artigo em Destaque</div>
+        <div class="artigo-card-titulo">💜 Fibromialgia: A dor que você não vê, mas que é real.</div>
+        <div class="artigo-card-preview">Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro...</div>
+        <div class="artigo-card-autor">— Nelson Tomaz Catunda Magalhães &nbsp;›</div>
+      </div>
+
+      <!-- Conquistas mini (home) -->
+      <div id="achiev-mini-section" style="display:none;text-align:center;margin:12px 0 4px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">🏆 Suas conquistas</div>
+        <div class="achiev-mini" id="achiev-mini-row" style="justify-content:center"></div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px;font-size:11px"
+          onclick="showTab('config')">Ver todas ›</button>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com<br>
+        © 2026 Todos os direitos reservados</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         SAÚDE
+         ============================================================ -->
+    <div class="tab-pane" id="tab-saude">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-red">❤️</div>
+        <div class="pt-body">
+          <div class="pt-title">Monitoramento de Saúde</div>
+          <div class="pt-sub">Como você se sentiu hoje?</div>
+        </div>
+        <button class="btn-fab" onclick="openHealthModal()" title="Novo registro">+</button>
+      </div>
+
+      <!-- Formulário rápido de hoje -->
+      <div class="card">
+        <div class="card-body">
+
+          <!-- Nível de Dor -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">❤️</span> Nível de Dor</div>
+            <div class="saude-section-sub">Como você está se sentindo hoje?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="pain-slider"
+                  min="0" max="10" value="0"
+                  oninput="updateRange(this,'pain-val',10)" style="--pct:0%" />
+                <div class="slider-hints"><span>Sem dor</span><span>Dor intensa</span></div>
+              </div>
+              <div class="slider-val"><span id="pain-val">0</span>/10</div>
+            </div>
+          </div>
+
+          <!-- Qualidade do Sono -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">😴</span> Qualidade do Sono</div>
+            <div class="saude-section-sub">Como você dormiu?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="sleep-slider"
+                  min="0" max="5" value="0"
+                  oninput="updateRange(this,'sleep-val',5)" style="--pct:0%" />
+                <div class="slider-hints"><span>Muito ruim</span><span>Excelente</span></div>
+              </div>
+              <div class="slider-val"><span id="sleep-val">0</span>/5</div>
+            </div>
+          </div>
+
+          <!-- Humor -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">😊</span> Humor e Disposição</div>
+            <div class="saude-section-sub">Como está seu humor hoje?</div>
+            <select class="humor-select" id="humor-select">
+              <option value="">Selecione seu humor...</option>
+              <option value="muito_bem">😄 Muito bem</option>
+              <option value="bem">🙂 Bem</option>
+              <option value="neutro">😐 Neutro</option>
+              <option value="mal">😔 Mal — Triste</option>
+              <option value="muito_mal">😢 Muito mal</option>
+            </select>
+          </div>
+
+          <!-- Fadiga -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">⚡</span> Nível de Fadiga</div>
+            <div class="saude-section-sub">Quão cansada você está hoje?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="fatigue-slider" min="0" max="10" value="0"
+                  oninput="updateRange(this,'fatigue-val',10)" style="--pct:0%" />
+                <div class="slider-hints"><span>Sem fadiga</span><span>Exaustão total</span></div>
+              </div>
+              <div class="slider-val"><span id="fatigue-val">0</span>/10</div>
+            </div>
+          </div>
+
+          <!-- Energia -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">🔋</span> Nível de Energia</div>
+            <div class="saude-section-sub">Como está sua energia hoje?</div>
+            <div class="slider-row">
+              <div class="slider-track">
+                <input type="range" class="fv-range" id="energy-slider" min="0" max="10" value="5"
+                  oninput="updateRange(this,'energy-val',10)" style="--pct:50%" />
+                <div class="slider-hints"><span>Sem energia</span><span>Energia plena</span></div>
+              </div>
+              <div class="slider-val"><span id="energy-val">5</span>/10</div>
+            </div>
+          </div>
+
+          <!-- Gatilhos -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">⚠️</span> Gatilhos Identificados</div>
+            <div class="saude-section-sub">O que pode ter influenciado como você está se sentindo?</div>
+            <div class="trigger-grid">
+              <label class="trig-item"><input type="checkbox" value="estresse" class="health-trigger"> Estresse</label>
+              <label class="trig-item"><input type="checkbox" value="frio" class="health-trigger"> Frio/Clima</label>
+              <label class="trig-item"><input type="checkbox" value="esforco" class="health-trigger"> Esforço físico</label>
+              <label class="trig-item"><input type="checkbox" value="insonia" class="health-trigger"> Insônia</label>
+              <label class="trig-item"><input type="checkbox" value="alimentacao" class="health-trigger"> Alimentação</label>
+              <label class="trig-item"><input type="checkbox" value="ansiedade" class="health-trigger"> Ansiedade</label>
+              <label class="trig-item"><input type="checkbox" value="hormonal" class="health-trigger"> Hormonal</label>
+              <label class="trig-item"><input type="checkbox" value="barulho" class="health-trigger"> Barulho/Luz</label>
+            </div>
+          </div>
+
+          <!-- Observações -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">📝</span> Observações</div>
+            <textarea class="fg" id="health-notes" placeholder="Anote aqui qualquer observação sobre como você se sentiu, gatilhos de dor, ou qualquer coisa relevante..."
+              style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);background:var(--bg);resize:vertical;min-height:72px;outline:none;color:var(--text)"></textarea>
+          </div>
+
+          <!-- Locais de Dor -->
+          <div class="saude-section">
+            <div class="saude-section-label"><span class="si">📍</span> Locais de Dor</div>
+            <div class="saude-section-sub">Onde você está sentindo dor hoje? (pode marcar vários)</div>
+            <div class="grade-locais" id="inline-locais-grid"></div>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveHealthInline()">💾 Salvar Registro</button>
+        </div>
+      </div>
+
+      <!-- Histórico de Saúde -->
+      <div class="flex-between mb-8 mt-12">
+        <span style="font-size:13px;font-weight:700;color:var(--text2)">Histórico de Registros</span>
+      </div>
+      <div id="health-list">
+        <div class="empty-state"><div class="ei">📅</div><p>Seus registros aparecerão aqui</p></div>
+      </div>
+
+      <!-- Histórico de Crises -->
+      <div class="section-title-bar mt-12">
+        <span>🚨 Histórico de Crises</span>
+      </div>
+      <div id="crisis-list">
+        <div class="empty-state"><div class="ei">🚨</div><p>Nenhuma crise registrada</p></div>
+      </div>
+
+      <!-- ── SINAIS VITAIS ────────────────────────────────── -->
+      <div class="section-title-bar">
+        <span>📊 Sinais Vitais</span>
+        <button class="btn-fab" onclick="openVitalsModal()" title="Editar registro">+</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">
+            Registre seus sinais vitais diariamente para acompanhar sua saúde ao longo do tempo.
+          </p>
+          <div class="vitals-grid">
+
+            <div class="vitals-input-group">
+              <label>⚖️ Peso</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-weight" step="0.1" min="20" max="300" placeholder="0.0" />
+                <span class="vunit">kg</span>
+              </div>
+            </div>
+
+            <div class="vitals-input-group">
+              <label>📏 Circunf. Abdominal</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-waist" step="0.1" min="40" max="200" placeholder="0.0" />
+                <span class="vunit">cm</span>
+              </div>
+            </div>
+
+            <div class="vitals-input-group span-2">
+              <label>🩺 Pressão Arterial</label>
+              <div class="vitals-input-row">
+                <div class="bp-field-wrap">
+                  <span class="bp-field-label">SIS</span>
+                  <input type="number" id="vitals-systolic" min="60" max="250" placeholder="120" />
+                  <span class="vunit">mmHg</span>
+                </div>
+                <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+                <div class="bp-field-wrap">
+                  <span class="bp-field-label">DIA</span>
+                  <input type="number" id="vitals-diastolic" min="40" max="150" placeholder="80" />
+                  <span class="vunit">mmHg</span>
+                </div>
+                <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+                <div class="bp-field-wrap">
+                  <span class="bp-field-label">PUL</span>
+                  <input type="number" id="vitals-pulse" min="30" max="220" placeholder="72" />
+                  <span class="vunit">bpm</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="vitals-input-group">
+              <label>🩸 Glicemia</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-glucose" step="0.1" min="30" max="600" placeholder="0.0" />
+                <span class="vunit">mg/dL</span>
+              </div>
+            </div>
+
+            <div class="vitals-input-group">
+              <label>Tipo de medição</label>
+              <select id="vitals-glucose-type" class="humor-select" style="font-size:12px;height:42px">
+                <option value="jejum">Em jejum</option>
+                <option value="pos_prandial">Pós-prandial</option>
+                <option value="aleatoria">Aleatória</option>
+              </select>
+            </div>
+
+          </div>
+          <button class="btn btn-primary mt-8" onclick="saveVitals()">💾 Salvar Sinais Vitais</button>
+        </div>
+      </div>
+
+      <div id="vitals-list">
+        <div class="empty-state"><div class="ei">📊</div><p>Seus sinais vitais aparecerão aqui</p></div>
+      </div>
+
+      <!-- ── DOCUMENTOS DE SAÚDE ──────────────────────────── -->
+      <div class="section-title-bar">
+        <span>📎 Documentos de Saúde</span>
+        <button class="btn-fab" onclick="openDocModal()" title="Novo documento">+</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">
+            Anexe receitas médicas, solicitações e resultados de exames em PDF ou imagem.
+            Acesse a qualquer momento direto pelo celular.
+          </p>
+          <div class="doc-type-legend">
+            <span class="doc-badge doc-receita">💊 Receita</span>
+            <span class="doc-badge doc-solicitacao">🔬 Solicitação</span>
+            <span class="doc-badge doc-resultado">📋 Resultado</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="docs-list">
+        <div class="empty-state"><div class="ei">📄</div><p>Seus documentos aparecerão aqui</p></div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         TAREFAS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-tarefas">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-green">✅</div>
+        <div class="pt-body">
+          <div class="pt-title">Minhas Tarefas</div>
+          <div class="pt-sub">Organize seu dia com carinho</div>
+        </div>
+        <button class="btn-fab" onclick="openTaskModal()" title="Nova tarefa">+</button>
+      </div>
+
+      <!-- Manhã -->
+      <div class="period-section" id="period-manha">
+        <div class="period-header">
+          <div class="period-dot dot-manha"></div>
+          🌅 Manhã
+        </div>
+        <div class="period-body" id="tasks-manha">
+          <div class="period-empty">Nenhuma tarefa para este período</div>
+        </div>
+      </div>
+
+      <!-- Tarde -->
+      <div class="period-section" id="period-tarde">
+        <div class="period-header">
+          <div class="period-dot dot-tarde"></div>
+          ☀️ Tarde
+        </div>
+        <div class="period-body" id="tasks-tarde">
+          <div class="period-empty">Nenhuma tarefa para este período</div>
+        </div>
+      </div>
+
+      <!-- Noite -->
+      <div class="period-section" id="period-noite">
+        <div class="period-header">
+          <div class="period-dot dot-noite"></div>
+          🌙 Noite
+        </div>
+        <div class="period-body" id="tasks-noite">
+          <div class="period-empty">Nenhuma tarefa para este período</div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         TERAPIAS / TRATAMENTOS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-terapias">

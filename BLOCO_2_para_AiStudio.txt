@@ -1,0 +1,804 @@
+=== BLOCO 2 DE 6 — FibroVida para Android Studio ===
+Esta é a PARTE 2 de 6. Aguarde todas antes de gerar o app Android.
+
+--- index.html (parte 2/3: terapias, bem-estar, profissionais, consultas, medicamentos, receitas, relatórios) ---
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-teal">〰️</div>
+        <div class="pt-body">
+          <div class="pt-title">Tratamentos</div>
+          <div class="pt-sub">Gerencie seus tratamentos e terapias</div>
+        </div>
+        <button class="btn-fab" onclick="openTreatmentModal()" title="Novo tratamento">+</button>
+      </div>
+
+      <div id="treatments-list">
+        <div class="card">
+          <div class="card-body">
+            <div class="empty-state" style="padding:8px 0">
+              <div class="ei">💉</div>
+              <p>Você ainda não cadastrou nenhum tratamento.<br>Adicione os tratamentos que você está realizando!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Notas de Sessão ── -->
+      <div class="section-label-bar">
+        <span>📋 Notas de Sessão</span>
+        <button class="btn btn-sm btn-primary" onclick="openTherapyNoteModal()">+ Nova nota</button>
+      </div>
+      <div id="therapy-notes-list"></div>
+
+      <!-- ── Bloco de Notas ── -->
+      <div class="section-label-bar" style="margin-top:16px">
+        <span>📝 Bloco de Notas</span>
+        <span id="notepad-status" style="font-size:11px;color:var(--text-muted)"></span>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+            Anote dúvidas, sintomas, lembretes e tudo relacionado à fibromialgia. Salva automaticamente. 💾
+          </p>
+          <textarea id="notepad-content" class="notepad-textarea"
+            placeholder="O que preciso falar com meu médico...&#10;Sintomas que percebi esta semana...&#10;Dúvidas sobre medicamentos..."
+            oninput="onNotepadChange()"></textarea>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         BEM-ESTAR
+         ============================================================ -->
+    <div class="tab-pane" id="tab-bemestar">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-purple">✨</div>
+        <div class="pt-body">
+          <div class="pt-title">Bem-Estar</div>
+          <div class="pt-sub">Cuide da sua saúde emocional</div>
+        </div>
+      </div>
+
+      <!-- Diário de Gratidão -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">🙏</span> Diário de Gratidão</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
+            Liste 3 coisas pelas quais você é grato(a) hoje. Pequenas coisas contam! 💙
+          </p>
+
+          <div class="grat-field">
+            <label>1. Sou grato(a) por...</label>
+            <input type="text" id="gratitude-1" placeholder="Ex: Um café quentinho pela manhã" />
+          </div>
+          <div class="grat-field">
+            <label>2. Sou grato(a) por...</label>
+            <input type="text" id="gratitude-2" placeholder="Ex: A ligação do meu neto" />
+          </div>
+          <div class="grat-field">
+            <label>3. Sou grato(a) por...</label>
+            <input type="text" id="gratitude-3" placeholder="Ex: Conseguir fazer minha caminhada" />
+          </div>
+
+          <button class="btn btn-primary mt-8" onclick="saveGratitude()">💾 Salvar Gratidão</button>
+        </div>
+      </div>
+
+      <!-- Histórico gratidão -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📖</span> Histórico de Gratidão</div>
+          <div id="gratitude-list">
+            <div class="empty-state" style="padding:8px 0">
+              <p>Seus diários de gratidão aparecerão aqui</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Entenda a Fibromialgia ── -->
+      <div class="section-label-bar" style="margin-top:8px">
+        <span>📚 Entenda a Fibromialgia</span>
+      </div>
+
+      <!-- Capa -->
+      <div class="fec-capa">
+        <div class="fec-capa-tag">💜 CONSCIENTIZAÇÃO</div>
+        <div class="fec-capa-titulo">Como explicar os <strong>sintomas</strong> da fibromialgia<br>a quem <em>não tem</em></div>
+        <div class="fec-capa-sub">Toque em cada sintoma para entender</div>
+      </div>
+
+      <!-- DOR -->
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">
+          <div class="fec2-emoji">❤️‍🩹</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">01</div>
+            <div class="fec2-nome">Dor</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
+        </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#c0392b;background:#fdf0ef">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine que você caiu de uma escada e ficou com o corpo inteiro dolorido. Nos primeiros dias, dói ao se movimentar, ao toque e até para realizar tarefas simples, como vestir-se ou arrumar o cabelo. <strong>Agora imagine que essa dor nunca vai embora.</strong></p>
+          <div class="fec2-tag" style="color:#c0392b;background:#fdf0ef">🔬 O que acontece</div>
+          <p class="fec2-science">A dor da fibromialgia não é "exagero" nem "imaginação". É uma alteração na forma como o sistema nervoso processa os sinais de dor — como se o botão do volume estivesse <strong>permanentemente ajustado no máximo</strong>.</p>
+        </div>
+      </div>
+
+      <!-- FADIGA -->
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#d35400,#e67e22)">
+          <div class="fec2-emoji">🔋</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">02</div>
+            <div class="fec2-nome">Fadiga</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
+        </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#d35400;background:#fef3ea">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine um celular com <strong>1% de bateria</strong>. Você o deixa carregando a noite toda e, de manhã, ele continua com exatamente 1% de bateria.</p>
+          <div class="fec2-tag" style="color:#d35400;background:#fef3ea">🔬 O que acontece</div>
+          <p class="fec2-science">A fadiga da fibromialgia <strong>não melhora com o sono ou com o descanso</strong>, pois sua origem está na disfunção do sistema nervoso central.</p>
+        </div>
+      </div>
+
+      <!-- INSÔNIA -->
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#1a3a6e,#2980b9)">
+          <div class="fec2-emoji">💤</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">03</div>
+            <div class="fec2-nome">Insônias</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
+        </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#1a3a6e;background:#eaf2f8">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine estar exausto, com sono, deitar na cama e... o corpo simplesmente não colabora. Ou adormece e acorda várias vezes, ou acorda como se <strong>não tivesse dormido nada</strong>.</p>
+          <div class="fec2-tag" style="color:#1a3a6e;background:#eaf2f8">🔬 O que acontece</div>
+          <p class="fec2-science">A insônia da fibromialgia pode evoluir para <strong>painsomnia</strong> (insônia provocada pela dor). O sono deixa de ser reparador porque o sistema nervoso nunca entra verdadeiramente no modo descanso.</p>
+        </div>
+      </div>
+
+      <!-- FIBRO FOG -->
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#6c3483,#9b59b6)">
+          <div class="fec2-emoji">🌫️</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">04</div>
+            <div class="fec2-nome">Fibro Fog</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
+        </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#6c3483;background:#f5eefa">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine que você dormiu apenas duas horas e está sobrecarregado. Alguém pede que você faça contas, lembre nomes e organize tarefas. As palavras fogem, a memória falha. <strong>Agora imagine viver isso todos os dias</strong>, mesmo depois de descansar.</p>
+          <div class="fec2-tag" style="color:#6c3483;background:#f5eefa">🔬 O que acontece</div>
+          <p class="fec2-science">O fibro fog é como <strong>tentar pensar através de um nevoeiro</strong>. Confusão mental, dificuldade de concentração, lapsos de memória. Não é falta de inteligência — é um sintoma real que afeta como o cérebro processa informações.</p>
+        </div>
+      </div>
+
+      <!-- ALODINIA -->
+      <div class="fec2-card" onclick="toggleEdu(this)">
+        <div class="fec2-head" style="background:linear-gradient(135deg,#1e6e42,#27ae60)">
+          <div class="fec2-emoji">🖐️</div>
+          <div class="fec2-head-txt">
+            <div class="fec2-num">05</div>
+            <div class="fec2-nome">Alodinia</div>
+          </div>
+          <div class="fec2-chevron">▼</div>
+        </div>
+        <div class="fec2-body">
+          <div class="fec2-tag" style="color:#1e6e42;background:#eafaf1">💭 A analogia</div>
+          <p class="fec2-analogy">Imagine que você tem uma ferida no braço. Se tocar na roupa ou em algum objeto, vai doer bastante. <strong>Agora imagine que seu corpo inteiro está coberto de feridas abertas.</strong></p>
+          <div class="fec2-tag" style="color:#1e6e42;background:#eafaf1">🔬 O que acontece</div>
+          <p class="fec2-science">A sensação da alodinia é muito semelhante a essa. Qualquer estímulo — a própria roupa ou um toque suave — é interpretado pelo sistema nervoso como <strong>dor intensa</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Mensagem final -->
+      <div class="fec2-final">
+        <div style="font-size:32px;margin-bottom:10px">💜</div>
+        <div class="fec2-final-titulo">Fibromialgia<br><em>não é frescura</em>.</div>
+        <p class="fec2-final-sub">É uma condição real, complexa e invisível para quem vê de fora.<br>Compartilhe com quem precisa entender.</p>
+        <div class="fec2-final-fonte">Fonte: @jorgequintinooficial</div>
+      </div>
+
+      <!-- Técnicas de Respiração -->
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px">
+        Técnicas de Respiração
+      </div>
+
+      <div class="resp-card">
+        <div class="resp-card-title">Respiração 4-7-8</div>
+        <div class="resp-card-sub">Ótima para relaxamento e alívio de ansiedade</div>
+        <ol class="resp-steps">
+          <li data-n="1">Inspire pelo nariz contando até 4</li>
+          <li data-n="2">Segure a respiração contando até 7</li>
+          <li data-n="3">Expire pela boca contando até 8</li>
+          <li data-n="4">Repita 4 vezes</li>
+        </ol>
+      </div>
+
+      <div class="resp-card">
+        <div class="resp-card-title">Respiração Profunda</div>
+        <div class="resp-card-sub">Ajuda a reduzir tensão muscular</div>
+        <ol class="resp-steps">
+          <li data-n="1">Sente-se confortavelmente</li>
+          <li data-n="2">Inspire profundamente pelo nariz (5 segundos)</li>
+          <li data-n="3">Expire pela boca (5 segundos)</li>
+          <li data-n="4">Repita por 5 minutos</li>
+        </ol>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         PROFISSIONAIS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-profissionais">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-blue">🩺</div>
+        <div class="pt-body">
+          <div class="pt-title">Profissionais de Saúde</div>
+          <div class="pt-sub">Gerencie sua equipe de cuidados</div>
+        </div>
+        <button class="btn-fab" onclick="openProfModal()" title="Novo profissional">+</button>
+      </div>
+
+      <div id="professionals-list">
+        <div class="card">
+          <div class="card-body">
+            <div class="empty-state" style="padding:8px 0">
+              <div class="ei">👩‍⚕️</div>
+              <p>Nenhum profissional cadastrado.<br>Adicione médicos e terapeutas.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         CONSULTAS MÉDICAS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-consultas">
+
+      <div class="page-title-bar">
+        <div class="pt-icon" style="background:linear-gradient(135deg,#7B5EA7,#4a2d6e)">🩺</div>
+        <div class="pt-body">
+          <div class="pt-title">Consultas Médicas</div>
+          <div class="pt-sub">Histórico e agendamentos</div>
+        </div>
+        <button class="btn-fab" onclick="openConsultaModal()" title="Nova consulta">+</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="filt-btn ativo" id="cfilt-proximas" onclick="setConsultaFiltro('proximas',this)">📅 Próximas</button>
+        <button class="filt-btn" id="cfilt-historico" onclick="setConsultaFiltro('historico',this)">📋 Histórico</button>
+      </div>
+
+      <div id="consultas-list">
+        <div class="empty-state">
+          <div class="ei">🩺</div>
+          <p>Nenhuma consulta agendada.<br>Toque em + para registrar.</p>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+    <!-- MODAL — NOVA / EDITAR CONSULTA -->
+    <div class="modal-overlay" id="modal-consulta">
+      <div class="modal-box" style="max-height:92vh;overflow-y:auto">
+        <div class="modal-header">
+          <h3>🩺 Consulta Médica</h3>
+          <button class="modal-close" onclick="closeModal('modal-consulta')">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="cons-id">
+
+          <div class="fg"><label>Médico / Especialista *</label>
+            <input type="text" id="cons-doctor" placeholder="Dr. Nome Sobrenome"></div>
+
+          <div class="fg"><label>Especialidade</label>
+            <input type="text" id="cons-specialty" placeholder="Reumatologista, Clínico Geral..."></div>
+
+          <div class="fg"><label>Local / Clínica</label>
+            <input type="text" id="cons-location" placeholder="Nome da clínica ou hospital"></div>
+
+          <div style="display:flex;gap:10px">
+            <div class="fg" style="flex:1"><label>Data da Consulta *</label>
+              <input type="date" id="cons-date"></div>
+            <div class="fg" style="flex:1"><label>Horário</label>
+              <input type="time" id="cons-time"></div>
+          </div>
+
+          <div class="fg"><label>📝 Anotações — o que foi discutido</label>
+            <textarea id="cons-notes" rows="4" placeholder="Sintomas relatados, avaliação do médico, orientações recebidas..."></textarea></div>
+
+          <div class="fg"><label>🔬 Exames Solicitados</label>
+            <textarea id="cons-exams" rows="2" placeholder="Hemograma, VHS, PCR, Vitamina D, Ressonância..."></textarea></div>
+
+          <div class="fg"><label>💊 Medicamentos Prescritos</label>
+            <textarea id="cons-prescriptions" rows="2" placeholder="Nome, dosagem e frequência de uso..."></textarea></div>
+
+          <div class="fg"><label>📅 Data da Próxima Consulta</label>
+            <input type="date" id="cons-next-date"></div>
+
+          <div class="fg" style="flex-direction:row;align-items:center;gap:10px;background:var(--bg-card);padding:10px;border-radius:10px">
+            <input type="checkbox" id="cons-next-alert" style="width:auto;margin:0">
+            <label for="cons-next-alert" style="margin:0;font-weight:500;cursor:pointer">🔔 Alertar-me no dia da próxima consulta</label>
+          </div>
+
+          <div class="fg">
+            <label>📎 Anexos (PDF ou imagem · máx 10 MB cada)</label>
+            <div id="cons-attachments-list" style="margin-bottom:8px"></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('solicitacao')">📋 Solicitação</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('receita')">💊 Receita</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('resultado')">🔬 Resultado</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="triggerConsultaUpload('outro')">📎 Outro</button>
+            </div>
+            <input type="file" id="cons-file-input" accept=".pdf,image/*" style="display:none" onchange="handleConsultaUpload(this)">
+            <input type="hidden" id="cons-upload-type">
+          </div>
+
+          <button class="btn btn-primary btn-full" onclick="saveConsulta()">💾 Salvar Consulta</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL — DETALHE DA CONSULTA -->
+    <div class="modal-overlay" id="modal-consulta-detail">
+      <div class="modal-box" style="max-height:92vh;overflow-y:auto">
+        <div class="modal-header">
+          <h3>🩺 Detalhe da Consulta</h3>
+          <button class="modal-close" onclick="closeModal('modal-consulta-detail')">✕</button>
+        </div>
+        <div class="modal-body" id="consulta-detail-body"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         MEDICAMENTOS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-medicamentos">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-purple">💊</div>
+        <div class="pt-body">
+          <div class="pt-title">Medicamentos</div>
+          <div class="pt-sub">Estoque automático diário</div>
+        </div>
+        <button class="btn-fab" onclick="openMedModal()" title="Novo medicamento">+</button>
+      </div>
+
+      <!-- Botão de teste de alerta — sempre visível no topo -->
+      <button onclick="testarAlertaMedicamento()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:8px;background:rgba(155,109,223,0.12);border:1.5px dashed #9b6ddf;color:#7B5EA7;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;">
+        🔔 Testar Alerta de Medicamento
+      </button>
+      <!-- Botão ativar push notifications -->
+      <button onclick="ativarLembretesMedicamentos()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:12px;background:rgba(57,136,192,0.10);border:1.5px dashed #3988c0;color:#2471a3;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;">
+        📱 Ativar lembretes automáticos (notificações)
+      </button>
+
+      <!-- Filtro + Relatório -->
+      <div class="med-filter-row">
+        <div class="med-filter-tabs">
+          <button class="mft-btn active" id="mft-fibro" onclick="setMedFilter('fibro')">💊 Fibromialgia</button>
+          <button class="mft-btn" id="mft-extra" onclick="setMedFilter('extra')">🏠 Outros</button>
+          <button class="mft-btn" id="mft-all" onclick="setMedFilter('all')">📋 Todos</button>
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="gerarRelatorioMedicamentos()" style="white-space:nowrap">📄 PDF</button>
+      </div>
+
+      <div id="medications-list"></div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         RECEITAS
+         ============================================================ -->
+    <div class="tab-pane" id="tab-receitas">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-green">🥗</div>
+        <div class="pt-body">
+          <div class="pt-title">Receitas Saudáveis</div>
+          <div class="pt-sub">Culinária que cuida de você</div>
+        </div>
+        <button class="btn-fab" onclick="openRecipeModal()" title="Nova receita">+</button>
+      </div>
+
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="recipe-search" placeholder="Buscar receitas..." oninput="filterRecipes()" />
+      </div>
+
+      <div class="filter-strip">
+        <button class="ftab active" onclick="filterRecipeCat('all',this)">Todas</button>
+        <button class="ftab" onclick="filterRecipeCat('cafe',this)">☕ Café da manhã</button>
+        <button class="ftab" onclick="filterRecipeCat('almoco',this)">🍽️ Almoço</button>
+        <button class="ftab" onclick="filterRecipeCat('jantar',this)">🌙 Jantar</button>
+        <button class="ftab" onclick="filterRecipeCat('lanche',this)">🥜 Lanches</button>
+        <button class="ftab" onclick="filterRecipeCat('sobremesa',this)">🍓 Sobremesas</button>
+        <button class="ftab" onclick="filterRecipeCat('suco',this)">🥤 Sucos</button>
+      </div>
+
+      <div class="recipe-grid" id="recipes-grid">
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="ei">🥗</div>
+          <p>Nenhuma receita cadastrada.<br>Adicione receitas saudáveis!</p>
+          <button class="btn btn-secondary" style="margin-top:12px;font-size:12px" onclick="loadSampleRecipes()">
+            🌿 Carregar receitas de exemplo
+          </button>
+        </div>
+      </div>
+
+      <div class="page-footer" style="margin-top:16px">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         RELATÓRIOS  (acessado via Configurações / Início)
+         ============================================================ -->
+    <div class="tab-pane" id="tab-relatorios">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-orange">📊</div>
+        <div class="pt-body">
+          <div class="pt-title">Relatórios</div>
+          <div class="pt-sub">Resumo semanal da sua saúde</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="window.print()" title="Imprimir">🖨️</button>
+          <button class="btn btn-secondary btn-sm" onclick="compartilharRelatorio()" title="Compartilhar com médico">📤</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📅</span> Período de Análise</div>
+          <div class="selecao-periodo">
+            <button class="botao-periodo ativo" onclick="setRepPeriod(7,this)">7 dias</button>
+            <button class="botao-periodo" onclick="setRepPeriod(14,this)">14 dias</button>
+            <button class="botao-periodo" onclick="setRepPeriod(30,this)">30 dias</button>
+          </div>
+          <div id="report-range" class="text-muted mt-8 mb-12"></div>
+          <div class="report-grid">
+            <div class="report-cell">
+              <div class="rc-icon">😣</div>
+              <div class="rc-val" id="rep-pain">—</div>
+              <div class="rc-lbl">Média Dor</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">😴</div>
+              <div class="rc-val" id="rep-sleep">—</div>
+              <div class="rc-lbl">Média Sono</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">✅</div>
+              <div class="rc-val" id="rep-tasks">0</div>
+              <div class="rc-lbl">Tarefas</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">💊</div>
+              <div class="rc-val" id="rep-meds">0</div>
+              <div class="rc-lbl">Medicamentos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">😊</span> Humor Predominante</div>
+          <div id="rep-mood" style="font-size:36px;text-align:center;padding:6px 0">—</div>
+          <div id="rep-mood-lbl" class="text-muted text-center"></div>
+        </div>
+      </div>
+
+      <!-- Locais de Dor mais frequentes -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📍</span> Locais Mais Doloridos</div>
+          <div id="rep-locais"><p class="text-muted" style="font-size:12px">Sem dados registrados</p></div>
+        </div>
+      </div>
+
+      <!-- Fadiga & Energia médias -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">😩</span> Fadiga &amp; Energia (Média)</div>
+          <div class="report-grid" style="margin:8px 0 0">
+            <div class="report-cell">
+              <div class="rc-icon">😩</div>
+              <div class="rc-val" id="rep-fatigue">—</div>
+              <div class="rc-lbl">Fadiga Média</div>
+            </div>
+            <div class="report-cell">
+              <div class="rc-icon">⚡</div>
+              <div class="rc-val" id="rep-energy">—</div>
+              <div class="rc-lbl">Energia Média</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gatilhos mais frequentes -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">⚡</span> Gatilhos Mais Frequentes</div>
+          <div id="rep-triggers"><p class="text-muted" style="font-size:12px">Sem dados registrados</p></div>
+        </div>
+      </div>
+
+      <!-- Gráfico SVG — evolução da dor -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📊</span> Evolução da Dor</div>
+          <div id="rep-svg-chart" class="svg-chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📈</span> Dor por dia</div>
+          <div class="bar-chart" id="rep-pain-chart"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">😴</span> Sono por dia</div>
+          <div class="bar-chart" id="rep-sleep-chart"></div>
+        </div>
+      </div>
+
+      <!-- Relatório PDF para médico -->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title"><span class="icon">📄</span> Relatório para o Médico</div>
+          <div class="fg">
+            <label style="font-size:12px;color:var(--text2);margin-bottom:4px;display:block">Nome do médico (opcional)</label>
+            <input type="text" id="rep-medico" placeholder="Dr(a). Nome do Médico..."
+              style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);background:var(--bg);outline:none;color:var(--text)" />
+          </div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.5">
+            O PDF inclui: resumo estatístico, locais de dor frequentes e tabela detalhada de cada registro.
+          </p>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-primary" style="flex:1" onclick="gerarPDFFibroVida()">📄 Gerar PDF</button>
+            <button class="btn btn-secondary" style="flex:1" onclick="window.print()">🖨️ Imprimir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer" style="margin-top:12px">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com · © 2026</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         FIBROASSISTENTE
+         ============================================================ -->
+    <div class="tab-pane" id="tab-assistente">
+
+      <div class="page-title-bar">
+        <div class="pt-icon" style="background:linear-gradient(135deg,var(--purple),#7b2d8b)">🤖</div>
+        <div class="pt-body">
+          <div class="pt-title">FibroAssistente</div>
+          <div class="pt-sub">Análise inteligente dos seus dados</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding-bottom:14px">
+          <p style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:10px">
+            💡 Analiso seus registros e ofereço insights personalizados. Toque em um tema ou escreva sua pergunta!
+          </p>
+          <div class="chat-quick-btns">
+            <button onclick="askAssistente('resumo')">📊 Semana</button>
+            <button onclick="askAssistente('gatilhos')">⚡ Gatilhos</button>
+            <button onclick="askAssistente('sono')">💤 Sono</button>
+            <button onclick="askAssistente('dor')">❤️ Dor</button>
+            <button onclick="askAssistente('crise')">🚨 Crises</button>
+            <button onclick="askAssistente('motivacao')">💜 Motivação</button>
+          </div>
+          <div class="chat-wrap" id="chat-wrap">
+            <div class="chat-msg chat-msg-bot">
+              <div class="chat-avatar">🤖</div>
+              <div class="chat-bubble">Olá! Sou o FibroAssistente 💚<br>Escolha um tema acima ou me escreva uma pergunta sobre sua saúde.</div>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input"
+              placeholder="Pergunte algo sobre sua saúde..."
+              onkeydown="if(event.key==='Enter')sendChatMsg()" />
+            <button class="chat-send-btn" onclick="sendChatMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer" style="margin-top:8px">
+        <p>O FibroAssistente analisa seus próprios dados.<br>Não substitui orientação médica profissional.</p>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         CONFIGURAÇÕES
+         ============================================================ -->
+    <div class="tab-pane" id="tab-config">
+
+      <div class="page-title-bar">
+        <div class="pt-icon pt-icon-green">⚙️</div>
+        <div class="pt-body">
+          <div class="pt-title">Configurações</div>
+          <div class="pt-sub">Gerencie sua conta</div>
+        </div>
+      </div>
+
+      <div id="admin-banner-strip" class="admin-banner-strip" style="display:none">
+        👑 Modo Administrador — Acesso Total ao Sistema
+      </div>
+
+      <!-- Card do usuário -->
+      <div class="settings-user-card">
+        <div class="user-avatar" id="avatar-initials">?</div>
+        <div class="user-info">
+          <h3 id="config-name">—</h3>
+          <p id="config-email">—</p>
+          <div id="config-admin-badge" class="admin-badge" style="display:none">👑 Administrador</div>
+        </div>
+      </div>
+
+      <!-- Minha conta -->
+      <div class="settings-group">
+        <div class="settings-group-title">Minha conta</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="openProfileModal()">
+            <span class="sr-icon">✏️</span>
+            <div class="sr-body">
+              <div class="sr-title">Editar perfil</div>
+              <div class="sr-sub">Alterar nome</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row" onclick="showTab('relatorios')">
+            <span class="sr-icon">📊</span>
+            <div class="sr-body">
+              <div class="sr-title">Relatórios</div>
+              <div class="sr-sub">Resumo semanal de saúde</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conquistas -->
+      <div class="settings-group">
+        <div class="settings-group-title">🏆 Minhas Conquistas</div>
+        <div class="achievements-grid" id="achievements-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:8px;font-size:12px;color:var(--text-muted)">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- Admin -->
+      <div class="settings-group" id="admin-section" style="display:none">
+        <div class="settings-group-title">Administração</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="openAdminModal()">
+            <span class="sr-icon">👑</span>
+            <div class="sr-body">
+              <div class="sr-title">Painel Admin</div>
+              <div class="sr-sub">Gerenciar todos os dados do sistema</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contatos de Emergência -->
+      <div class="settings-group">
+        <div class="settings-group-title">🆘 Contatos de Emergência</div>
+        <div style="padding:12px 16px">
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Esses números serão exibidos no Botão de Pânico para contato rápido em crises graves.</p>
+          <div class="fg" style="margin-bottom:10px">
+            <label>Contato 1 — Nome</label>
+            <input type="text" id="panic-name-1" placeholder="Ex: Maria (mãe)" />
+          </div>
+          <div class="fg" style="margin-bottom:14px">
+            <label>Contato 1 — Telefone</label>
+            <input type="tel" id="panic-phone-1" placeholder="(85) 99999-9999" />
+          </div>
+          <div class="fg" style="margin-bottom:10px">
+            <label>Contato 2 — Nome</label>
+            <input type="text" id="panic-name-2" placeholder="Ex: João (marido)" />
+          </div>
+          <div class="fg" style="margin-bottom:14px">
+            <label>Contato 2 — Telefone</label>
+            <input type="tel" id="panic-phone-2" placeholder="(85) 99999-9999" />
+          </div>
+          <button class="btn btn-primary" onclick="saveEmergencyContacts()">💾 Salvar Contatos</button>
+        </div>
+      </div>
+
+      <!-- Ajuda -->
+      <div class="settings-group">
+        <div class="settings-group-title">Ajuda</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="window.open('manual.html','_blank')">
+            <span class="sr-icon">📖</span>
+            <div class="sr-body">
+              <div class="sr-title">Manual do Aplicativo</div>
+              <div class="sr-sub">Como usar todas as funcionalidades</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row" onclick="window.open('apresentacao.html','_blank')">
+            <span class="sr-icon">🌿</span>
+            <div class="sr-body">
+              <div class="sr-title">Sobre o FibroVida</div>
+              <div class="sr-sub">Conheça o app e os planos</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row" onclick="showTab('assistente')">
+            <span class="sr-icon">🤖</span>
+            <div class="sr-body">
+              <div class="sr-title">FibroAssistente</div>
+              <div class="sr-sub">Tire dúvidas sobre seus dados</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacidade -->
+      <div class="settings-group">
+        <div class="settings-group-title">Privacidade</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="showLGPD()">
+            <span class="sr-icon">🔒</span>
+            <div class="sr-body">
+              <div class="sr-title">Política de Privacidade (LGPD)</div>
+              <div class="sr-sub">Como seus dados são usados</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>

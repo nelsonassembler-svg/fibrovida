@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FibroVida — Slides para Redes Sociais</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
+
+  h1 { color: #C9B8E8; font-size: 18px; margin-bottom: 16px; text-align: center; letter-spacing: 1px; }
+
+  .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+  .btn { padding: 8px 16px; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .btn-prev, .btn-next { background: #7B5EA7; color: white; }
+  .btn-prev:hover, .btn-next:hover { background: #9B7EC7; }
+  .btn-play { background: #22C55E; color: white; }
+  .btn-play:hover { background: #16A34A; }
+  .btn-format { background: #334155; color: #C9B8E8; border: 1px solid #7B5EA7; }
+  .btn-format.active { background: #7B5EA7; color: white; }
+  .slide-counter { color: #C9B8E8; font-size: 13px; padding: 8px 16px; background: #2d2d4e; border-radius: 20px; }
+
+  /* ── Canvas area ── */
+  .canvas-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
+  .slide-canvas {
+    position: relative; overflow: hidden;
+    border-radius: 16px; box-shadow: 0 8px 40px rgba(123,94,167,0.5);
+    background: linear-gradient(135deg, #2d1f4a 0%, #1a0f2e 100%);
+    transition: width 0.4s, height 0.4s;
+  }
+
+  /* ── Slides ── */
+  .slide { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
+  .slide.active { opacity: 1; pointer-events: auto; }
+
+  /* ── Slide 1 — Abertura ── */
+  .s1-bg { background: radial-gradient(ellipse at center, #3d1f7a 0%, #1a0f2e 70%); }
+  .s1-logo-ring { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #7B5EA7, #C9B8E8); display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 16px; animation: pulse 2s infinite; box-shadow: 0 0 30px rgba(123,94,167,0.7); }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 30px rgba(123,94,167,0.7); } 50% { box-shadow: 0 0 60px rgba(201,184,232,0.9); } }
+  .s1-title { font-size: clamp(28px,6vw,42px); font-weight: 900; color: #fff; text-align: center; letter-spacing: 2px; }
+  .s1-sub { font-size: clamp(12px,2.5vw,16px); color: #C9B8E8; text-align: center; margin: 10px 0; }
+  .s1-url { font-size: clamp(14px,3vw,20px); color: #E879F9; font-weight: 700; margin-top: 12px; }
+  .s1-tag { margin-top: 16px; font-size: clamp(10px,2vw,13px); color: #a78bfa; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* ── Slide 2 — O que é ── */
+  .s2-bg { background: linear-gradient(160deg, #1e1040 0%, #2d1a5a 50%, #1a0f2e 100%); }
+  .card-big { background: rgba(123,94,167,0.18); border: 1.5px solid rgba(201,184,232,0.35); border-radius: 16px; padding: 20px 24px; width: 100%; text-align: center; }
+  .card-icon { font-size: clamp(32px,6vw,48px); margin-bottom: 8px; }
+  .card-title { font-size: clamp(18px,4vw,26px); font-weight: 800; color: #C9B8E8; margin-bottom: 8px; }
+  .card-text { font-size: clamp(11px,2vw,14px); color: #e0d4f5; line-height: 1.6; }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+  .badge { padding: 5px 12px; border-radius: 20px; background: rgba(123,94,167,0.35); border: 1px solid #7B5EA7; color: #C9B8E8; font-size: clamp(9px,1.8vw,11px); font-weight: 600; }
+
+  /* ── Slide 3 — Funcionalidades ── */
+  .s3-bg { background: linear-gradient(145deg, #0f2040 0%, #1a1060 50%, #2d0f4a 100%); }
+  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+  .feat-item { background: rgba(255,255,255,0.06); border: 1px solid rgba(201,184,232,0.2); border-radius: 12px; padding: 10px; display: flex; align-items: flex-start; gap: 8px; }
+  .feat-icon { font-size: clamp(18px,3.5vw,24px); flex-shrink: 0; }
+  .feat-name { font-size: clamp(9px,1.8vw,12px); color: #e0d4f5; font-weight: 600; line-height: 1.3; }
+  .feat-desc { font-size: clamp(8px,1.5vw,10px); color: #a78bfa; margin-top: 2px; }
+  .slide-headline { font-size: clamp(14px,3vw,20px); font-weight: 800; color: #C9B8E8; margin-bottom: 14px; text-align: center; }
+
+  /* ── Slide 4 — Preços ── */
+  .s4-bg { background: radial-gradient(ellipse at top, #2d1460 0%, #0f0a20 100%); }
+  .price-cards { display: flex; gap: 10px; width: 100%; flex-direction: column; }
+  .price-card { border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pc-free { background: rgba(34,197,94,0.15); border: 1.5px solid #22C55E; }
+  .pc-anual { background: rgba(123,94,167,0.25); border: 1.5px solid #7B5EA7; }
+  .pc-vital { background: linear-gradient(135deg, rgba(232,121,249,0.2), rgba(123,94,167,0.3)); border: 2px solid #E879F9; }
+  .pc-label { font-size: clamp(10px,2vw,13px); font-weight: 700; color: #fff; }
+  .pc-detail { font-size: clamp(8px,1.5vw,10px); color: #a78bfa; margin-top: 2px; }
+  .pc-price { font-size: clamp(14px,3vw,22px); font-weight: 900; color: #E879F9; white-space: nowrap; }
+  .pix-info { margin-top: 14px; background: rgba(34,197,94,0.12); border: 1px solid #22C55E; border-radius: 10px; padding: 10px 14px; width: 100%; text-align: center; color: #6ee7b7; font-size: clamp(9px,1.8vw,11px); }
+
+  /* ── Slide 5 — Depoimento / CTA ── */
+  .s5-bg { background: radial-gradient(ellipse at bottom, #3d1f7a 0%, #0f0a20 100%); }
+  .cta-main { font-size: clamp(20px,5vw,36px); font-weight: 900; color: #fff; text-align: center; line-height: 1.2; }
+  .cta-main span { color: #E879F9; }
+  .cta-sub { font-size: clamp(11px,2.2vw,15px); color: #C9B8E8; text-align: center; margin: 12px 0; line-height: 1.5; }
+  .cta-btn { margin-top: 16px; padding: 14px 32px; background: linear-gradient(135deg, #7B5EA7, #E879F9); border-radius: 30px; color: white; font-size: clamp(13px,2.5vw,18px); font-weight: 800; letter-spacing: 1px; animation: glow 1.5s infinite; display: inline-block; }
+  @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(232,121,249,0.6); } 50% { box-shadow: 0 0 50px rgba(232,121,249,1); } }
+  .ntech-tag { margin-top: 20px; font-size: clamp(9px,1.8vw,12px); color: #6366f1; letter-spacing: 2px; }
+
+  /* ── Slide 6 — Crise / Urgência ── */
+  .s6-bg { background: linear-gradient(150deg, #1a0020 0%, #2d1040 50%, #0a0a1e 100%); }
+  .crisis-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .crisis-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); border-left: 3px solid #7B5EA7; border-radius: 8px; padding: 10px 14px; }
+  .crisis-emoji { font-size: clamp(16px,3vw,22px); }
+  .crisis-text { font-size: clamp(10px,2vw,13px); color: #e0d4f5; }
+
+  /* ── N Tech IA watermark ── */
+  .watermark { position: absolute; bottom: 10px; right: 14px; font-size: clamp(8px,1.5vw,11px); color: rgba(201,184,232,0.4); letter-spacing: 1px; font-weight: 600; }
+
+  /* ── Progress bar ── */
+  .progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: linear-gradient(90deg, #7B5EA7, #E879F9); border-radius: 0 0 16px 16px; transition: width 0.1s linear; }
+
+  /* ── Info ── */
+  .info-box { margin-top: 20px; background: #2d2d4e; border-radius: 12px; padding: 14px 20px; color: #C9B8E8; font-size: 12px; text-align: center; max-width: 540px; line-height: 1.7; }
+  .info-box strong { color: #E879F9; }
+</style>
+</head>
+<body>
+
+<h1>🎬 FibroVida — Slides para Redes Sociais</h1>
+
+<div class="controls">
+  <button class="btn btn-format active" onclick="setFormat('square')">■ Instagram (1:1)</button>
+  <button class="btn btn-format" onclick="setFormat('story')">▮ Stories (9:16)</button>
+  <button class="btn btn-format" onclick="setFormat('wide')">▬ YouTube/FB (16:9)</button>
+</div>
+
+<div class="controls">
+  <button class="btn btn-prev" onclick="prevSlide()">◀ Anterior</button>
+  <span class="slide-counter" id="counter">Slide 1 / 6</span>
+  <button class="btn btn-next" onclick="nextSlide()">Próximo ▶</button>
+  <button class="btn btn-play" id="playBtn" onclick="togglePlay()">▶ Apresentação Auto</button>
+</div>
+
+<div class="canvas-wrap">
+  <div class="slide-canvas" id="canvas">
+
+    <!-- ══ SLIDE 1 — Abertura ══ -->
+    <div class="slide s1-bg active" id="slide-0">
+      <div class="s1-logo-ring">💜</div>
+      <div class="s1-title">FibroVida</div>
+      <div class="s1-sub">Diário da Dor e Bem-Estar</div>
+      <div class="s1-sub" style="color:#fff;font-size:clamp(11px,2vw,14px);margin-top:4px;">O aplicativo completo para quem vive com fibromialgia</div>
+      <div class="s1-url">fibrovida.com.br</div>
+      <div class="s1-tag">Desenvolvido por N Tech IA</div>
+      <div class="watermark">N Tech IA</div>
+      <div class="progress-bar" id="pb-0"></div>
+    </div>
+
+    <!-- ══ SLIDE 2 — O que é ══ -->
+    <div class="slide s2-bg" id="slide-1">
+      <div class="card-big">
+        <div class="card-icon">🏥</div>
+        <div class="card-title">O que é o FibroVida?</div>
+        <div class="card-text">
+          Um aplicativo <strong style="color:#C9B8E8">completo e gratuito para testar</strong>, desenvolvido especialmente para pessoas com <strong style="color:#E879F9">fibromialgia</strong>.<br><br>
+          Funciona no <strong style="color:#C9B8E8">celular e no computador</strong>, sem precisar instalar.<br>
+          Acesse agora: <strong style="color:#E879F9">fibrovida.com.br</strong>
+        </div>
+        <div class="badge-row">
+          <span class="badge">📱 Sem instalar</span>
+          <span class="badge">☁️ Nuvem segura</span>
+          <span class="badge">🔒 LGPD</span>
+          <span class="badge">🌙 Modo escuro</span>
+          <span class="badge">🎙️ Voz</span>
+          <span class="badge">💊 Alertas</span>
+        </div>
+      </div>
+      <div class="watermark">N Tech IA • fibrovida.com.br</div>
+      <div class="progress-bar" id="pb-1"></div>
+    </div>
+
+    <!-- ══ SLIDE 3 — Funcionalidades ══ -->
+    <div class="slide s3-bg" id="slide-2">
+      <div class="slide-headline">✨ Tudo que você precisa em um só lugar</div>
+      <div class="feat-grid">
+        <div class="feat-item"><div class="feat-icon">📅</div><div><div class="feat-name">Diário de Dor</div><div class="feat-desc">Registre dor, fadiga e humor diariamente</div></div></div>
+        <div class="feat-item"><div class="feat-icon">💊</div><div><div class="feat-name">Medicamentos</div><div class="feat-desc">Alertas e controle de estoque</div></div></div>
+        <div class="feat-item"><div class="feat-icon">🚨</div><div><div class="feat-name">Registrar Crise</div><div class="feat-desc">Dor, fadiga, alergia, coceira, urticária</div></div></div>
+        <div class="feat-item"><div class="feat-icon">📊</div><div><div class="feat-name">Sinais Vitais</div><div class="feat-desc">Pressão, glicemia, peso</div></div></div>
+        <div class="feat-item"><div class="feat-icon">🤖</div><div><div class="feat-name">IA FibroAssistente</div><div class="feat-desc">Dicas personalizadas com IA</div></div></div>
+        <div class="feat-item"><div class="feat-icon">📄</div><div><div class="feat-name">Relatório PDF</div><div class="feat-desc">Para médicos e perícias INSS</div></div></div>
+        <div class="feat-item"><div class="feat-icon">🆘</div><div><div class="feat-name">Botão de Pânico</div><div class="feat-desc">Contatos de emergência</div></div></div>
+        <div class="feat-item"><div class="feat-icon">🏆</div><div><div class="feat-name">Gamificação</div><div class="feat-desc">Conquistas para incentivar</div></div></div>
+      </div>
+      <div class="watermark">N Tech IA • fibrovida.com.br</div>
+      <div class="progress-bar" id="pb-2"></div>
+    </div>
+
+    <!-- ══ SLIDE 4 — Preços ══ -->
+    <div class="slide s4-bg" id="slide-3">
+      <div class="slide-headline">💰 Planos e Preços</div>
+      <div class="price-cards">
+        <div class="price-card pc-free">
+          <div><div class="pc-label">🆓 Teste Gratuito</div><div class="pc-detail">7 dias completos • sem cartão</div></div>
+          <div class="pc-price" style="color:#22C55E">R$ 0</div>
+        </div>
+        <div class="price-card pc-anual">
+          <div><div class="pc-label">📅 Plano Anual</div><div class="pc-detail">Menos de R$ 6 por mês</div></div>
+          <div class="pc-price">R$ 69,90<span style="font-size:0.5em;color:#a78bfa">/ano</span></div>
+        </div>
+        <div class="price-card pc-vital">
+          <div><div class="pc-label">💜 Vitalício</div><div class="pc-detail">Pagamento único • acesso para sempre</div></div>
+          <div class="pc-price">R$ 169,90</div>
+        </div>
+      </div>
+      <div class="pix-info">
+        💳 <strong>Pagamento via PIX</strong> — Chave: <strong>06127126304</strong> (Banco Inter)<br>
+        Envie o comprovante: WhatsApp <strong>+55 85 9 9825-1219</strong>
+      </div>
+      <div class="watermark">N Tech IA • fibrovida.com.br</div>
+      <div class="progress-bar" id="pb-3"></div>
+    </div>
+
+    <!-- ══ SLIDE 5 — CTA ══ -->
+    <div class="slide s5-bg" id="slide-4">
+      <div class="cta-main">Sua saúde merece<br><span>cuidado inteligente</span> 💜</div>
+      <div class="cta-sub">
+        Experimente <strong style="color:#E879F9">7 dias grátis</strong> e descubra como o FibroVida pode transformar sua qualidade de vida.
+      </div>
+      <div class="cta-btn">🌐 fibrovida.com.br</div>
+      <div class="cta-sub" style="margin-top:14px;font-size:clamp(9px,1.8vw,12px)">
+        📲 Acesse pelo celular ou computador — sem instalar nada!
+      </div>
+      <div class="ntech-tag">💡 N Tech IA — Tecnologia com propósito</div>
+      <div class="watermark">N Tech IA</div>
+      <div class="progress-bar" id="pb-4"></div>
+    </div>
+
+    <!-- ══ SLIDE 6 — Recursos especiais ══ -->
+    <div class="slide s6-bg" id="slide-5">
+      <div class="slide-headline">🚀 Recursos únicos do FibroVida</div>
+      <div class="crisis-list">
+        <div class="crisis-item"><div class="crisis-emoji">🎙️</div><div class="crisis-text"><strong style="color:#C9B8E8">Entrada por voz</strong> — preencha qualquer campo falando, ideal para momentos de dor intensa</div></div>
+        <div class="crisis-item"><div class="crisis-emoji">📋</div><div class="crisis-text"><strong style="color:#C9B8E8">Relatório para médico</strong> — gerado conforme Lei 15.176/2025, aceito em perícias INSS</div></div>
+        <div class="crisis-item"><div class="crisis-emoji">🔔</div><div class="crisis-text"><strong style="color:#C9B8E8">Alertas mesmo offline</strong> — notificações de remédio mesmo com app fechado</div></div>
+        <div class="crisis-item"><div class="crisis-emoji">🤖</div><div class="crisis-text"><strong style="color:#C9B8E8">IA personalizada</strong> — o FibroAssistente entende sua rotina e sugere melhorias</div></div>
+        <div class="crisis-item"><div class="crisis-emoji">💜</div><div class="crisis-text"><strong style="color:#C9B8E8">Desenvolvido com amor</strong> — por quem entende a fibromialgia</div></div>
+      </div>
+      <div style="margin-top:14px;text-align:center;color:#E879F9;font-size:clamp(11px,2.2vw,15px);font-weight:700;">fibrovida.com.br</div>
+      <div class="watermark">N Tech IA</div>
+      <div class="progress-bar" id="pb-5"></div>
+    </div>
+
+  </div><!-- /canvas -->
+</div><!-- /canvas-wrap -->
+
+<div class="info-box">
+  <strong>Como usar estes slides:</strong><br>
+  • Use o modo <strong>Apresentação Auto</strong> para ver como ficam os vídeos<br>
+  • Cada slide dura <strong>6 segundos</strong> em modo auto<br>
+  • Grave a tela no celular ou computador e poste no Instagram, Facebook, WhatsApp e YouTube<br>
+  • <strong>Instagram/Facebook:</strong> formato 1:1 ou Stories (9:16)<br>
+  • <strong>YouTube:</strong> formato Wide (16:9)<br>
+  • Hashtags sugeridas: #fibromialgia #fibrovida #saude #bemestar #fibromyalgia #fibrogirl #fibrofighter
+</div>
+
+<script>
+  let current = 0;
+  const total = 6;
+  let playing = false;
+  let timer = null;
+  let progressTimer = null;
+  let progressStart = null;
+  const DURATION = 6000;
+
+  const formats = {
+    square: { w: 500, h: 500 },
+    story:  { w: 320, h: 570 },
+    wide:   { w: 540, h: 304 },
+  };
+  let currentFormat = 'square';
+
+  function setFormat(f) {
+    currentFormat = f;
+    document.querySelectorAll('.btn-format').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    applyFormat();
+  }
+
+  function applyFormat() {
+    const c = document.getElementById('canvas');
+    const { w, h } = formats[currentFormat];
+    c.style.width = w + 'px';
+    c.style.height = h + 'px';
+  }
+
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach((s, i) => {
+      s.classList.toggle('active', i === n);
+    });
+    document.getElementById('counter').textContent = `Slide ${n+1} / ${total}`;
+    resetProgress();
+  }
+
+  function nextSlide() {
+    current = (current + 1) % total;
+    showSlide(current);
+  }
+
+  function prevSlide() {
+    current = (current - 1 + total) % total;
+    showSlide(current);
+  }
+
+  function resetProgress() {
+    for (let i = 0; i < total; i++) {
+      const pb = document.getElementById(`pb-${i}`);
+      if (pb) pb.style.width = '0%';
+    }
+  }
+
+  function animateProgress() {
+    if (!playing) return;
+    progressStart = Date.now();
+    const pb = document.getElementById(`pb-${current}`);
+    function tick() {
+      if (!playing) return;
+      const elapsed = Date.now() - progressStart;
+      const pct = Math.min((elapsed / DURATION) * 100, 100);
+      if (pb) pb.style.width = pct + '%';
+      if (pct < 100) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function togglePlay() {
+    playing = !playing;
+    const btn = document.getElementById('playBtn');
+    if (playing) {
+      btn.textContent = '⏸ Pausar';
+      btn.style.background = '#ef4444';
+      tick();
+    } else {
+      btn.textContent = '▶ Apresentação Auto';
+      btn.style.background = '#22C55E';
+      clearTimeout(timer);
+      resetProgress();
+    }
+  }
+
+  function tick() {
+    if (!playing) return;
+    animateProgress();
+    timer = setTimeout(() => {
+      current = (current + 1) % total;
+      showSlide(current);
+      tick();
+    }, DURATION);
+  }
+
+  // init
+  applyFormat();
+  showSlide(0);
+</script>
+</body>
+</html>

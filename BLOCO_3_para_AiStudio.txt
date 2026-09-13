@@ -1,0 +1,868 @@
+=== BLOCO 3 DE 6 — FibroVida para Android Studio ===
+Esta é a PARTE 3 de 6. Aguarde todas antes de gerar o app Android.
+
+--- index.html (parte 3/3: assistente, config, modais, navegação) ---
+
+      <!-- Conta -->
+      <div class="settings-group">
+        <div class="settings-group-title">Conta</div>
+        <div class="settings-rows">
+          <div class="settings-row" onclick="doLogout()">
+            <span class="sr-icon">🚪</span>
+            <div class="sr-body">
+              <div class="sr-title">Sair do sistema</div>
+              <div class="sr-sub">Encerrar sessão atual</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row danger" onclick="confirmDeleteAccount()">
+            <span class="sr-icon">🗑️</span>
+            <div class="sr-body">
+              <div class="sr-title">Excluir conta</div>
+              <div class="sr-sub">Remove todos os seus dados</div>
+            </div>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <p>Desenvolvido por <strong>Nelson Tomaz Catunda Magalhães</strong><br>
+        nelsontcmagalhaes@gmail.com<br>
+        © 2026 Todos os direitos reservados</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- NAVEGAÇÃO INFERIOR — 8 itens scrolláveis -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item active" data-tab="inicio" onclick="showTab('inicio',this)">
+      <span class="ni">🏠</span><span class="nl">Início</span>
+    </button>
+    <button class="nav-item" data-tab="saude" onclick="showTab('saude',this)">
+      <span class="ni">❤️</span><span class="nl">Saúde</span>
+    </button>
+    <button class="nav-item" data-tab="tarefas" onclick="showTab('tarefas',this)">
+      <span class="ni">✅</span><span class="nl">Tarefas</span>
+    </button>
+    <button class="nav-item" data-tab="terapias" onclick="showTab('terapias',this)">
+      <span class="ni">〰️</span><span class="nl">Terapias</span>
+    </button>
+    <button class="nav-item" data-tab="bemestar" onclick="showTab('bemestar',this)">
+      <span class="ni">🧘</span><span class="nl">Bem-Estar</span>
+    </button>
+    <button class="nav-item" data-tab="profissionais" onclick="showTab('profissionais',this)">
+      <span class="ni">👨‍⚕️</span><span class="nl">Profissionais</span>
+    </button>
+    <button class="nav-item" data-tab="consultas" onclick="showTab('consultas',this)">
+      <span class="ni">🩺</span><span class="nl">Consultas</span>
+    </button>
+    <button class="nav-item" data-tab="medicamentos" onclick="showTab('medicamentos',this)">
+      <span class="ni">💊</span><span class="nl">Medicamentos</span>
+    </button>
+    <button class="nav-item" data-tab="receitas" onclick="showTab('receitas',this)">
+      <span class="ni">🥗</span><span class="nl">Receitas</span>
+    </button>
+    <button class="nav-item" data-tab="assistente" onclick="showTab('assistente',this)">
+      <span class="ni">🤖</span><span class="nl">Assistente</span>
+    </button>
+    <button class="nav-item" data-tab="relatorios" onclick="showTab('relatorios',this)">
+      <span class="ni">📊</span><span class="nl">Relatórios</span>
+    </button>
+    <button class="nav-item" data-tab="config" onclick="showTab('config',this)">
+      <span class="ni">⚙️</span><span class="nl">Config</span>
+    </button>
+  </nav>
+
+  <!-- 🚨 FAB FIXO DE CRISE — sempre visível -->
+  <button class="crisis-fab-fixed" id="crisis-fab-fixed" onclick="openCriseModal()" title="Registrar Crise">
+    🚨
+  </button>
+
+</div><!-- /main-screen -->
+</div><!-- /app -->
+
+
+<!-- ================================================================
+     MODAIS
+     ================================================================ -->
+
+<!-- Modal: Registro de Saúde (edição via lista) -->
+<div class="modal-overlay" id="modal-health">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mh-title">❤️ Registro de Saúde</h3>
+      <button class="modal-close" onclick="closeModal('modal-health')">✕</button>
+    </div>
+    <input type="hidden" id="health-edit-id" />
+
+    <div class="fg">
+      <label>Data</label>
+      <input type="date" id="health-edit-date" />
+    </div>
+
+    <div class="fg" style="margin-bottom:16px">
+      <label>Nível de dor: <strong id="mh-pain-val" style="color:var(--green)">0</strong>/10</label>
+      <input type="range" class="fv-range" id="mh-pain-slider"
+        min="0" max="10" value="0"
+        oninput="updateRange(this,'mh-pain-val',10)" style="--pct:0%;margin-top:6px" />
+      <div class="slider-hints"><span>Sem dor</span><span>Dor intensa</span></div>
+    </div>
+
+    <div class="fg" style="margin-bottom:16px">
+      <label>Qualidade do sono: <strong id="mh-sleep-val" style="color:var(--green)">0</strong>/5</label>
+      <input type="range" class="fv-range" id="mh-sleep-slider"
+        min="0" max="5" value="0"
+        oninput="updateRange(this,'mh-sleep-val',5)" style="--pct:0%;margin-top:6px" />
+      <div class="slider-hints"><span>Muito ruim</span><span>Excelente</span></div>
+    </div>
+
+    <div class="fg">
+      <label>Humor</label>
+      <select class="humor-select" id="mh-humor">
+        <option value="">Selecione...</option>
+        <option value="muito_bem">😄 Muito bem</option>
+        <option value="bem">🙂 Bem</option>
+        <option value="neutro">😐 Neutro</option>
+        <option value="mal">😔 Mal — Triste</option>
+        <option value="muito_mal">😢 Muito mal</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Observações</label>
+      <textarea id="mh-notes" placeholder="Como você se sentiu..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-health')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveHealthModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tarefa -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mt-title">✅ Nova Tarefa</h3>
+      <button class="modal-close" onclick="closeModal('modal-task')">✕</button>
+    </div>
+    <input type="hidden" id="task-id" />
+    <div class="fg"><label>Título</label><input type="text" id="task-title" placeholder="Ex: Tomar medicação..." /></div>
+    <div class="fg"><label>Descrição (opcional)</label><textarea id="task-desc" style="min-height:56px" placeholder="Detalhes..."></textarea></div>
+    <div class="fg">
+      <label>Período</label>
+      <select id="task-period" class="humor-select">
+        <option value="manha">🌅 Manhã</option>
+        <option value="tarde">☀️ Tarde</option>
+        <option value="noite">🌙 Noite</option>
+      </select>
+    </div>
+    <div class="fg"><label>Data</label><input type="date" id="task-date" /></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-task')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTask()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tratamento -->
+<div class="modal-overlay" id="modal-treatment">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mtr-title">💉 Novo Tratamento</h3>
+      <button class="modal-close" onclick="closeModal('modal-treatment')">✕</button>
+    </div>
+    <input type="hidden" id="treatment-id" />
+    <div class="fg"><label>Nome do tratamento</label><input type="text" id="treatment-name" placeholder="Ex: Fisioterapia..." /></div>
+    <div class="fg"><label>Descrição</label><textarea id="treatment-desc" placeholder="Descreva..."></textarea></div>
+    <div class="fg"><label>Frequência</label><input type="text" id="treatment-freq" placeholder="Ex: Semanal, 3x por semana..." /></div>
+    <div class="fg"><label>Observações</label><textarea id="treatment-notes" placeholder="Notas adicionais..."></textarea></div>
+    <div class="fg">
+      <label>Status</label>
+      <select id="treatment-active" class="humor-select">
+        <option value="true">✅ Ativo</option>
+        <option value="false">⏸️ Inativo</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-treatment')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTreatment()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Profissional -->
+<div class="modal-overlay" id="modal-prof">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mp-title">👨‍⚕️ Novo Profissional</h3>
+      <button class="modal-close" onclick="closeModal('modal-prof')">✕</button>
+    </div>
+    <input type="hidden" id="prof-id" />
+    <div class="fg"><label>Nome completo</label><input type="text" id="prof-name" placeholder="Dr(a). Nome..." /></div>
+    <div class="fg"><label>Especialidade</label><input type="text" id="prof-specialty" placeholder="Ex: Reumatologista..." /></div>
+    <div class="fg"><label>CRM / Registro</label><input type="text" id="prof-registry" placeholder="CRM-SP 123456" /></div>
+    <div class="fg"><label>Telefone / WhatsApp</label><input type="tel" id="prof-phone" placeholder="(85) 99999-9999" /></div>
+    <div class="fg"><label>E-mail</label><input type="email" id="prof-email" placeholder="contato@clinica.com" /></div>
+    <div class="fg"><label>Observações</label><textarea id="prof-notes" placeholder="Notas..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-prof')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProf()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nota de Sessão -->
+<div class="modal-overlay" id="modal-therapy-note">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mtn-title">📋 Nova Nota de Sessão</h3>
+      <button class="modal-close" onclick="closeModal('modal-therapy-note')">✕</button>
+    </div>
+    <input type="hidden" id="tn-id" />
+    <div class="fg"><label>📅 Data da sessão</label><input type="date" id="tn-date" /></div>
+    <div class="fg">
+      <label>👨‍⚕️ Profissional</label>
+      <select id="tn-professional" class="humor-select">
+        <option value="">— Selecione o profissional —</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>💬 O que foi discutido na sessão</label>
+      <textarea id="tn-discussed" placeholder="Resumo do que foi conversado..." style="min-height:90px"></textarea>
+    </div>
+    <div class="fg">
+      <label>📌 O que devo falar / fazer na próxima</label>
+      <textarea id="tn-bring-next" placeholder="Lembretes, perguntas, tarefas para a próxima sessão..." style="min-height:90px"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-therapy-note')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTherapyNote()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Medicamento -->
+<div class="modal-overlay" id="modal-med">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mm-title">💊 Novo Medicamento</h3>
+      <button class="modal-close" onclick="closeModal('modal-med')">✕</button>
+    </div>
+    <input type="hidden" id="med-id" />
+    <!-- Tipo -->
+    <div class="fg med-type-toggle">
+      <label class="toggle-label">
+        <input type="checkbox" id="med-is-extra" onchange="toggleMedType(this)" />
+        <span class="toggle-slider"></span>
+        <span id="med-type-label">💊 Medicamento para fibromialgia</span>
+      </label>
+    </div>
+    <div class="fg"><label>Nome do medicamento</label><input type="text" id="med-name" placeholder="Ex: Amitriptilina..." /></div>
+    <div class="fg"><label>Dosagem</label><input type="text" id="med-dosage" placeholder="Ex: 25mg" /></div>
+    <div class="fg"><label>Horário</label><input type="text" id="med-time" placeholder="Ex: 22:00" /></div>
+    <div class="fg"><label>Frequência</label><input type="text" id="med-freq" placeholder="Ex: 1x ao dia" /></div>
+    <div class="fg" style="display:flex;gap:8px">
+      <div style="flex:1"><label>Estoque (un.)</label><input type="number" id="med-stock" value="0" min="0" /></div>
+      <div style="flex:1"><label>Alerta abaixo de</label><input type="number" id="med-alert" value="5" min="1" /></div>
+      <div style="flex:1"><label>Un./embalagem</label><input type="number" id="med-qty-pkg" value="0" min="0" placeholder="30" /></div>
+    </div>
+    <div class="fg" style="display:flex;gap:8px">
+      <div style="flex:1"><label>Valor por unidade (R$)</label><input type="number" id="med-unit-price" step="0.01" min="0" placeholder="0,00" /></div>
+      <div style="flex:1"><label>Un. tomadas por dia</label><input type="number" id="med-daily-units" value="0" min="0" placeholder="1" title="Para dedução automática do estoque" /></div>
+    </div>
+    <div class="fg"><label>Observações</label><textarea id="med-notes" placeholder="Efeitos colaterais, notas..."></textarea></div>
+    <div class="fg" id="fg-med-professional">
+      <label>👨‍⚕️ Prescrito por</label>
+      <select id="med-professional" class="humor-select">
+        <option value="">— Sem prescrição vinculada —</option>
+      </select>
+    </div>
+
+    <!-- Receita médica -->
+    <div class="fg">
+      <label>📄 Receita Médica (PDF ou imagem)</label>
+      <div class="file-upload-area" id="med-file-area" onclick="document.getElementById('med-file-input').click()">
+        <div class="fua-icon">📎</div>
+        <div class="fua-text">Clique para anexar a receita</div>
+        <div class="fua-sub">PDF, JPG ou PNG · máx. 10 MB</div>
+      </div>
+      <div class="file-selected-name" id="med-file-name" style="display:none"></div>
+      <input type="file" id="med-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="onMedFileSelected(this)" />
+      <div id="med-receita-atual" style="display:none;margin-top:6px">
+        <a id="med-receita-link" href="#" target="_blank" style="font-size:12px;color:var(--green);font-weight:600">📎 Ver receita atual</a>
+        <button onclick="removeMedReceita()" style="font-size:11px;color:var(--danger);background:none;border:none;cursor:pointer;margin-left:8px">✕ Remover</button>
+      </div>
+    </div>
+    <input type="hidden" id="med-receita-url" />
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-med')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveMed()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Receita -->
+<div class="modal-overlay" id="modal-recipe">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mr-title">🥗 Nova Receita</h3>
+      <button class="modal-close" onclick="closeModal('modal-recipe')">✕</button>
+    </div>
+    <input type="hidden" id="recipe-id" />
+    <div class="fg"><label>Nome da receita</label><input type="text" id="recipe-name" placeholder="Ex: Salada antioxidante..." /></div>
+    <div class="fg"><label>Descrição curta</label><input type="text" id="recipe-desc" placeholder="Breve descrição do prato..." /></div>
+    <div class="fg">
+      <label>Categoria</label>
+      <select id="recipe-category" class="humor-select">
+        <option value="cafe">☕ Café da manhã</option>
+        <option value="almoco">🍽️ Almoço</option>
+        <option value="jantar">🌙 Jantar</option>
+        <option value="lanche">🥜 Lanche</option>
+        <option value="sobremesa">🍓 Sobremesa</option>
+        <option value="suco">🥤 Suco / Smoothie</option>
+      </select>
+    </div>
+    <div class="fg"><label>Imagem (emoji ou URL)</label><input type="text" id="recipe-image" placeholder="Ex: 🥗 ou https://..." /></div>
+    <div class="fg" style="display:flex;gap:8px">
+      <div style="flex:1"><label>Tempo (min)</label><input type="number" id="recipe-time" placeholder="30" /></div>
+      <div style="flex:1"><label>Porções</label><input type="number" id="recipe-servings" placeholder="2" /></div>
+      <div style="flex:1"><label>Calorias</label><input type="number" id="recipe-calories" placeholder="200" /></div>
+    </div>
+    <div class="fg"><label>Tags (vírgula)</label><input type="text" id="recipe-tags" placeholder="vegano, sem glúten..." /></div>
+    <div class="fg"><label>Ingredientes</label><textarea id="recipe-ingredients" placeholder="Liste os ingredientes..."></textarea></div>
+    <div class="fg"><label>Modo de preparo</label><textarea id="recipe-instructions" placeholder="Passo a passo..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-recipe')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRecipe()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ver Receita -->
+<div class="modal-overlay" id="modal-recipe-view">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="rv-title">—</h3>
+      <button class="modal-close" onclick="closeModal('modal-recipe-view')">✕</button>
+    </div>
+    <div id="rv-content"></div>
+  </div>
+</div>
+
+<!-- Modal: Sinais Vitais (edição de registro) -->
+<div class="modal-overlay" id="modal-vitals">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mv-title">📊 Editar Sinais Vitais</h3>
+      <button class="modal-close" onclick="closeModal('modal-vitals')">✕</button>
+    </div>
+    <input type="hidden" id="vitals-edit-id" />
+    <div class="fg"><label>Data</label><input type="date" id="vitals-edit-date" /></div>
+    <div class="vitals-grid" style="margin-top:8px">
+      <div class="vitals-input-group">
+        <label>⚖️ Peso (kg)</label>
+        <div class="vitals-input-row">
+          <input type="number" id="ve-weight" step="0.1" min="20" max="300" placeholder="0.0" />
+          <span class="vunit">kg</span>
+        </div>
+      </div>
+      <div class="vitals-input-group">
+        <label>📏 Cintura (cm)</label>
+        <div class="vitals-input-row">
+          <input type="number" id="ve-waist" step="0.1" min="40" max="200" placeholder="0.0" />
+          <span class="vunit">cm</span>
+        </div>
+      </div>
+      <div class="vitals-input-group span-2">
+        <label>🩺 Pressão Arterial</label>
+        <div class="vitals-input-row">
+          <div class="bp-field-wrap">
+            <span class="bp-field-label">SIS</span>
+            <input type="number" id="ve-systolic" min="60" max="250" placeholder="120" />
+            <span class="vunit">mmHg</span>
+          </div>
+          <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+          <div class="bp-field-wrap">
+            <span class="bp-field-label">DIA</span>
+            <input type="number" id="ve-diastolic" min="40" max="150" placeholder="80" />
+            <span class="vunit">mmHg</span>
+          </div>
+          <span class="vunit" style="font-size:18px;font-weight:700;padding:0 2px">·</span>
+          <div class="bp-field-wrap">
+            <span class="bp-field-label">PUL</span>
+            <input type="number" id="ve-pulse" min="30" max="220" placeholder="72" />
+            <span class="vunit">bpm</span>
+          </div>
+        </div>
+      </div>
+      <div class="vitals-input-group">
+        <label>🩸 Glicemia (mg/dL)</label>
+        <div class="vitals-input-row">
+          <input type="number" id="ve-glucose" step="0.1" min="30" max="600" placeholder="0.0" />
+          <span class="vunit">mg/dL</span>
+        </div>
+      </div>
+      <div class="vitals-input-group">
+        <label>Tipo de medição</label>
+        <select id="ve-glucose-type" class="humor-select" style="font-size:12px;height:42px">
+          <option value="jejum">Em jejum</option>
+          <option value="pos_prandial">Pós-prandial</option>
+          <option value="aleatoria">Aleatória</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Observações</label><textarea id="ve-notes" placeholder="Notas sobre este registro..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-vitals')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveVitalsModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edição de Gratidão -->
+<div class="modal-overlay" id="modal-gratitude-edit">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🙏 Editar Gratidão</h3>
+      <button class="modal-close" onclick="closeModal('modal-gratitude-edit')">✕</button>
+    </div>
+    <input type="hidden" id="ge-id" />
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">📅 <span id="ge-date"></span></p>
+    <div class="fg">
+      <label>1. Sou grato(a) por...</label>
+      <input type="text" id="ge-1" spellcheck="true" lang="pt-BR" placeholder="Ex: Um café quentinho pela manhã" />
+    </div>
+    <div class="fg">
+      <label>2. Sou grato(a) por...</label>
+      <input type="text" id="ge-2" spellcheck="true" lang="pt-BR" placeholder="Ex: A ligação do meu neto" />
+    </div>
+    <div class="fg">
+      <label>3. Sou grato(a) por...</label>
+      <input type="text" id="ge-3" spellcheck="true" lang="pt-BR" placeholder="Ex: Conseguir fazer minha caminhada" />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-gratitude-edit')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveGratitudeEdit()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Documento de Saúde -->
+<div class="modal-overlay" id="modal-doc">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mdoc-title">📎 Novo Documento</h3>
+      <button class="modal-close" onclick="closeModal('modal-doc')">✕</button>
+    </div>
+    <input type="hidden" id="doc-id" />
+    <div class="fg">
+      <label>Tipo de documento</label>
+      <select id="doc-type" class="humor-select">
+        <option value="receita_medica">💊 Receita Médica</option>
+        <option value="solicitacao_exame">🔬 Solicitação de Exame</option>
+        <option value="resultado_exame">📋 Resultado de Exame</option>
+      </select>
+    </div>
+    <div class="fg"><label>Título / Descrição</label><input type="text" id="doc-title" placeholder="Ex: Receita Amitriptilina — Dr. Silva" /></div>
+    <div class="fg"><label>Data do documento</label><input type="date" id="doc-date" /></div>
+    <div class="fg">
+      <label>Arquivo (PDF ou imagem)</label>
+      <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('doc-file-input').click()">
+        <div class="fua-icon">📎</div>
+        <div class="fua-text">Clique para selecionar o arquivo</div>
+        <div class="fua-sub">PDF, JPG ou PNG · máx. 10 MB</div>
+      </div>
+      <input type="file" id="doc-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="onFileSelected(this)" />
+      <div id="doc-file-name" class="file-selected-name" style="display:none"></div>
+    </div>
+    <div class="fg"><label>Observações (opcional)</label><textarea id="doc-notes" placeholder="Médico responsável, validade, notas..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-doc')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveDoc()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Perfil -->
+<div class="modal-overlay" id="modal-profile">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Editar Perfil</h3>
+      <button class="modal-close" onclick="closeModal('modal-profile')">✕</button>
+    </div>
+    <div class="fg"><label>Nome</label><input type="text" id="profile-name" placeholder="Seu nome completo" /></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('modal-profile')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProfile()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: LGPD -->
+<div class="modal-overlay" id="modal-lgpd">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🔒 Política de Privacidade</h3>
+      <button class="modal-close" onclick="closeModal('modal-lgpd')">✕</button>
+    </div>
+    <div style="font-size:13px;line-height:1.7;color:var(--text2)">
+      <p><strong style="color:var(--text)">Lei Geral de Proteção de Dados (LGPD) — Lei 13.709/2018</strong></p><br>
+      <p><strong>Dados coletados:</strong> Nome, e-mail e dados de saúde inseridos por você.</p><br>
+      <p><strong>Finalidade:</strong> Uso exclusivo para o funcionamento do FibroVida e melhoria da qualidade de vida.</p><br>
+      <p><strong>Compartilhamento:</strong> Seus dados <strong>não são compartilhados</strong> com terceiros.</p><br>
+      <p><strong>Seus direitos:</strong> Acesse, corrija ou exclua seus dados a qualquer momento nas configurações.</p><br>
+      <p><strong>Contato:</strong> nelsontcmagalhaes@gmail.com</p>
+    </div>
+    <button class="btn btn-primary mt-8" onclick="closeModal('modal-lgpd')">Entendi</button>
+  </div>
+</div>
+
+<!-- Modal: Admin -->
+<div class="modal-overlay" id="modal-admin">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>👑 Painel Administrador</h3>
+      <button class="modal-close" onclick="closeModal('modal-admin')">✕</button>
+    </div>
+    <div class="admin-banner-strip">Acesso total a todos os dados do sistema</div>
+    <div class="empty-state">
+      <div class="ei">👑</div>
+      <p>Como administrador, você tem acesso completo a todos os módulos.<br>
+      Navegue pelos menus para gerenciar os dados.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL DE CRISE
+     ================================================================ -->
+<div class="crisis-modal-overlay" id="crise-modal" style="display:none" onclick="if(event.target===this)closeCriseModal()">
+  <div class="crisis-modal-content">
+    <div class="crisis-modal-header">
+      <span>🚨 Registrar Crise</span>
+      <button onclick="closeCriseModal()">✕</button>
+    </div>
+    <div class="crisis-modal-body">
+      <p class="crisis-time">📍 Registrando em: <strong id="crise-hora"></strong></p>
+
+      <div class="saude-section">
+        <div class="saude-section-label">❤️ Nível de Dor</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="8" id="crise-pain"
+              oninput="updateRange(this,'crise-pain-val',10)" style="--pct:80%" />
+            <div class="slider-hints"><span>Sem dor</span><span>Dor intensa</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-pain-val">8</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">⚡ Fadiga</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="7" id="crise-fatigue"
+              oninput="updateRange(this,'crise-fatigue-val',10)" style="--pct:70%" />
+            <div class="slider-hints"><span>Sem fadiga</span><span>Exaustão</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-fatigue-val">7</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">😰 Ansiedade</div>
+        <div class="slider-row">
+          <div class="slider-track">
+            <input type="range" class="fv-range" min="0" max="10" value="5" id="crise-anxiety"
+              oninput="updateRange(this,'crise-anxiety-val',10)" style="--pct:50%" />
+            <div class="slider-hints"><span>Calma</span><span>Ansiedade intensa</span></div>
+          </div>
+          <div class="slider-val"><span id="crise-anxiety-val">5</span>/10</div>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">⚠️ Possíveis Gatilhos</div>
+        <div class="trigger-grid">
+          <label class="trig-item"><input type="checkbox" value="estresse" class="crise-trigger"> Estresse</label>
+          <label class="trig-item"><input type="checkbox" value="frio" class="crise-trigger"> Frio/Clima</label>
+          <label class="trig-item"><input type="checkbox" value="esforco" class="crise-trigger"> Esforço físico</label>
+          <label class="trig-item"><input type="checkbox" value="insonia" class="crise-trigger"> Insônia</label>
+          <label class="trig-item"><input type="checkbox" value="alimentacao" class="crise-trigger"> Alimentação</label>
+          <label class="trig-item"><input type="checkbox" value="ansiedade" class="crise-trigger"> Ansiedade</label>
+          <label class="trig-item"><input type="checkbox" value="tempo" class="crise-trigger"> Tempo/Umidade</label>
+          <label class="trig-item"><input type="checkbox" value="hormonal" class="crise-trigger"> Hormonal</label>
+          <label class="trig-item"><input type="checkbox" value="barulho" class="crise-trigger"> Barulho</label>
+          <label class="trig-item"><input type="checkbox" value="luz" class="crise-trigger"> Luz forte</label>
+        </div>
+      </div>
+
+      <div class="saude-section">
+        <div class="saude-section-label">📝 O que estava acontecendo?</div>
+        <textarea id="crise-notes" placeholder="Descreva o que você estava fazendo ou sentindo quando a crise começou..."
+          style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);min-height:72px;resize:vertical;font-family:var(--font);outline:none"></textarea>
+      </div>
+    </div>
+    <div class="crisis-modal-footer">
+      <button class="btn btn-secondary btn-sm" onclick="closeCriseModal()">Cancelar</button>
+      <button class="btn btn-danger" onclick="saveCrise()" style="flex:2">🚨 Registrar Crise</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- ================================================================
+     MODAL — COMPARTILHAR RELATÓRIO COM MÉDICO
+     ================================================================ -->
+<div class="modal-overlay" id="modal-compartilhar" onclick="if(event.target===this)closeModal('modal-compartilhar')">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header">
+      <h3>📤 Compartilhar com Médico</h3>
+      <button class="modal-close" onclick="closeModal('modal-compartilhar')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+        Escolha como enviar seu resumo de saúde para o(a) seu(sua) médico(a):
+      </p>
+      <div id="compartilhar-resumo" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px;white-space:pre-wrap;max-height:180px;overflow-y:auto"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" onclick="enviarWhatsApp()">
+          💬 Enviar via WhatsApp
+        </button>
+        <button class="btn btn-secondary" onclick="enviarEmail()">
+          ✉️ Enviar por E-mail
+        </button>
+        <button class="btn btn-secondary" onclick="copiarResumo()">
+          📋 Copiar texto
+        </button>
+      </div>
+      <p style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:12px">
+        💜 Para relatório completo em PDF, use o botão de impressão.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL DE PÂNICO
+     ================================================================ -->
+<div class="modal-overlay" id="modal-panico" onclick="if(event.target===this)closeModal('modal-panico')">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header" style="background:#c0392b">
+      <h3 style="color:#fff">🆘 Contato de Emergência</h3>
+      <button class="modal-close" onclick="closeModal('modal-panico')" style="color:#fff">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;text-align:center">
+        Selecione quem chamar agora:
+      </p>
+      <div id="panico-contatos"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <button class="btn btn-secondary" style="width:100%;font-size:12px" onclick="closeModal('modal-panico')">Cancelar — Estou bem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL DO ARTIGO — FIBROMIALGIA
+     ================================================================ -->
+<div class="modal-overlay" id="modal-artigo" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-box artigo-modal-box">
+    <div class="artigo-modal-header">
+      <button class="modal-close" onclick="document.getElementById('modal-artigo').classList.remove('open')">✕</button>
+    </div>
+    <div class="artigo-modal-body">
+      <div class="artigo-modal-tag">✍️ Artigo em Destaque</div>
+      <h2 class="artigo-modal-titulo">💜 Fibromialgia: A dor que você não vê, mas que é real.</h2>
+
+      <p class="artigo-modal-intro">Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro. A fibromialgia é uma condição complexa que vai muito além de uma "dorzinha física". Ela mexe com a rotina, com o sono, com a mente e com a alma.</p>
+
+      <p class="artigo-modal-texto">Se você convive com a fibromialgia, ou conhece alguém que tem, sabe que os desafios diários envolvem:</p>
+
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">❤️‍🩹</div>
+        <div>
+          <strong>Dor generalizada</strong><br>
+          <span>Aquela sensação de que o corpo todo dói, sem um motivo aparente.</span>
+        </div>
+      </div>
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">⚡</div>
+        <div>
+          <strong>Fadiga extrema</strong><br>
+          <span>Um cansaço profundo que não passa nem depois de uma noite inteira de sono.</span>
+        </div>
+      </div>
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">🌫️</div>
+        <div>
+          <strong>"Fibro Fog"</strong><br>
+          <span>Lapsos de memória, dificuldade de concentração e aquela sensação de mente enevoada.</span>
+        </div>
+      </div>
+      <div class="artigo-sintoma">
+        <div class="artigo-sintoma-icon">🌙</div>
+        <div>
+          <strong>Alterações de humor e sono</strong><br>
+          <span>Noites mal dormidas que alimentam um ciclo de mais dor e desgaste emocional.</span>
+        </div>
+      </div>
+
+      <div class="artigo-destaque">
+        <strong>O maior desafio? A invisibilidade.</strong><br>
+        Por não aparecer em exames de sangue ou de imagem, muitas pessoas ainda enfrentam a falta de empatia e o julgamento alheio.
+      </div>
+
+      <p class="artigo-modal-texto">Se você tem fibromialgia, lembre-se: <strong>sua dor não é frescura, não é psicológica e você não está sozinho(a).</strong> Validar o que você sente é o primeiro passo para encontrar caminhos de cuidado e bem-estar.</p>
+
+      <p class="artigo-modal-texto">E se você conhece alguém nessa jornada, o melhor remédio que você pode oferecer hoje é a <strong>escuta e o respeito</strong>.</p>
+
+      <div class="artigo-cta">💬 Vamos quebrar o silêncio?</div>
+
+      <div class="artigo-assinatura">
+        <div class="artigo-assinatura-nome">Nelson Tomaz Catunda Magalhães</div>
+        <div class="artigo-assinatura-sub">Desenvolvedor — FibroVida</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
+
+--- sw.js (Service Worker) ---
+/* ============================================================
+   FibroVida — Service Worker
+   Cache-first para assets estáticos | Network-first para API
+   ============================================================ */
+
+const CACHE_NAME  = 'fibrovida-v4.0';
+const STATIC_URLS = [
+  './',
+  './index.html',
+  './style.css?v=12',
+  './app.js',
+  './icons/fibrovida.svg',
+  './manifest.json',
+  './Images/login-bg.jpg.png',
+];
+
+// ── INSTALL: pré-cache dos assets estáticos ───────────────────
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(STATIC_URLS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+// ── ACTIVATE: limpa caches antigos ───────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
+// ── FETCH: estratégia híbrida ─────────────────────────────────
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Network-first: Supabase API e Stripe (dados em tempo real)
+  if (
+    url.hostname.includes('supabase.co') ||
+    url.hostname.includes('stripe.com') ||
+    url.hostname.includes('allorigins.win') ||
+    url.hostname.includes('cancaonova.com')
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          // Retorna resposta de erro legível para a app
+          return new Response(
+            JSON.stringify({ error: 'offline', message: 'Sem conexão com a internet.' }),
+            { status: 503, headers: { 'Content-Type': 'application/json' } }
+          );
+        })
+    );
+    return;
+  }
+
+  // Cache-first: assets estáticos da app shell
+  if (event.request.method === 'GET' && !url.pathname.includes('/functions/')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+
+        return fetch(event.request).then(response => {
+          // Armazena novas respostas bem-sucedidas no cache
+          if (response && response.ok && response.type === 'basic') {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        }).catch(() => {
+          // Fallback para HTML se offline e não há cache
+          if (event.request.headers.get('accept')?.includes('text/html')) {
+            return caches.match('./index.html');
+          }
+        });
+      })
+    );
+  }
+});
+
+// ── PUSH NOTIFICATIONS ────────────────────────────────────────
+self.addEventListener('push', event => {
+  let data = { title: 'FibroVida', body: 'Lembrete do seu app de saúde 💊', icon: './icons/icon-192.png' };
+  try { if (event.data) data = { ...data, ...event.data.json() }; } catch(e) {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    data.icon || './icons/icon-192.png',
+      badge:   './icons/icon-72.png',
+      tag:     data.tag || 'fibrovida-reminder',
+      data:    { url: data.url || './' },
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || './';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => c.url.includes(self.location.origin));
+      if (existing) return existing.focus();
+      return clients.openWindow(url);
+    })
+  );
+});
+
+// ── NOTIFICAÇÕES LOCAIS AGENDADAS (via postMessage) ──────────
+// O app envia { type:'SCHEDULE_MED_ALERT', med, delayMs } ao SW
+self.addEventListener('message', event => {
+  if (!event.data || event.data.type !== 'SCHEDULE_MED_ALERT') return;
+  const { med, delayMs } = event.data;
+  setTimeout(() => {
+    self.registration.showNotification('💊 FibroVida — Medicamento', {
+      body:    `Hora de tomar: ${med.name}${med.dosage ? ' — ' + med.dosage : ''}`,
+      icon:    './icons/icon-192.png',
+      badge:   './icons/icon-72.png',
+      tag:     `med-${med.id}`,
+      vibrate: [150, 80, 150, 80, 150],
+      data:    { url: './#medicamentos' },
+    });
+  }, delayMs);
+});

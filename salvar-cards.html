@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salvar Cards — FibroVida</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0edf5; padding: 24px; }
+    h1 { font-size: 20px; color: #4a2d6e; margin-bottom: 6px; }
+    .sub { font-size: 13px; color: #888; margin-bottom: 28px; }
+    .section { margin-bottom: 40px; }
+    .section-label { font-size: 11px; font-weight: 700; color: #9b6ddf; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+    .btn-baixar {
+      display: block; width: 100%; margin-top: 14px;
+      background: #7B5EA7; color: #fff; border: none; border-radius: 12px;
+      padding: 13px 20px; font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-baixar:hover { background: #5c3a8a; }
+    .btn-baixar:active { transform: scale(0.98); }
+
+    /* ── CARD INSTAGRAM ── */
+    #card-instagram {
+      width: 1080px; height: 1080px;
+      background: #1e0f35;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 72px 64px;
+      position: relative; overflow: hidden;
+      transform-origin: top left;
+      transform: scale(0.5);
+      margin-bottom: -540px;
+    }
+    #card-facebook {
+      width: 1200px; height: 628px;
+      background: #1e0f35;
+      display: flex; overflow: hidden;
+      position: relative;
+      transform-origin: top left;
+      transform: scale(0.5);
+      margin-bottom: -314px;
+    }
+    #card-story {
+      width: 1080px; height: 1920px;
+      background: #1e0f35;
+      display: flex; flex-direction: column;
+      padding: 80px 64px;
+      position: relative; overflow: hidden;
+      transform-origin: top left;
+      transform: scale(0.3);
+      margin-bottom: -1344px;
+    }
+
+    /* Círculos decorativos */
+    .circle-tr {
+      position: absolute; top: -120px; right: -120px;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: #4a2d6e; opacity: 0.5;
+    }
+    .circle-bl {
+      position: absolute; bottom: -100px; left: -80px;
+      width: 380px; height: 380px; border-radius: 50%;
+      background: #7B5EA7; opacity: 0.25;
+    }
+    .z { position: relative; z-index: 1; }
+
+    /* Elementos de texto compartilhados */
+    .logo-tag { font-size: 22px; font-weight: 700; color: #b89be0; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 36px; }
+    .titulo-grande { font-size: 52px; font-weight: 800; color: #fff; line-height: 1.25; margin-bottom: 36px; }
+    .titulo-grande span { color: #c9aaff; }
+    .intro-quote { font-size: 28px; color: rgba(255,255,255,0.80); line-height: 1.7; font-style: italic; border-left: 6px solid #9b6ddf; padding-left: 28px; margin-bottom: 36px; }
+    .texto-corpo { font-size: 26px; color: rgba(255,255,255,0.75); line-height: 1.75; margin-bottom: 32px; }
+    .sint-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 36px; }
+    .sint-card { background: rgba(255,255,255,0.08); border-radius: 20px; padding: 22px 26px; display: flex; align-items: flex-start; gap: 20px; }
+    .sint-ico { font-size: 36px; flex-shrink: 0; }
+    .sint-nome { font-size: 22px; font-weight: 700; color: #c9aaff; display: block; margin-bottom: 4px; }
+    .sint-desc { font-size: 20px; color: rgba(255,255,255,0.78); line-height: 1.5; }
+    .destaque-box { background: rgba(155,109,223,0.18); border-left: 8px solid #9b6ddf; border-radius: 16px; padding: 26px 30px; font-size: 26px; color: rgba(255,255,255,0.88); line-height: 1.7; margin-bottom: 32px; }
+    .destaque-box strong { color: #c9aaff; }
+    .cta-box { background: rgba(155,109,223,0.15); border-radius: 50px; padding: 22px 40px; font-size: 32px; font-weight: 800; color: #c9aaff; text-align: center; margin-bottom: 32px; }
+    .assinatura { border-top: 2px solid rgba(255,255,255,0.12); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; }
+    .autor-nome { font-size: 26px; font-weight: 700; color: rgba(255,255,255,0.9); }
+    .autor-sub { font-size: 20px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+    .app-tag { font-size: 20px; font-weight: 700; color: #9b6ddf; letter-spacing: 1px; text-align: right; }
+
+    /* Facebook específico */
+    .fb-left { width: 42%; background: #2d1b4e; padding: 60px 50px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+    .fb-titulo { font-size: 36px; font-weight: 800; color: #fff; line-height: 1.3; margin: 24px 0 20px; }
+    .fb-titulo span { color: #c9aaff; }
+    .fb-sub { font-size: 22px; color: rgba(255,255,255,0.65); line-height: 1.65; }
+    .fb-right { flex: 1; padding: 50px 46px; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+    .fb-item { display: flex; align-items: flex-start; gap: 20px; }
+    .fb-ic { width: 60px; height: 60px; border-radius: 16px; background: rgba(155,109,223,0.25); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+    .fb-itxt { font-size: 20px; color: rgba(255,255,255,0.82); line-height: 1.55; }
+    .fb-itxt strong { color: #c9aaff; display: block; font-size: 22px; font-weight: 700; margin-bottom: 3px; }
+    .fb-divider { width: 2px; background: rgba(255,255,255,0.07); }
+    .fb-cta { position: absolute; bottom: 28px; right: 36px; background: #7B5EA7; color: #fff; font-size: 18px; font-weight: 700; border-radius: 30px; padding: 10px 28px; }
+
+    /* Story lista */
+    .story-list { display: flex; flex-direction: column; gap: 20px; margin: 30px 0 40px; }
+    .story-li { display: flex; align-items: center; gap: 22px; font-size: 28px; color: rgba(255,255,255,0.82); line-height: 1.5; }
+    .story-dot { width: 14px; height: 14px; border-radius: 50%; background: #c9aaff; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <h1>💜 Cards FibroVida — Salvar como Imagem</h1>
+  <p class="sub">Clique no botão abaixo de cada card para baixar o arquivo PNG pronto para publicar.</p>
+
+  <!-- ═══════════ INSTAGRAM ═══════════ -->
+  <div class="section">
+    <div class="section-label">Instagram — 1080×1080 px</div>
+
+    <div id="card-instagram">
+      <div class="circle-tr"></div>
+      <div class="circle-bl"></div>
+      <div class="z">
+        <div class="logo-tag">FibroVida</div>
+        <div class="titulo-grande">💜 Fibromialgia: <span>A dor que você não vê,</span> mas que é real.</div>
+        <div class="intro-quote">Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro.</div>
+        <div class="sint-grid">
+          <div class="sint-card"><div class="sint-ico">❤️‍🩹</div><div><span class="sint-nome">Dor generalizada</span><span class="sint-desc">O corpo todo dói sem motivo aparente.</span></div></div>
+          <div class="sint-card"><div class="sint-ico">⚡</div><div><span class="sint-nome">Fadiga extrema</span><span class="sint-desc">Cansaço que não passa nem com descanso.</span></div></div>
+          <div class="sint-card"><div class="sint-ico">🌫️</div><div><span class="sint-nome">Fibro Fog</span><span class="sint-desc">Lapsos de memória e mente enevoada.</span></div></div>
+          <div class="sint-card"><div class="sint-ico">🌙</div><div><span class="sint-nome">Sono e humor</span><span class="sint-desc">Noites mal dormidas alimentam mais dor.</span></div></div>
+        </div>
+      </div>
+      <div class="z">
+        <div class="cta-box">💬 Vamos quebrar o silêncio?</div>
+        <div class="assinatura">
+          <div><div class="autor-nome">Nelson Tomaz Catunda Magalhães</div><div class="autor-sub">Desenvolvedor — FibroVida</div></div>
+          <div class="app-tag">FibroVida<br>💜 Diário da Dor</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-baixar" onclick="baixar('card-instagram','FibroVida-Instagram-1080x1080',1080,1080,2)">⬇ Baixar card Instagram (PNG)</button>
+  </div>
+
+  <!-- ═══════════ FACEBOOK ═══════════ -->
+  <div class="section">
+    <div class="section-label">Facebook — 1200×628 px</div>
+
+    <div id="card-facebook">
+      <div class="circle-tr"></div>
+      <div class="circle-bl"></div>
+      <div class="fb-left z">
+        <div>
+          <div class="logo-tag" style="font-size:18px;margin-bottom:20px">FibroVida</div>
+          <div class="fb-titulo">💜 Fibromialgia: <span>A dor que você não vê,</span> mas que é real.</div>
+          <div class="fb-sub">Sua dor não é frescura. Não é psicológica. E você não está sozinho(a).</div>
+        </div>
+        <div>
+          <div class="autor-nome" style="font-size:20px">Nelson Tomaz Catunda Magalhães</div>
+          <div class="autor-sub" style="font-size:16px">Desenvolvedor — FibroVida</div>
+        </div>
+      </div>
+      <div class="fb-divider"></div>
+      <div class="fb-right z">
+        <div class="fb-item"><div class="fb-ic">❤️‍🩹</div><div class="fb-itxt"><strong>Dor generalizada</strong>Sensação de que o corpo todo dói sem motivo aparente.</div></div>
+        <div class="fb-item"><div class="fb-ic">⚡</div><div class="fb-itxt"><strong>Fadiga extrema</strong>Cansaço profundo que não passa nem com descanso.</div></div>
+        <div class="fb-item"><div class="fb-ic">🌫️</div><div class="fb-itxt"><strong>Fibro Fog</strong>Lapsos de memória e mente enevoada.</div></div>
+        <div class="fb-item"><div class="fb-ic">🌙</div><div class="fb-itxt"><strong>Sono e humor</strong>Noites mal dormidas alimentam mais dor e desgaste.</div></div>
+        <div class="fb-cta">💬 Vamos quebrar o silêncio?</div>
+      </div>
+    </div>
+    <button class="btn-baixar" onclick="baixar('card-facebook','FibroVida-Facebook-1200x628',1200,628,2)">⬇ Baixar card Facebook (PNG)</button>
+  </div>
+
+  <!-- ═══════════ STORY ═══════════ -->
+  <div class="section">
+    <div class="section-label">Instagram Stories / Reels — 1080×1920 px</div>
+
+    <div id="card-story">
+      <div class="circle-tr"></div>
+      <div class="circle-bl"></div>
+      <div class="z">
+        <div class="logo-tag">FibroVida</div>
+        <div class="titulo-grande" style="font-size:58px;margin-top:28px">💜 Fibromialgia:<br><span>A dor que você não vê,</span> mas que é real.</div>
+        <div class="intro-quote" style="font-size:26px">Quem olha por fora, muitas vezes não imagina o turbilhão que acontece por dentro. A fibromialgia mexe com a rotina, com o sono, com a mente e com a alma.</div>
+        <div class="texto-corpo">Os desafios diários de quem vive com fibromialgia:</div>
+        <div class="story-list">
+          <div class="story-li"><div class="story-dot"></div>❤️‍🩹 Dor generalizada sem causa aparente</div>
+          <div class="story-li"><div class="story-dot"></div>⚡ Fadiga extrema que não passa com descanso</div>
+          <div class="story-li"><div class="story-dot"></div>🌫️ Fibro Fog — lapsos de memória e mente enevoada</div>
+          <div class="story-li"><div class="story-dot"></div>🌙 Sono e humor comprometidos, ciclo de dor</div>
+        </div>
+        <div class="destaque-box"><strong>O maior desafio? A invisibilidade.</strong> Por não aparecer em exames, muitas pessoas ainda enfrentam julgamento e falta de empatia.</div>
+        <div class="destaque-box" style="background:rgba(255,255,255,0.05);border-left-color:rgba(255,255,255,0.2)">Se você tem fibromialgia: <strong>sua dor não é frescura, não é psicológica e você não está sozinho(a).</strong><br><br>E se você conhece alguém nessa jornada, o melhor remédio é a <strong>escuta e o respeito.</strong></div>
+        <div class="cta-box" style="font-size:36px">💬 Vamos quebrar o silêncio?</div>
+        <div class="assinatura">
+          <div><div class="autor-nome" style="font-size:24px">Nelson Tomaz Catunda Magalhães</div><div class="autor-sub" style="font-size:18px">Desenvolvedor — FibroVida</div></div>
+          <div class="app-tag" style="font-size:18px">FibroVida<br>💜 Diário da Dor</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-baixar" onclick="baixar('card-story','FibroVida-Story-1080x1920',1080,1920,3)">⬇ Baixar card Story (PNG)</button>
+  </div>
+
+  <script>
+    async function baixar(id, nome, largura, altura, escala) {
+      const el = document.getElementById(id);
+      const oldTransform = el.style.transform;
+      const oldMargin = el.style.marginBottom;
+      el.style.transform = 'scale(1)';
+      el.style.marginBottom = '0';
+      try {
+        const canvas = await html2canvas(el, {
+          scale: 1,
+          width: largura,
+          height: altura,
+          useCORS: true,
+          backgroundColor: null,
+          logging: false
+        });
+        const link = document.createElement('a');
+        link.download = nome + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } finally {
+        el.style.transform = oldTransform;
+        el.style.marginBottom = oldMargin;
+      }
+    }
+  </script>
+</body>
+</html>
