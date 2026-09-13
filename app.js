@@ -3405,6 +3405,17 @@ function fecharModalRelatorioCategoria() {
   _printHtml = "";
 }
 
+async function deleteVitaisDoHistorico(id) {
+  if (!confirm("Excluir este registro?")) return;
+  showLoad();
+  try {
+    const { error } = await db.from("vitals_records").delete().eq("id", id);
+    if (error) throw error;
+    toast("Registro excluído.", "i");
+    fecharModalRelatorioCategoria();
+  } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
+}
+
 async function verHistoricoCategoria(cat) {
   showLoad();
   try {
@@ -3418,7 +3429,7 @@ async function verHistoricoCategoria(cat) {
     if (cat === "pressao") {
       titulo = "🩺 Pressão Arterial";
       const { data, error } = await db.from("vitals_records")
-        .select("record_date,record_time,bp_systolic,bp_diastolic,pulse,bp_type,notes")
+        .select("id,record_date,record_time,bp_systolic,bp_diastolic,pulse,bp_type,notes,weight,waist,glucose,glucose_type,updated_at")
         .eq("user_id", currentUser.id).not("bp_systolic","is",null)
         .order("record_date",{ascending:false}).order("record_time",{ascending:false});
       if (error) throw error;
@@ -3432,6 +3443,10 @@ async function verHistoricoCategoria(cat) {
           <td><strong>${r.bp_systolic}</strong></td><td><strong>${r.bp_diastolic}</strong></td>
           <td>${r.pulse||"—"}</td><td>${bpCat(r.bp_systolic)}</td>
           <td>${r.bp_type?esc(r.bp_type):"—"}</td><td style="font-size:11px">${r.notes?esc(r.notes):"—"}</td>
+          <td style="white-space:nowrap">
+            <button onclick='openVitalsModal(${JSON.stringify(r)});fecharModalRelatorioCategoria()' style="border:none;background:none;cursor:pointer;font-size:15px" title="Editar">✏️</button>
+            <button onclick="deleteVitaisDoHistorico('${r.id}')" style="border:none;background:none;cursor:pointer;font-size:15px" title="Excluir">🗑️</button>
+          </td>
         </tr>`).join("");
         const rowsPrint = data.map(r=>`<tr>
           <td>${fmtDate(r.record_date)}</td><td>${r.record_time?r.record_time.substring(0,5):"—"}</td>
@@ -3439,7 +3454,7 @@ async function verHistoricoCategoria(cat) {
           <td>${r.pulse||"—"}</td><td>${bpTxt(r.bp_systolic)}</td>
           <td>${r.bp_type?esc(r.bp_type):"—"}</td><td>${r.notes?esc(r.notes):"—"}</td>
         </tr>`).join("");
-        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Sistólica</th><th>Diastólica</th><th>Pulso</th><th>Classificação</th><th>Tipo</th><th>Obs.</th></tr></thead>`;
+        const cab = `<thead><tr><th>Data</th><th>Hora</th><th>Sistólica</th><th>Diastólica</th><th>Pulso</th><th>Classificação</th><th>Tipo</th><th>Obs.</th><th></th></tr></thead>`;
         const legenda = `<div class="legenda">
           <span class="leg" style="background:#d5f5e3;color:#1a6b3a">Ótima &lt;120</span>
           <span class="leg" style="background:#d5f5e3;color:#27ae60">Normal 120–129</span>
@@ -3449,7 +3464,7 @@ async function verHistoricoCategoria(cat) {
         </div>`;
         tabelaModal = `<div class="relcat-info">Paciente: <strong>${nome}</strong> &nbsp;|&nbsp; ${data.length} registros &nbsp;|&nbsp; ${hoje}</div>
           ${legenda}<div class="relcat-table-wrap"><table class="relcat-table">${cab}<tbody>${rows}</tbody></table></div>`;
-        printConteudo = legenda + `<table>${cab}<tbody>${rowsPrint}</tbody></table>`;
+        printConteudo = legenda + `<table>${cab.replace(/<th><\/th>/,"")}<tbody>${rowsPrint}</tbody></table>`;
       }
 
     } else if (cat === "glicemia") {
