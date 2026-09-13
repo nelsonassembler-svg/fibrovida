@@ -345,12 +345,18 @@
       </div>
 
       <!-- Saudação -->
-      <div class="greeting-card">
-        <div class="g-emoji" id="greeting-emoji">☀️</div>
-        <div>
-          <div class="g-hello" id="greeting-text">Olá!</div>
-          <div class="g-date"  id="greeting-date"></div>
+      <div class="greeting-card" style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="g-emoji" id="greeting-emoji">☀️</div>
+          <div>
+            <div class="g-hello" id="greeting-text">Olá!</div>
+            <div class="g-date"  id="greeting-date"></div>
+          </div>
         </div>
+        <button onclick="verificarAtualizacoes()" title="Verificar atualizações"
+          style="background:none;border:none;cursor:pointer;font-size:22px;opacity:0.6;padding:6px;border-radius:50%;transition:opacity .2s,transform .3s"
+          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"
+          id="btn-refresh-home">🔄</button>
       </div>
 
       <!-- Painel Admin — só visível para nelsontcmagalhaes@gmail.com -->

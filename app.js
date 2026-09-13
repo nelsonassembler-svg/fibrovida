@@ -1209,48 +1209,48 @@ function renderConfig() {
 }
 
 async function verificarAtualizacoes() {
-  const subEl = document.getElementById("update-check-sub");
+  const subEl   = document.getElementById("update-check-sub");
   const arrowEl = document.getElementById("update-check-arrow");
+  const btnHome = document.getElementById("btn-refresh-home");
 
   if (!('serviceWorker' in navigator)) {
     toast("Seu navegador não suporta atualizações automáticas.", "e");
     return;
   }
 
-  if (subEl) subEl.textContent = "🔍 Verificando...";
-  if (arrowEl) arrowEl.textContent = "⏳";
+  if (subEl)   subEl.textContent   = "🔍 Verificando...";
+  if (arrowEl) arrowEl.textContent  = "⏳";
+  if (btnHome) { btnHome.style.animation = "spin 1s linear infinite"; btnHome.disabled = true; }
+
+  function pararAnimacao() {
+    if (btnHome) { btnHome.style.animation = ""; btnHome.disabled = false; }
+  }
 
   try {
     const reg = await navigator.serviceWorker.getRegistration();
     if (!reg) {
       toast("Serviço de atualização não encontrado.", "e");
-      if (subEl) subEl.textContent = "Toque para verificar se há uma versão nova";
+      if (subEl)   subEl.textContent  = "Toque para verificar se há uma versão nova";
       if (arrowEl) arrowEl.textContent = "›";
-      return;
+      pararAnimacao(); return;
     }
 
-    // Função que aplica a atualização quando o SW já está esperando
     function aplicarAtualizacao(worker) {
+      pararAnimacao();
       if (confirm("✅ Nova versão disponível!\n\nDeseja atualizar agora? O app será recarregado.")) {
         if (subEl) subEl.textContent = "Aplicando atualização...";
         navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
         worker.postMessage({ type: 'SKIP_WAITING' });
       } else {
-        if (subEl) subEl.textContent = "Atualização pendente — toque para aplicar";
+        if (subEl)   subEl.textContent  = "Atualização pendente — toque para aplicar";
         if (arrowEl) arrowEl.textContent = "🔔";
       }
     }
 
-    // Já tem atualização baixada esperando?
-    if (reg.waiting) {
-      aplicarAtualizacao(reg.waiting);
-      return;
-    }
+    if (reg.waiting) { aplicarAtualizacao(reg.waiting); return; }
 
-    // Pede ao SW para verificar se há versão nova no servidor
     await reg.update();
 
-    // Ouve se uma nova versão for encontrada durante o update()
     let encontrouNova = false;
     reg.addEventListener('updatefound', () => {
       encontrouNova = true;
@@ -1263,22 +1263,23 @@ async function verificarAtualizacoes() {
       });
     });
 
-    // Aguarda 4 segundos para o SW processar
     await new Promise(r => setTimeout(r, 4000));
 
     if (!encontrouNova && !reg.waiting) {
+      pararAnimacao();
       toast("✅ Você já está na versão mais recente!", "s");
-      if (subEl) subEl.textContent = "Versão atual — sem atualizações disponíveis";
+      if (subEl)   subEl.textContent  = "Versão atual — sem atualizações disponíveis";
       if (arrowEl) arrowEl.textContent = "✓";
       setTimeout(() => {
-        if (subEl) subEl.textContent = "Toque para verificar se há uma versão nova";
+        if (subEl)   subEl.textContent  = "Toque para verificar se há uma versão nova";
         if (arrowEl) arrowEl.textContent = "›";
       }, 5000);
     }
 
   } catch(e) {
+    pararAnimacao();
     toast("Erro ao verificar atualizações.", "e");
-    if (subEl) subEl.textContent = "Toque para verificar se há uma versão nova";
+    if (subEl)   subEl.textContent  = "Toque para verificar se há uma versão nova";
     if (arrowEl) arrowEl.textContent = "›";
   }
 }
