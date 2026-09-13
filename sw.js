@@ -3,7 +3,7 @@
    Cache-first para assets estáticos | Network-first para API
    ============================================================ */
 
-const CACHE_NAME  = 'fibrovida-v5.9';
+const CACHE_NAME  = 'fibrovida-v5.10';
 const STATIC_URLS = [
   './',
   './index.html',
@@ -192,6 +192,12 @@ self.addEventListener('notificationclick', event => {
 // O app envia { type:'SCHEDULE_MED_ALERT', med, delayMs } ao SW
 self.addEventListener('message', event => {
   if (!event.data) return;
+
+  // ── Forçar atualização imediata ───────────────────────
+  if (event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
 
   // ── Alerta de medicamento ─────────────────────────────
   if (event.data.type === 'SCHEDULE_MED_ALERT') {
