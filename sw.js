@@ -3,7 +3,7 @@
    Cache-first para assets estáticos | Network-first para API
    ============================================================ */
 
-const CACHE_NAME  = 'fibrovida-v5.10';
+const CACHE_NAME  = 'fibrovida-v5.11';
 const STATIC_URLS = [
   './',
   './index.html',

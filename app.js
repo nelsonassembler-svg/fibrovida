@@ -34,7 +34,7 @@ let allTasks         = [];
 let allRecipes       = [];
 let currentRecipeCat = "all";
 
-const TRIAL_DAYS     = 7;   // dias de trial gratuito
+const TRIAL_DAYS     = 5;   // dias de trial gratuito
 
 // ── INSTALAÇÃO PWA ───────────────────────────────────────────
 let _pwaPrompt = null;
@@ -2429,6 +2429,7 @@ async function loadMedications() {
   try {
     let q = db.from("medications")
       .select("*, professionals(name,specialty)")
+      .order("schedule_time", {ascending: true})
       .order("name", {ascending: true});
     if (!isAdmin) q = q.eq("user_id", currentUser.id);
     if (_medFilter === "fibro") q = q.eq("is_extra", false);
@@ -2467,7 +2468,24 @@ function renderMedications(list) {
     </div></div></div>`;
     return;
   }
+
+  // Agrupa por horário para exibir separadores de período
+  const periodOrder = { "Manhã": 0, "Tarde": 1, "Noite": 2 };
+  const periodEmoji = { "Manhã": "🌅", "Tarde": "☀️", "Noite": "🌙" };
+  let lastPeriod = null;
+
   el.innerHTML = list.map(m => {
+    let separador = "";
+    const periodo = m.frequency || (
+      !m.schedule_time ? "" :
+      parseInt(m.schedule_time) < 12 ? "Manhã" :
+      parseInt(m.schedule_time) < 18 ? "Tarde" : "Noite"
+    );
+    if (periodo && periodo !== lastPeriod) {
+      lastPeriod = periodo;
+      separador = `<div style="margin:12px 0 6px;padding:6px 12px;background:var(--card-bg);border-left:4px solid var(--primary);border-radius:0 8px 8px 0;font-weight:700;font-size:13px;color:var(--primary)">${periodEmoji[periodo] || "⏰"} ${periodo}</div>`;
+    }
+    return separador + (() => {
     const low   = m.stock <= m.low_stock_alert;
     const empty = m.stock <= 0;
     const badgeClass = empty ? "badge-out" : low ? "badge-low" : "badge-ok";
@@ -2500,6 +2518,7 @@ function renderMedications(list) {
           <button class="ia-btn del"  onclick="deleteMed('${m.id}')">🗑️</button>
         </div>
       </div>`;
+    })();
   }).join("");
 }
 
