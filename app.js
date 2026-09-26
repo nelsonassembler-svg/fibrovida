@@ -2235,7 +2235,26 @@ function testarAlertaMedicamento() {
     });
 }
 
+function falarAlertaMed(nome, dosagem) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const texto = `Hora de tomar: ${nome}${dosagem ? ', ' + dosagem : ''}.`;
+  const fala  = new SpeechSynthesisUtterance(texto);
+  fala.lang   = 'pt-BR';
+  fala.rate   = 0.88;
+  fala.pitch  = 1.05;
+  fala.volume = 1;
+  // Tenta selecionar voz em português
+  const vozes = window.speechSynthesis.getVoices();
+  const vozPt = vozes.find(v => v.lang.startsWith('pt')) || null;
+  if (vozPt) fala.voice = vozPt;
+  window.speechSynthesis.speak(fala);
+}
+
 function showMedAlert(m, chave) {
+  // Dispara alerta de voz
+  falarAlertaMed(m.name, m.dosage);
+
   // Cria alerta fixo com botão "Tomei ✓"
   const id = "med-alert-" + chave.replace(/[^a-z0-9]/gi, "_");
   const div = document.createElement("div");
@@ -2247,7 +2266,11 @@ function showMedAlert(m, chave) {
       <strong>Hora do medicamento!</strong><br>
       ${m.name}${m.dosage ? " — " + m.dosage : ""}
     </div>
-    <button class="med-alert-btn" onclick="marcarMedTomado('${m.id}','${id}')">Tomei ✓</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="med-alert-btn" onclick="marcarMedTomado('${m.id}','${id}')">Tomei ✓</button>
+      <button onclick="falarAlertaMed('${m.name.replace(/'/g,"\\'")}','${(m.dosage||'').replace(/'/g,"\\'")}'')"
+        style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px" title="Repetir voz">🔊</button>
+    </div>
   `;
   document.body.appendChild(div);
   // Remove automaticamente após 5 minutos
