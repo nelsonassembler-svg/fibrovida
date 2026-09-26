@@ -3430,27 +3430,76 @@ async function deleteVitals(id) {
 
 // ── HELPER: imprime via iframe oculto (sem pop-up) ────────────
 function abrirImpressao(html) {
-  // Tenta iframe oculto primeiro (não depende de pop-up)
-  try {
-    let frame = document.getElementById("_print_frame_fv");
-    if (!frame) {
-      frame = document.createElement("iframe");
-      frame.id = "_print_frame_fv";
-      frame.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:0";
-      document.body.appendChild(frame);
-    }
-    const doc = frame.contentDocument || frame.contentWindow.document;
-    doc.open();
-    doc.write(html);
-    doc.close();
-    // Aguarda o carregamento antes de imprimir
-    frame.contentWindow.focus();
-    setTimeout(() => {
-      try { frame.contentWindow.print(); } catch(e) { _abrirImpressaoPopup(html); }
-    }, 300);
-  } catch(e) {
-    _abrirImpressaoPopup(html);
-  }
+  // Mostra guia de salvamento antes de abrir o diálogo
+  _mostrarGuiaSalvarPDF();
+
+  setTimeout(() => {
+    try {
+      let frame = document.getElementById("_print_frame_fv");
+      if (!frame) {
+        frame = document.createElement("iframe");
+        frame.id = "_print_frame_fv";
+        frame.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:0";
+        document.body.appendChild(frame);
+      }
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open(); doc.write(html); doc.close();
+      frame.contentWindow.focus();
+      setTimeout(() => {
+        try { frame.contentWindow.print(); } catch(e) { _abrirImpressaoPopup(html); }
+      }, 300);
+    } catch(e) { _abrirImpressaoPopup(html); }
+  }, 1800);
+}
+
+function _mostrarGuiaSalvarPDF() {
+  const existente = document.getElementById("_guia-pdf-overlay");
+  if (existente) existente.remove();
+
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const passo2 = isIOS
+    ? `<b>2.</b> Toque em <b>"Compartilhar"</b> (ícone quadrado com seta ↑)`
+    : `<b>2.</b> No menu, toque em <b>"Salvar como PDF"</b>`;
+  const passo3 = isIOS
+    ? `<b>3.</b> Escolha <b>"Salvar em Arquivos"</b> e toque em <b>Salvar</b>`
+    : `<b>3.</b> Escolha a pasta e toque em <b>"Salvar"</b>`;
+
+  const div = document.createElement("div");
+  div.id = "_guia-pdf-overlay";
+  div.style.cssText = `
+    position:fixed;bottom:0;left:0;right:0;z-index:99999;
+    background:var(--card-bg);border-top:3px solid var(--primary);
+    border-radius:20px 20px 0 0;padding:20px 20px 28px;
+    box-shadow:0 -4px 24px rgba(0,0,0,.18);
+    animation:slideUp .3s ease;
+  `;
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <span style="font-size:16px;font-weight:700;color:var(--primary)">📥 Como salvar o PDF</span>
+      <button onclick="document.getElementById('_guia-pdf-overlay').remove()"
+        style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted)">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5;color:var(--text)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="background:var(--primary);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</span>
+        <span><b>1.</b> A janela de impressão vai abrir automaticamente...</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="background:var(--primary);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</span>
+        <span>${passo2}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="background:var(--primary);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</span>
+        <span>${passo3}</span>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:10px 14px;background:var(--lilas-light,#EDE7F6);border-radius:10px;font-size:12px;color:var(--text-muted)">
+      ⏳ A janela de impressão abrirá em instantes...
+    </div>
+  `;
+  document.body.appendChild(div);
+  // Remove automaticamente após 30 segundos
+  setTimeout(() => div.remove(), 30000);
 }
 
 function _abrirImpressaoPopup(html) {
