@@ -1651,6 +1651,9 @@ async function loadHealthRecords() {
   loadVitals();
   loadDocs();
   loadCrisisHistory();
+  loadProntuario();
+  renderVacinas();
+  renderExames();
 }
 
 function renderHealthList(list) {
@@ -3261,7 +3264,10 @@ async function saveVitals() {
   const timeEl    = document.getElementById("vitals-time");
   const recordTime = timeEl?.value || new Date().toTimeString().substring(0,5);
 
-  if (!weight && !waist && !systolic && !diastolic && !pulse && !glucose) {
+  const temp  = parseFloat(document.getElementById("vitals-temp")?.value)  || null;
+  const spo2  = parseInt(document.getElementById("vitals-spo2")?.value)   || null;
+
+  if (!weight && !waist && !systolic && !diastolic && !pulse && !glucose && !temp && !spo2) {
     toast("Preencha ao menos um campo de sinais vitais.", "w"); return;
   }
   if ((systolic && !diastolic) || (!systolic && diastolic)) {
@@ -3270,7 +3276,7 @@ async function saveVitals() {
 
   showLoad();
   try {
-    const { error } = await db.from("vitals_records").insert({
+    const payload = {
       user_id:      currentUser.id,
       record_date:  todayISO(),
       record_time:  recordTime,
@@ -3281,10 +3287,18 @@ async function saveVitals() {
       pulse,
       glucose,
       glucose_type: glucose ? gType : null,
-    });
+      temperature:  temp,
+      spo2,
+    };
+    let { error } = await db.from("vitals_records").insert(payload);
+    // Se colunas não existem no banco, tenta sem elas
+    if (error && error.message?.includes("column")) {
+      delete payload.temperature; delete payload.spo2;
+      ({ error } = await db.from("vitals_records").insert(payload));
+    }
     if (error) throw error;
 
-    ["vitals-weight","vitals-waist","vitals-systolic","vitals-diastolic","vitals-pulse","vitals-bp-type","vitals-glucose"].forEach(id => {
+    ["vitals-weight","vitals-waist","vitals-systolic","vitals-diastolic","vitals-pulse","vitals-bp-type","vitals-glucose","vitals-temp","vitals-spo2"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
@@ -3402,6 +3416,12 @@ function renderVitalsList(list) {
     const wa  = r.waist
       ? `<div class="vhc-item"><span class="vi-lbl">📏 Cintura</span><span class="vi-val waist">${r.waist} <small style="font-size:10px;font-weight:500">cm</small></span></div>`
       : "";
+    const tmp = r.temperature
+      ? `<div class="vhc-item"><span class="vi-lbl">🌡️ Temp.</span><span class="vi-val">${r.temperature} <small style="font-size:10px;font-weight:500">°C</small></span></div>`
+      : "";
+    const sp2 = r.spo2
+      ? `<div class="vhc-item"><span class="vi-lbl">💨 SpO₂</span><span class="vi-val">${r.spo2} <small style="font-size:10px;font-weight:500">%</small></span></div>`
+      : "";
 
     return `<div class="vitals-history-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -3411,7 +3431,7 @@ function renderVitalsList(list) {
           <button class="ia-btn del"  onclick="deleteVitals('${r.id}')" title="Excluir">🗑️</button>
         </div>
       </div>
-      <div class="vhc-grid">${bp}${glu}${wt}${wa}</div>
+      <div class="vhc-grid">${bp}${glu}${wt}${wa}${tmp}${sp2}</div>
       ${r.notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px">📝 ${esc(r.notes)}</div>` : ""}
     </div>`;
   }).join("");
@@ -3426,6 +3446,180 @@ async function deleteVitals(id) {
     toast("Registro excluído.", "i");
     loadVitals();
   } catch(e) { toast("Erro ao excluir.", "e"); } finally { hideLoad(); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRONTUÁRIO PESSOAL (localStorage)
+// ══════════════════════════════════════════════════════════════
+function _prontKey() { return `fv_prontuario_${currentUser?.id || "guest"}`; }
+
+function toggleProntuario() {
+  const body  = document.getElementById("pront-body");
+  const arrow = document.getElementById("pront-arrow");
+  if (!body) return;
+  const open = body.style.display === "none";
+  body.style.display = open ? "block" : "none";
+  if (arrow) arrow.style.transform = open ? "rotate(180deg)" : "";
+}
+
+function loadProntuario() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(_prontKey()) || "{}");
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    set("pront-blood",      saved.blood);
+    set("pront-height",     saved.height);
+    set("pront-conditions", saved.conditions);
+    set("pront-allergies",  saved.allergies);
+    set("pront-surgeries",  saved.surgeries);
+    set("pront-med-history",saved.medHistory);
+    set("pront-family",     saved.family);
+  } catch(e) {}
+}
+
+function saveProntuario() {
+  const g = id => document.getElementById(id)?.value.trim() || "";
+  const data = {
+    blood:      g("pront-blood"),
+    height:     g("pront-height"),
+    conditions: g("pront-conditions"),
+    allergies:  g("pront-allergies"),
+    surgeries:  g("pront-surgeries"),
+    medHistory: g("pront-med-history"),
+    family:     g("pront-family"),
+  };
+  try {
+    localStorage.setItem(_prontKey(), JSON.stringify(data));
+    toast("Prontuário salvo! 📋", "s");
+  } catch(e) { toast("Erro ao salvar prontuário.", "e"); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// VACINAS (localStorage)
+// ══════════════════════════════════════════════════════════════
+function _vacinasKey() { return `fv_vacinas_${currentUser?.id || "guest"}`; }
+function _loadVacinasData() { try { return JSON.parse(localStorage.getItem(_vacinasKey()) || "[]"); } catch(e) { return []; } }
+function _saveVacinasData(arr) { localStorage.setItem(_vacinasKey(), JSON.stringify(arr)); }
+
+function abrirFormVacina() {
+  const f = document.getElementById("vacinas-form");
+  if (f) { f.style.display = "block"; document.getElementById("vac-name")?.focus(); }
+}
+function fecharFormVacina() {
+  const f = document.getElementById("vacinas-form");
+  if (f) f.style.display = "none";
+  ["vac-name","vac-date","vac-dose","vac-lab"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+}
+
+function salvarVacina() {
+  const name = document.getElementById("vac-name")?.value.trim();
+  if (!name) { toast("Informe o nome da vacina.", "w"); return; }
+  const vac = {
+    id:   crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+    name,
+    date: document.getElementById("vac-date")?.value || "",
+    dose: document.getElementById("vac-dose")?.value.trim() || "",
+    lab:  document.getElementById("vac-lab")?.value.trim() || "",
+    created_at: new Date().toISOString(),
+  };
+  const arr = _loadVacinasData();
+  arr.unshift(vac);
+  _saveVacinasData(arr);
+  renderVacinas();
+  fecharFormVacina();
+  toast("Vacina registrada! 💉", "s");
+}
+
+function removeVacina(id) {
+  if (!confirm("Excluir este registro de vacina?")) return;
+  _saveVacinasData(_loadVacinasData().filter(v => v.id !== id));
+  renderVacinas();
+  toast("Registro excluído.", "i");
+}
+
+function renderVacinas() {
+  const el = document.getElementById("vacinas-list");
+  if (!el) return;
+  const arr = _loadVacinasData();
+  if (!arr.length) { el.innerHTML = `<div class="empty-state"><div class="ei">💉</div><p>Nenhuma vacina registrada</p></div>`; return; }
+  el.innerHTML = arr.map(v => `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">💉 ${esc(v.name)}${v.dose ? ` — ${esc(v.dose)}` : ""}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
+          ${v.date ? `📅 ${fmtDate(v.date)}` : ""}${v.lab ? ` · 🏭 ${esc(v.lab)}` : ""}
+        </div>
+      </div>
+      <button onclick="removeVacina('${v.id}')" class="ia-btn del" title="Excluir">🗑️</button>
+    </div>`).join("");
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXAMES & PRESCRIÇÕES (localStorage)
+// ══════════════════════════════════════════════════════════════
+function _examesKey() { return `fv_exames_${currentUser?.id || "guest"}`; }
+function _loadExamesData() { try { return JSON.parse(localStorage.getItem(_examesKey()) || "[]"); } catch(e) { return []; } }
+function _saveExamesData(arr) { localStorage.setItem(_examesKey(), JSON.stringify(arr)); }
+
+const _exmIcon = { exame:"🔬", prescricao:"💊", lab:"🧪", radiologia:"🩻", patologia:"🔭" };
+const _exmLabel = { exame:"Exame", prescricao:"Prescrição", lab:"Lab", radiologia:"Radiologia", patologia:"Patologia" };
+
+function abrirFormExame() {
+  const f = document.getElementById("exames-form");
+  if (f) { f.style.display = "block"; document.getElementById("exm-name")?.focus(); }
+}
+function fecharFormExame() {
+  const f = document.getElementById("exames-form");
+  if (f) f.style.display = "none";
+  ["exm-name","exm-date","exm-doctor","exm-result"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+  const tp = document.getElementById("exm-type"); if (tp) tp.value = "exame";
+}
+
+function salvarExame() {
+  const name = document.getElementById("exm-name")?.value.trim();
+  if (!name) { toast("Informe o nome do exame/prescrição.", "w"); return; }
+  const exm = {
+    id:     crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+    type:   document.getElementById("exm-type")?.value || "exame",
+    name,
+    date:   document.getElementById("exm-date")?.value || "",
+    doctor: document.getElementById("exm-doctor")?.value.trim() || "",
+    result: document.getElementById("exm-result")?.value.trim() || "",
+    created_at: new Date().toISOString(),
+  };
+  const arr = _loadExamesData();
+  arr.unshift(exm);
+  _saveExamesData(arr);
+  renderExames();
+  fecharFormExame();
+  toast("Registro salvo! 🔬", "s");
+}
+
+function removeExame(id) {
+  if (!confirm("Excluir este registro?")) return;
+  _saveExamesData(_loadExamesData().filter(e => e.id !== id));
+  renderExames();
+  toast("Registro excluído.", "i");
+}
+
+function renderExames() {
+  const el = document.getElementById("exames-list");
+  if (!el) return;
+  const arr = _loadExamesData();
+  if (!arr.length) { el.innerHTML = `<div class="empty-state"><div class="ei">🔬</div><p>Nenhum exame ou prescrição registrado</p></div>`; return; }
+  el.innerHTML = arr.map(e => `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="background:var(--lilas-light,#EDE7F6);color:var(--primary);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px">${_exmIcon[e.type]||"📋"} ${_exmLabel[e.type]||"Registro"}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--text)">${esc(e.name)}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+          ${e.date ? `📅 ${fmtDate(e.date)}` : ""}${e.doctor ? ` · 👨‍⚕️ ${esc(e.doctor)}` : ""}
+        </div>
+        ${e.result ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;white-space:pre-wrap">${esc(e.result)}</div>` : ""}
+      </div>
+      <button onclick="removeExame('${e.id}')" class="ia-btn del" title="Excluir" style="flex-shrink:0;margin-left:8px">🗑️</button>
+    </div>`).join("");
 }
 
 // ── HELPER: imprime via iframe oculto (sem pop-up) ────────────

@@ -676,6 +676,80 @@
         <button class="btn-fab" onclick="openHealthModal()" title="Novo registro">+</button>
       </div>
 
+      <!-- ── PRONTUÁRIO PESSOAL ──────────────────────────── -->
+      <div class="card" style="margin-bottom:14px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer"
+          onclick="toggleProntuario()">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:22px">📋</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--primary)">Prontuário Pessoal</div>
+              <div style="font-size:11px;color:var(--text-muted)">Dados, histórico médico, alergias e cirurgias</div>
+            </div>
+          </div>
+          <span id="pront-arrow" style="font-size:20px;color:var(--text-muted);transition:transform .25s">▾</span>
+        </div>
+        <div id="pront-body" style="display:none;margin-top:14px">
+
+          <!-- Dados do Paciente -->
+          <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+            <div class="saude-section-label" style="margin-bottom:8px">👤 Dados do Paciente</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Tipo Sanguíneo</label>
+                <select id="pront-blood" class="humor-select" style="width:100%;font-size:13px">
+                  <option value="">Não sei</option>
+                  <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                  <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Altura (cm)</label>
+                <input type="number" id="pront-height" min="100" max="220" placeholder="170"
+                  style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+              </div>
+            </div>
+          </div>
+
+          <!-- Condições Crônicas -->
+          <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+            <div class="saude-section-label" style="margin-bottom:8px">🏥 Condições Crônicas</div>
+            <textarea id="pront-conditions" rows="2" placeholder="Ex: Fibromialgia, Hipotireoidismo, Hipertensão..."
+              style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+
+          <!-- Alergias -->
+          <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+            <div class="saude-section-label" style="margin-bottom:8px">⚠️ Alergias Conhecidas</div>
+            <textarea id="pront-allergies" rows="2" placeholder="Ex: Dipirona, Penicilina, Látex, Glúten..."
+              style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+
+          <!-- Cirurgias -->
+          <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+            <div class="saude-section-label" style="margin-bottom:8px">🔪 Cirurgias</div>
+            <textarea id="pront-surgeries" rows="2" placeholder="Ex: Apendicectomia (2010), Colecistectomia (2018)..."
+              style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+
+          <!-- Histórico Médico -->
+          <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+            <div class="saude-section-label" style="margin-bottom:8px">📖 Histórico Médico</div>
+            <textarea id="pront-med-history" rows="3" placeholder="Diagnósticos anteriores, internações, tratamentos relevantes..."
+              style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+
+          <!-- História de Família -->
+          <div style="margin-bottom:14px">
+            <div class="saude-section-label" style="margin-bottom:8px">👨‍👩‍👧 História de Família</div>
+            <textarea id="pront-family" rows="2" placeholder="Ex: Pai com diabetes, Mãe com hipertensão..."
+              style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%" onclick="saveProntuario()">💾 Salvar Prontuário</button>
+        </div>
+      </div>
+
       <!-- Formulário rápido de hoje -->
       <div class="card">
         <div class="card-body">
@@ -870,6 +944,22 @@
                 style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none" />
             </div>
 
+            <div class="vitals-input-group">
+              <label>🌡️ Temperatura</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-temp" step="0.1" min="34" max="42" placeholder="36.5" />
+                <span class="vunit">°C</span>
+              </div>
+            </div>
+
+            <div class="vitals-input-group">
+              <label>💨 Saturação O₂</label>
+              <div class="vitals-input-row">
+                <input type="number" id="vitals-spo2" step="1" min="70" max="100" placeholder="98" />
+                <span class="vunit">%</span>
+              </div>
+            </div>
+
           </div>
           <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
             <div class="vitals-input-group" style="flex:1;margin-bottom:0">
@@ -883,6 +973,98 @@
 
       <div id="vitals-list">
         <div class="empty-state"><div class="ei">📊</div><p>Seus sinais vitais aparecerão aqui</p></div>
+      </div>
+
+      <!-- ── VACINAS ─────────────────────────────────────── -->
+      <div class="section-title-bar">
+        <span>💉 Vacinas</span>
+        <button class="btn-fab" onclick="abrirFormVacina()" title="Nova vacina">+</button>
+      </div>
+      <div class="card" id="vacinas-card">
+        <div id="vacinas-form" style="display:none;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Nome da Vacina*</label>
+              <input type="text" id="vac-name" placeholder="Ex: Gripe, COVID-19, Tétano..."
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Data</label>
+              <input type="date" id="vac-date"
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Dose</label>
+              <input type="text" id="vac-dose" placeholder="1ª dose, 2ª dose, Anual..."
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Laboratório</label>
+              <input type="text" id="vac-lab" placeholder="Butantan, Pfizer..."
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1" onclick="salvarVacina()">💾 Salvar</button>
+            <button class="btn btn-secondary" onclick="fecharFormVacina()">Cancelar</button>
+          </div>
+        </div>
+        <div id="vacinas-list">
+          <div class="empty-state"><div class="ei">💉</div><p>Nenhuma vacina registrada</p></div>
+        </div>
+      </div>
+
+      <!-- ── EXAMES & PRESCRIÇÕES ─────────────────────────── -->
+      <div class="section-title-bar">
+        <span>🔬 Exames & Prescrições</span>
+        <button class="btn-fab" onclick="abrirFormExame()" title="Novo registro">+</button>
+      </div>
+      <div class="card" id="exames-card">
+        <div id="exames-form" style="display:none;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Tipo*</label>
+              <select id="exm-type" class="humor-select" style="width:100%;font-size:13px">
+                <option value="exame">🔬 Exame Solicitado/Realizado</option>
+                <option value="prescricao">💊 Prescrição Médica</option>
+                <option value="lab">🧪 Teste de Laboratório</option>
+                <option value="radiologia">🩻 Radiologia / Imagem</option>
+                <option value="patologia">🔭 Patologia</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Nome*</label>
+              <input type="text" id="exm-name" placeholder="Ex: Hemograma, Raio-X de Tórax..."
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Data</label>
+              <input type="date" id="exm-date"
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Médico / Solicitante</label>
+              <input type="text" id="exm-doctor" placeholder="Dr. Silva..."
+                style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Resultado / Observações</label>
+            <textarea id="exm-result" rows="2" placeholder="Resultado ou observações relevantes..."
+              style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1" onclick="salvarExame()">💾 Salvar</button>
+            <button class="btn btn-secondary" onclick="fecharFormExame()">Cancelar</button>
+          </div>
+        </div>
+        <div id="exames-list">
+          <div class="empty-state"><div class="ei">🔬</div><p>Nenhum exame ou prescrição registrado</p></div>
+        </div>
       </div>
 
       <!-- ── DOCUMENTOS DE SAÚDE ──────────────────────────── -->
